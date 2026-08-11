@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "encrypted_document",
+    "retryable": false
+  },
+  "expectation_kind": "safe_error",
+  "fixture_id": "encrypted",
+  "provider_scope": "local",
+  "schema_version": "2.0"
+}

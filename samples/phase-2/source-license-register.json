@@ -1,0 +1,268 @@
+{
+  "artifacts": [
+    {
+      "bytes": 1603,
+      "kind": "documentation",
+      "license": "CC0-1.0",
+      "media_type": "text/markdown",
+      "path": "README.md",
+      "purpose": "Fixture scope, verification, and regeneration instructions",
+      "sha256": "bcdc87d5dae2f9662107b63c14de3b751f8fa3c8fc734c9e97c9286e538dc432"
+    },
+    {
+      "bytes": 195,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/corrupt.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "f5dfc95af2d4b263a806a7f7711f444393366068bf94c8392f0d6c8ef59700f0"
+    },
+    {
+      "bytes": 199,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/encrypted.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "f0e3056650f7d665f746142ee76f0aa0d6efbe3e3bfcb9c6877215aa73e78642"
+    },
+    {
+      "bytes": 1133,
+      "kind": "schema",
+      "license": "CC0-1.0",
+      "media_type": "application/schema+json",
+      "path": "expected/expectation-label.schema.json",
+      "purpose": "Structural expectation-label schema",
+      "sha256": "ea9a59999595dc0db0eb46c79cedc08d175b9ce1a97ce827bfc4fc74fbd2a1fd"
+    },
+    {
+      "bytes": 608,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/invoice-jpg.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "c57cef9f661dd60ac44e485a7c8b940d67eddcc6f5edc35415e293809ac372b6"
+    },
+    {
+      "bytes": 608,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/invoice-png.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "4b78f0640e89e216100f98b5c7b659c886b8fe26981598f794820346292efa2a"
+    },
+    {
+      "bytes": 6660,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/native-two-page-invoice.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "3553a1b19ac9ed5dc1cb8566112562b795b283fb09e13193a6c0dd4dc1b67fe5"
+    },
+    {
+      "bytes": 653,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/rotated-low-quality-invoice.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "44a7c2b9aab701efd5ea473b4a3141c86c98c1db8403be43c29ab3872a6d0503"
+    },
+    {
+      "bytes": 628,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/scanned-two-page-invoice-300dpi.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "87040c0646b5b091703ceefa6ea6b52234bcb161b459a1dd7d7acc50f89203ca"
+    },
+    {
+      "bytes": 205,
+      "kind": "expectation",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "expected/unsupported.expected.json",
+      "purpose": "Versioned fixture expectation",
+      "sha256": "94760724981ab0f51dbc823705081e92221f6137cdcfd6e6e2751c595901180e"
+    },
+    {
+      "bytes": 45,
+      "kind": "document_fixture",
+      "license": "CC0-1.0",
+      "media_type": "application/pdf",
+      "path": "generated/corrupt.pdf",
+      "purpose": "Safe corrupt-document failure",
+      "sha256": "e050e592668e03bb28f7a8e24a32a3274bbc32a531a2d9116f833f1165bc3964"
+    },
+    {
+      "bytes": 22926,
+      "kind": "document_fixture",
+      "license": "CC0-1.0 AND Bitstream-Vera",
+      "media_type": "application/pdf",
+      "path": "generated/encrypted.pdf",
+      "purpose": "Safe encrypted-document failure",
+      "sha256": "9201bcc6a584ffc5a3ec743b86a9c318c6d1c9c419e5970c41f97f83ab268e76"
+    },
+    {
+      "bytes": 374084,
+      "kind": "document_fixture",
+      "license": "CC0-1.0",
+      "media_type": "image/jpeg",
+      "path": "generated/invoice.jpg",
+      "purpose": "Direct JPEG OCR input",
+      "sha256": "0e90828eed65fb8a737c3102b89dd0ef802154cfa5ff0ba6a9a73ce2c8c7e78c"
+    },
+    {
+      "bytes": 55254,
+      "kind": "document_fixture",
+      "license": "CC0-1.0",
+      "media_type": "image/png",
+      "path": "generated/invoice.png",
+      "purpose": "Direct PNG OCR input",
+      "sha256": "9d6a3f0ddde5bc7187ec49d11a365c491a22a5da6f1049815ec434e52a7634f4"
+    },
+    {
+      "bytes": 22851,
+      "kind": "document_fixture",
+      "license": "CC0-1.0 AND Bitstream-Vera",
+      "media_type": "application/pdf",
+      "path": "generated/native-two-page-invoice.pdf",
+      "purpose": "Native-text two-page path",
+      "sha256": "002a63dede487a4390f0178b5c64581a31edbbbad4948798403796d17bb56bdf"
+    },
+    {
+      "bytes": 174899,
+      "kind": "document_fixture",
+      "license": "CC0-1.0",
+      "media_type": "application/pdf",
+      "path": "generated/rotated-low-quality-invoice.pdf",
+      "purpose": "Reviewed Partial path for rotated/degraded OCR",
+      "sha256": "a0219d75ae4bdbb9d642916027769bce0471e52dfb06661a456ce3b69cabe8e5"
+    },
+    {
+      "bytes": 143461,
+      "kind": "document_fixture",
+      "license": "CC0-1.0",
+      "media_type": "application/pdf",
+      "path": "generated/scanned-two-page-invoice-300dpi.pdf",
+      "purpose": "Two-page 300-DPI OCR path",
+      "sha256": "2dff4ea3789bf0f61bc0157af796f084bb554583bcdd2abc6da259e8053679cf"
+    },
+    {
+      "bytes": 46,
+      "kind": "document_fixture",
+      "license": "CC0-1.0",
+      "media_type": "text/plain",
+      "path": "generated/unsupported.txt",
+      "purpose": "Local-provider unsupported-media failure",
+      "sha256": "4f17462f750a643cbfceb62afd4bb46102c80b72b7feb9b31add02c68c40971f"
+    },
+    {
+      "bytes": 5954,
+      "kind": "third_party_notice",
+      "license": "Bitstream-Vera",
+      "media_type": "text/plain",
+      "path": "licenses/bitstream-vera-license.txt",
+      "purpose": "Required notice for the embedded Bitstream Vera font",
+      "sha256": "3361d054759a2fc686a2c058be82deaf9c2e6fe549be9004d7935a6c1736315d"
+    },
+    {
+      "bytes": 7777,
+      "kind": "provider_fixture",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "provider-responses/malformed-result.json",
+      "purpose": "Sanitized provider contract fixture",
+      "sha256": "7fd96f7618b2b250db91a8c3b45540c54b8e39dc55a70e30e3b77b026c146d20"
+    },
+    {
+      "bytes": 7784,
+      "kind": "provider_fixture",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "provider-responses/sanitized-native-ready.json",
+      "purpose": "Sanitized provider contract fixture",
+      "sha256": "634830900b229c963a5cd3fca32d54dd6cbaeaa231413217f78d6df00f567e90"
+    },
+    {
+      "bytes": 340,
+      "kind": "provider_fixture",
+      "license": "CC0-1.0",
+      "media_type": "application/json",
+      "path": "provider-responses/sanitized-timeout.json",
+      "purpose": "Sanitized provider contract fixture",
+      "sha256": "758ff9990a7926e1facaefba3364f126e1c35efd63849f82cc51ddd2e9ff0c0c"
+    }
+  ],
+  "canonical_environment": {
+    "container_image": "python:3.11.15-slim-bookworm@sha256:d29f48a31a8b408ed19272ca1e7b10ebae13b240a27e862d3d4217c528e2e0c3",
+    "locale": "C.UTF-8",
+    "platform": "linux/amd64",
+    "python": "3.11.15",
+    "timezone": "UTC"
+  },
+  "dependencies": [
+    {
+      "license": "HPND",
+      "name": "Pillow",
+      "source": "https://pypi.org/project/Pillow/9.4.0/",
+      "version": "9.4.0"
+    },
+    {
+      "license": "BSD-3-Clause",
+      "name": "ReportLab",
+      "source": "https://pypi.org/project/reportlab/3.6.12/",
+      "version": "3.6.12"
+    },
+    {
+      "license": "Bitstream-Vera",
+      "name": "Bitstream Vera Sans",
+      "sha256": "c4c45690b345435b2cba52ecabe275f05e49b389b39fe68ad03afbb551288d3d",
+      "source": "reportlab/fonts/Vera.ttf",
+      "version": "1.10"
+    }
+  ],
+  "generator": {
+    "name": "phase2-synthetic-invoice",
+    "source_sha256": "8ae137110af4c36b22ff68b80f7a7c344198555c0d2619f5fe1dd059bb7ae2e8",
+    "version": "1.0.0"
+  },
+  "register_schema_version": "1.0",
+  "sources": [
+    {
+      "fictional": true,
+      "license": "CC0-1.0",
+      "path": "tools/phase2_fixture_source.json",
+      "sha256": "8761106c9c542be6158b2f505595c442670abe5014d0de753bce277f5458eb38",
+      "source_id": "phase-2-synthetic-invoice-v1"
+    }
+  ],
+  "tooling": [
+    {
+      "license": "repository",
+      "path": "apps/api/app/fixture_contract.py",
+      "sha256": "ee35fd80aafdb1b47240dfb47f23468acf93f9b9debcc7924f195ca0f3e82978"
+    },
+    {
+      "license": "repository",
+      "path": "tools/phase2-fixtures.Dockerfile",
+      "sha256": "d0d28c1b838750acb287fa77b9f6500ff4662014eb44fd7a75552a31407b88ac"
+    },
+    {
+      "license": "repository",
+      "path": "tools/phase2-fixtures-requirements.txt",
+      "sha256": "46a8545bb3e0a9ea01f63ca5a24064f267527da52db9a2ca74f2dff8371beb81"
+    },
+    {
+      "license": "repository",
+      "path": "tools/phase2_fixtures.py",
+      "sha256": "8ae137110af4c36b22ff68b80f7a7c344198555c0d2619f5fe1dd059bb7ae2e8"
+    }
+  ],
+  "total_bytes": 827913
+}

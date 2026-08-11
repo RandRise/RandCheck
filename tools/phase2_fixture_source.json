@@ -1,0 +1,19 @@
+{
+  "source_schema_version": "1.0",
+  "fixture_set_id": "phase-2-synthetic-invoice-v1",
+  "license": "CC0-1.0",
+  "fictional_notice": "All names, identifiers, addresses, and values are synthetic.",
+  "invoice": {
+    "invoice_number": "INV-AE-2026-002",
+    "invoice_date": "2026-08-11",
+    "supplier": "Desert Horizon Technology L.L.C.",
+    "supplier_trn": "000000000000000",
+    "customer": "Gulf Office Supplies L.L.C.",
+    "customer_email": "accounts@gulf-office.invalid",
+    "currency": "AED",
+    "subtotal": "1,000.00",
+    "vat": "50.00",
+    "total": "1,050.00",
+    "payment_terms": "Net 30"
+  }
+}

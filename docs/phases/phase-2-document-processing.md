@@ -3,7 +3,7 @@
 **Status:** In progress
 **Outcome:** English native-text and scanned invoices can be processed asynchronously into one page-aware, provider-neutral result without requiring paid credentials locally.
 
-P2-T01 planning and P2-T02's normalized extraction foundation were completed on 2026-08-11. P2-T03 is ready but has not started. Phase 2 remains in progress; no real PDF/OCR or Phase 2 completion claim is made. Phase 1 remains complete.
+P2-T01 planning, P2-T02's normalized extraction foundation, and P2-T03's synthetic fixture set were completed on 2026-08-11. P2-T04 is ready but not started. Phase 2 remains in progress; no real PDF/OCR, accuracy, or Phase 2 completion claim is made. Phase 1 remains complete.
 
 ## Planning set
 
@@ -13,6 +13,7 @@ P2-T01 planning and P2-T02's normalized extraction foundation were completed on 
 - [Quality plan](../testing/phase-2-quality-plan.md)
 - [2026-08-11 implementation-start record](../reviews/P2-T01-phase-2-implementation-start.md)
 - [P2-T02 contract and persistence evidence](../evidence/phase-2/P2-T02-contract-persistence-verification.md)
+- [P2-T03 synthetic fixture evidence](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md)
 
 ## Problem and user outcome
 
@@ -27,7 +28,7 @@ Phase 1 proves upload, persistence, deterministic extraction, and human correcti
 - Configuration-selected `mock`, `local`, and optional `azure_di` providers. The local path must work without paid credentials.
 - A PostgreSQL-backed `extraction_jobs` queue processed by a .NET `BackgroundService`.
 - Honest UI states: queued, processing, ready, partial, and failed.
-- Synthetic or licensed fixtures and expected JSON labels.
+- Reproducibly generated synthetic fixtures, a source/license register, and versioned schema 2.0 expected labels.
 - Measurement hooks for later analysis, not accuracy claims.
 
 ## Approved processing flow

@@ -1,0 +1,57 @@
+{
+  "$id": "https://example.invalid/schemas/phase2-fixture-expectation-2.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Structural schema for Phase 2 expectations. Semantic invariants are enforced by app.fixture_contract.",
+  "oneOf": [
+    {
+      "properties": {
+        "expectation_kind": {
+          "const": "normalized_result"
+        }
+      }
+    },
+    {
+      "properties": {
+        "expectation_kind": {
+          "const": "semantic_result"
+        }
+      }
+    },
+    {
+      "properties": {
+        "expectation_kind": {
+          "const": "safe_error"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "expectation_kind": {
+      "enum": [
+        "normalized_result",
+        "semantic_result",
+        "safe_error"
+      ]
+    },
+    "fixture_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "provider_scope": {
+      "enum": [
+        "local",
+        "mock"
+      ]
+    },
+    "schema_version": {
+      "const": "2.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "expectation_kind",
+    "fixture_id",
+    "provider_scope"
+  ],
+  "type": "object"
+}

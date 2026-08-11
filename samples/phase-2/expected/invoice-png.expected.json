@@ -1,0 +1,27 @@
+{
+  "document_type": "invoice",
+  "expectation_kind": "semantic_result",
+  "expected_page_count": 1,
+  "fields": [
+    {
+      "key": "invoice_number",
+      "normalized_value": "INV-AE-2026-002",
+      "occurrence": 0,
+      "value": "INV-AE-2026-002",
+      "value_type": "String"
+    },
+    {
+      "key": "total",
+      "normalized_value": "1050.00",
+      "occurrence": 0,
+      "value": "1,050.00",
+      "value_type": "Decimal"
+    }
+  ],
+  "fixture_id": "invoice-png",
+  "language": "en",
+  "outcome": "Ready",
+  "provider_scope": "local",
+  "required_warning_codes": [],
+  "schema_version": "2.0"
+}

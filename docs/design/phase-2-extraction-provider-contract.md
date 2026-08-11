@@ -154,7 +154,11 @@ P2-T02 owns the `ProcessingCancelled` document-state migration and mapping. A ca
 - `local`: pinned `pdfplumber`/`pdfminer` for native text, `pypdfium2` for rendering, and Tesseract through `pytesseract` with the English pack.
 - `azure_di`: optional, explicitly configured, and verified offline with sanitized/stubbed responses.
 
-The synthetic generator uses Noto Sans. Before P2-T03, libraries, Tesseract/container digest, English language pack, font, and licenses must be pinned and recorded; runtime downloads are forbidden. Missing settings for an explicitly selected provider fail fast.
+P2-T03's canonical fixture generator is separately pinned to Python 3.11.15 on `linux/amd64`, Pillow 9.4.0, ReportLab 3.6.12, and hash-verified Bitstream Vera Sans 1.10. Its registered font notice and composite PDF licensing belong to fixture provenance, not the extraction runtime.
+
+Before P2-T04 local-provider implementation or acceptance, P2-T04 must pin and register `pdfplumber`/`pdfminer`, `pypdfium2`, Tesseract/`pytesseract`, English `eng` data, the runtime container digest, and the exact OCR/model mapping. Runtime downloads are forbidden. Missing settings for an explicitly selected provider fail fast.
+
+Schema 2.0 fixtures use the exact .NET field-value enum vocabulary and provider-metrics semantics. Cross-language contract tests enforce nullable/finite metrics, cost/currency/price-basis coupling, and rejection of unknown value types.
 
 ## Telemetry ownership
 

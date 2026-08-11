@@ -1,0 +1,10 @@
+# P2-T03 hashes require byte-identical checkout across Windows and Linux.
+/.gitattributes text eol=lf
+/apps/api/app/fixture_contract.py text eol=lf
+/tools/phase2-fixtures-requirements.txt text eol=lf
+/tools/phase2-fixtures.Dockerfile text eol=lf
+/tools/phase2_fixture_source.json text eol=lf
+/tools/phase2_fixtures.py text eol=lf
+/samples/phase-2/** text eol=lf
+/samples/phase-2/generated/** binary
+/samples/phase-2/licenses/** binary

@@ -39,7 +39,8 @@ export default defineConfig({
           { text: "Extraction provider contract", link: "/design/phase-2-extraction-provider-contract" },
           { text: "Synthetic sample plan", link: "/data/phase-2-sample-plan" },
           { text: "Phase 2 quality plan", link: "/testing/phase-2-quality-plan" },
-          { text: "P2-T02 verification", link: "/evidence/phase-2/P2-T02-contract-persistence-verification" }
+          { text: "P2-T02 verification", link: "/evidence/phase-2/P2-T02-contract-persistence-verification" },
+          { text: "P2-T03 verification", link: "/evidence/phase-2/P2-T03-synthetic-fixture-verification" }
         ]
       },
       {

@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "unsupported_media_type",
+    "retryable": false
+  },
+  "expectation_kind": "safe_error",
+  "fixture_id": "unsupported",
+  "provider_scope": "local",
+  "schema_version": "2.0"
+}

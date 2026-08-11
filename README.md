@@ -18,14 +18,15 @@ The planning site covers the [product specification](docs/product-spec.md), [del
 
 - Upload PDF, PNG, JPEG, or text documents (10 MB limit)
 - ASP.NET modular monolith with Domain, Application, Infrastructure, and API boundaries
-- EF Core Code First model with an automatically verified initial Npgsql migration
+- EF Core Code First model with verified Npgsql migrations
 - Tenant-ready document, extraction-run, evidence, and review-history schema
 - Upload and deterministic offline invoice extraction through a private Python provider interface
 - Explicit API DTOs preserving the document-review UI contract
 - Append-only human review with correction, confirmation, addition, clearing, completion, reload, and ETag concurrency
 - Next.js review UI that keeps machine and effective reviewed values visibly separate
-- 100 passing .NET tests: 53 domain, 15 application, 11 PostgreSQL persistence, 4 architecture, 15 API, and 2 infrastructure
-- 5 passing frontend tests, 1 passing Python test, frontend lint/build, and VitePress production build
+- 137 passing .NET tests: 72 domain, 23 application, 17 PostgreSQL persistence, 4 architecture, 15 API, and 6 infrastructure
+- 29 passing Python tests, 5 passing frontend tests, frontend lint/build, and VitePress production build
+- Deterministic synthetic Phase 2 fixtures with versioned labels, source/license records, and byte-for-byte container reproducibility; these are contract fixtures, not accuracy evidence ([P2-T03 verification](docs/evidence/phase-2/P2-T03-synthetic-fixture-verification.md))
 - Zero-warning .NET Release build, no pending EF model changes, and valid Compose configuration
 - Reproduced review result: machine total `1050.00` unchanged, effective total `1155.00`, added `payment_terms = Net 30`, completion and reload persisted
 
@@ -109,4 +110,4 @@ See the [product specification](docs/product-spec.md), [architecture](docs/archi
 
 ## Data and claims
 
-The bundled document is synthetic and contains no personal or client data. Extraction is deterministic and fixture-based; Phase 1 does not prove production English OCR or Arabic/bilingual accuracy. Authentication and tenant-aware authorization, production OCR, Arabic support, RAG, reconciliation, cloud deployment, client usage, extraction accuracy, time saved, and financial impact are not claimed.
+The bundled documents are synthetic and contain no personal or client data. Current fixtures verify deterministic contracts and failure behavior; they do not prove production English OCR or Arabic/bilingual accuracy. Authentication and tenant-aware authorization, production OCR, Arabic support, RAG, reconciliation, cloud deployment, client usage, extraction accuracy, time saved, and financial impact are not claimed.
