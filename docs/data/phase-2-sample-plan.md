@@ -81,3 +81,9 @@ Phase 2 fixtures verify deterministic contract behavior, orchestration, provenan
 - [x] Automated tests and Integration Guardian review are linked.
 
 Final verification is 26/26 targeted fixture-contract and CLI tests, 29/29 full Python discovery, direct verification of 22 artifacts totaling 827,913 bytes, and a 23/23 canonical file comparison. Integration Guardian reported **APPROVED** with no blockers. See the [P2-T03 evidence](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md).
+
+## P2-T04 verified fixture correction
+
+PNG, JPEG, and rotated/low-quality fixtures now render a complete, visible one-page synthetic invoice rather than a cropped subset. Rotated generation uses `expand=True`, preserving the full page after rotation. The low-quality expectation remains `Partial`.
+
+The corrected set contains 22 registered artifacts totaling 999,112 bytes and 23 files including the self-excluded register. The pinned canonical container matched all 23/23 committed files exactly. P2-T04 runtime verification uses this corrected set; the earlier P2-T03 section remains the historical approval checkpoint.

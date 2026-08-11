@@ -16,6 +16,13 @@ services:
     build: {context: ., dockerfile: apps/api/Dockerfile}
     environment:
       EXTRACTION_PROVIDER: mock
+      OCR_LANGUAGE: eng
+      OCR_TIMEOUT_SECONDS: "30"
+      OCR_RENDER_DPI: "300"
+      OCR_TESSDATA_DIR: /usr/share/tesseract-ocr/5/tessdata
+      OMP_THREAD_LIMIT: "1"
+      TZ: UTC
+      LANG: C.UTF-8
     ports: ["8001:8001"]
     volumes: ["uploads:/data/uploads:ro"]
   backend:

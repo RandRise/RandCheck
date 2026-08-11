@@ -78,6 +78,16 @@ class ExtractionProvider(Protocol):
     def extract(self, path: Path, content_type: str) -> ExtractionResult: ...
 
 
+class ExtractionError(Exception):
+    """Expected provider failure with a deliberately safe public message."""
+
+    def __init__(self, code: str, summary: str, *, retryable: bool = False) -> None:
+        super().__init__(summary)
+        self.code = code
+        self.summary = summary
+        self.retryable = retryable
+
+
 class MockInvoiceExtractor:
     """Deterministic local parser for text-like demos; not production OCR."""
 
@@ -146,6 +156,10 @@ class MockInvoiceExtractor:
 
 
 def get_extractor(name: str) -> ExtractionProvider:
-    if name != "mock":
-        raise ValueError(f"Unsupported extraction provider: {name}")
-    return MockInvoiceExtractor()
+    if name == "mock":
+        return MockInvoiceExtractor()
+    if name == "local":
+        from .local_extraction import LocalInvoiceExtractor
+
+        return LocalInvoiceExtractor.from_environment()
+    raise ValueError(f"Unsupported extraction provider: {name}")

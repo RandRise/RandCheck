@@ -25,7 +25,7 @@ The planning site covers the [product specification](docs/product-spec.md), [del
 - Append-only human review with correction, confirmation, addition, clearing, completion, reload, and ETag concurrency
 - Next.js review UI that keeps machine and effective reviewed values visibly separate
 - 137 passing .NET tests: 72 domain, 23 application, 17 PostgreSQL persistence, 4 architecture, 15 API, and 6 infrastructure
-- 29 passing Python tests, 5 passing frontend tests, frontend lint/build, and VitePress production build
+- 62 Python tests exercised across the host and pinned OCR runtime, 5 passing frontend tests, frontend lint/build, and VitePress production build
 - Deterministic synthetic Phase 2 fixtures with versioned labels, source/license records, and byte-for-byte container reproducibility; these are contract fixtures, not accuracy evidence ([P2-T03 verification](docs/evidence/phase-2/P2-T03-synthetic-fixture-verification.md))
 - Zero-warning .NET Release build, no pending EF model changes, and valid Compose configuration
 - Reproduced review result: machine total `1050.00` unchanged, effective total `1155.00`, added `payment_terms = Net 30`, completion and reload persisted

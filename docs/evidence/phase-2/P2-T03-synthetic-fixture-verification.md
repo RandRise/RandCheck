@@ -44,3 +44,7 @@ The broader .NET invocation passed Domain 72, Application 23, PostgreSQL Persist
 ## Honest scope
 
 These fixtures verify reproducibility, contract validation, safe failure inputs, and reviewed semantics for synthetic cases. They are not an accuracy dataset, do not benchmark OCR, and do not establish production performance or client usage. Phase 3 remains the owner of formal evaluation and accuracy reporting.
+
+## Post-completion fixture correction
+
+P2-T04 identified that the PNG, JPEG, and rotated/low-quality inputs should show the complete one-page synthetic invoice. They now do so, with rotated generation using `expand=True`. The corrected register reports 22 artifacts and 999,112 bytes across a 23-file tree; the pinned canonical container matched all 23/23 files exactly. P2-T04 runtime verification is recorded in the [P2-T04 draft evidence](./P2-T04-local-provider-verification.md). The table above remains the historical P2-T03 approval checkpoint.

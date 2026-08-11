@@ -1,16 +1,16 @@
 # Phase 2 task ledger
 
 **Phase status:** In progress  
-**Implementation status:** P2-T03 complete; P2-T04 pending and ready
+**Implementation status:** P2-T04 complete; P2-T05 and P2-T06 pending and ready
 
-P2-T01, P2-T02, and P2-T03 were completed on 2026-08-11. P2-T04 is unblocked and ready for an explicit start; it is not in progress.
+P2-T01 through P2-T04 were completed on 2026-08-11. P2-T05 and P2-T06 are ready for an explicit start; neither is in progress.
 
 | ID | Task | Status | Depends on | Planned evidence |
 |---|---|---|---|---|
 | P2-T01 | Contract, async architecture, P0 quality gates, and fixture-plan pre-review | Complete | Phase 1 complete | [Provider contract](../design/phase-2-extraction-provider-contract.md), [sample plan](../data/phase-2-sample-plan.md), [quality plan](../testing/phase-2-quality-plan.md), [approval record](../reviews/P2-T01-phase-2-implementation-start.md) |
 | P2-T02 | Implement normalized pages/fields/evidence persistence and domain/state transitions, including `byte_start`/`byte_end` column semantics | Complete | P2-T01 complete | [P2-T02 contract and persistence evidence](../evidence/phase-2/P2-T02-contract-persistence-verification.md) |
 | P2-T03 | Generate reproducible synthetic fixtures and versioned expected JSON labels | Complete | P2-T01 and P2-T02 complete | [P2-T03 verification](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md) |
-| P2-T04 | Implement local native-PDF and scanned-OCR providers | Pending (ready) | P2-T02 and P2-T03 complete | Native and scanned integration tests |
+| P2-T04 | Implement local native-PDF and scanned-OCR providers | Complete | P2-T02 and P2-T03 complete | [P2-T04 local-provider verification](../evidence/phase-2/P2-T04-local-provider-verification.md) |
 | P2-T05 | Define the optional Azure Document Intelligence adapter and credential-free contract tests | Pending (ready) | P2-T02 complete | Stubbed contract tests; no credentials required |
 | P2-T06 | Implement the PostgreSQL durable queue and .NET worker | Pending (ready) | P2-T01 and P2-T02 complete | Transaction, claim, idempotency, retry, timeout, and recovery tests |
 | P2-T07 | Add public API and Next.js processing-state behavior | Blocked | P2-T06 | API contract and rendered UI tests |
@@ -35,6 +35,20 @@ P2-T01, P2-T02, and P2-T03 were completed on 2026-08-11. P2-T04 is unblocked and
 - [x] Link implementation, automated verification, and Guardian review before marking P2-T03 complete.
 
 Final implementation and verification are recorded in the [P2-T03 evidence](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md). Integration Guardian reported **APPROVED** with no blockers on 2026-08-11.
+
+## P2-T04 implementation boundary
+
+- [x] Implement the internal/testable `local` provider while preserving the deterministic `mock` provider.
+- [x] Extract native English PDF text with pinned `pdfplumber`/`pdfminer` versions.
+- [x] Render scanned PDFs with pinned `pypdfium2` and OCR scanned pages plus PNG/JPEG inputs with pinned Tesseract/`pytesseract` and English `eng` data.
+- [x] Record exact library versions, runtime/container digest and image ID, OCR/model identity, language-data versions/hashes, sources, and licenses.
+- [x] Verify native and scanned fixture paths against the provider-neutral schema without converting fixture behavior into an accuracy claim.
+- [x] Enforce page/pixel/decompression limits, OCR model hashes, normalized-result validation, truthful mixed-provider identity, and a path-independent disabled legacy local route.
+- [x] Keep Azure adapters, durable queue/worker orchestration, UI processing states, Arabic, and formal evaluation outside P2-T04.
+- [x] Link automated host, container, fixture, golden, lint, and Compose verification.
+- [x] Record Integration Guardian **APPROVED** verdict with no blockers on 2026-08-11.
+
+The verified local extractor remains an internal/testable component. Docker Compose and the legacy HTTP extraction path remain on `mock` until P2-T06 supplies the trusted storage-key worker request and orchestration boundary. See the [P2-T04 evidence](../evidence/phase-2/P2-T04-local-provider-verification.md).
 
 ## P2-T01 review gate
 

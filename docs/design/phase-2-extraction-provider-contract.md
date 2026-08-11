@@ -105,6 +105,8 @@ Errors contain no fields, provider payload, storage path, document text, credent
 | `input_too_large` / `page_limit_exceeded` | No | Contract limit exceeded |
 | `unsupported_media_type` | No | Unsupported detected content |
 | `corrupt_document` / `encrypted_document` | No | PDF cannot be safely processed |
+| `document_unreadable` | No | Supported media decoded but produced no readable text |
+| `unsupported_document` | No | Readable content is not a supported English invoice |
 | `ocr_unavailable` | No | Required pinned local OCR runtime is absent |
 | `provider_configuration_error` | No | Selected adapter lacks valid configuration |
 | `provider_authentication_failed` / `provider_rejected` | No | Provider permanent 4xx rejection |
@@ -154,9 +156,25 @@ P2-T02 owns the `ProcessingCancelled` document-state migration and mapping. A ca
 - `local`: pinned `pdfplumber`/`pdfminer` for native text, `pypdfium2` for rendering, and Tesseract through `pytesseract` with the English pack.
 - `azure_di`: optional, explicitly configured, and verified offline with sanitized/stubbed responses.
 
+During P2-T04, `local` is internal and directly testable only. Docker Compose and the legacy HTTP extraction endpoint remain configured for `mock`; they must not accept arbitrary local paths. P2-T06 owns the trusted storage-key worker request, storage resolution, and safe orchestration needed before Compose or workflow traffic may select `local`.
+
 P2-T03's canonical fixture generator is separately pinned to Python 3.11.15 on `linux/amd64`, Pillow 9.4.0, ReportLab 3.6.12, and hash-verified Bitstream Vera Sans 1.10. Its registered font notice and composite PDF licensing belong to fixture provenance, not the extraction runtime.
 
-Before P2-T04 local-provider implementation or acceptance, P2-T04 must pin and register `pdfplumber`/`pdfminer`, `pypdfium2`, Tesseract/`pytesseract`, English `eng` data, the runtime container digest, and the exact OCR/model mapping. Runtime downloads are forbidden. Missing settings for an explicitly selected provider fail fast.
+The adopted P2-T04 pins are:
+
+- Python `3.11.15-slim-bookworm` at digest `sha256:d29f48a31a8b408ed19272ca1e7b10ebae13b240a27e862d3d4217c528e2e0c3` on `linux/amd64`;
+- `pdfplumber` 0.11.10 with `pdfminer.six` 20260107;
+- `pypdfium2` 5.12.1 and Pillow 12.3.0;
+- `pytesseract` 0.3.13 with Debian Tesseract 5.3.0-2 and `eng`/`osd` data 4.1.0-2;
+- PDFium runtime 152.0.7947.0;
+- production image ID `sha256:4ac9f479d4de61a24d1c266f533237070dbfd32afd5479e2ff15f8d08cf12684`;
+- `eng` SHA-256 `7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2` and `osd` SHA-256 `9cf5d576fcc47564f11265841e5ca839001e7e6f38ff7f7aacf46d15a96b00ff`.
+
+Runtime downloads are forbidden. These pins, sources, licenses, hashes, container identity, and returned model identity are verified in the [P2-T04 evidence](../evidence/phase-2/P2-T04-local-provider-verification.md), which received Guardian **APPROVED** with no blockers on 2026-08-11.
+
+For each English PDF page, readable native text uses `pdfplumber`/`pdfminer`; otherwise PDFium renders at 300 DPI and Tesseract uses `eng` plus `osd`. PNG/JPEG inputs use the same OCR path. Rotation is the clockwise correction needed to make the page upright: native PDF provenance comes from the page `/Rotate` entry, raster inputs first honor EXIF orientation, and OCR-backed pages then record the Tesseract OSD correction. Empty/unreadable content and readable non-invoices return safe stable failures. A validated result is `Ready` without warnings or `Partial` when it contains at least one validated field/evidence plus a degraded warning.
+
+Provider identity is result-wide. An all-native result reports the pinned `pdfplumber`/`pdfminer` identity, an all-OCR result reports `tesseract-eng-osd`, and a mixed native/OCR PDF reports `pdfplumber-tesseract-eng-osd` with both version sets so neither processing path is hidden.
 
 Schema 2.0 fixtures use the exact .NET field-value enum vocabulary and provider-metrics semantics. Cross-language contract tests enforce nullable/finite metrics, cost/currency/price-basis coupling, and rejection of unknown value types.
 

@@ -35,6 +35,8 @@ ERROR_CODES = {
     "unsupported_media_type",
     "corrupt_document",
     "encrypted_document",
+    "document_unreadable",
+    "unsupported_document",
     "ocr_unavailable",
     "provider_configuration_error",
     "provider_authentication_failed",
@@ -550,6 +552,17 @@ def validate_normalized_result(payload: Any, path: str = "result") -> None:
             _fail(f"{path}.fields[{index}].confidence", "must be within [0,1]")
     _validate_provider(value["provider"], f"{path}.provider")
     _validate_metrics(value["metrics"], len(value["pages"]), f"{path}.metrics")
+    try:
+        payload_bytes = json.dumps(
+            value,
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    except (TypeError, ValueError) as error:
+        _fail(path, f"must be finite JSON: {error}")
+    if len(payload_bytes) > MAX_NORMALIZED_RESULT_BYTES:
+        _fail(path, "exceeds the 5 MiB normalized-result limit")
 
 
 def validate_error_envelope(payload: Any, path: str = "error_envelope") -> None:

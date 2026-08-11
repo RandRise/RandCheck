@@ -356,6 +356,54 @@ class FixtureContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractValidationError, "price_basis"):
             validate_normalized_result(invalid)
 
+    def test_normalized_result_rejects_more_than_100_warnings(self):
+        payload = provider_result()
+        payload["warnings"] = [
+            {
+                "code": f"warning_{index:03}",
+                "severity": "info",
+                "safe_summary": "Synthetic bounded warning.",
+                "page_number": None,
+                "field_key": None,
+                "occurrence": None,
+            }
+            for index in range(100)
+        ]
+        validate_normalized_result(payload)
+        payload["warnings"].append(
+            {
+                "code": "warning_100",
+                "severity": "info",
+                "safe_summary": "Synthetic bounded warning.",
+                "page_number": None,
+                "field_key": None,
+                "occurrence": None,
+            }
+        )
+
+        with self.assertRaisesRegex(ContractValidationError, "at most 100 warnings"):
+            validate_normalized_result(payload)
+
+    def test_normalized_result_rejects_overlarge_page_text(self):
+        payload = provider_result()
+        original = payload["pages"][0]["canonical_text"]
+        payload["pages"][0]["canonical_text"] = original + "x" * (
+            1024 * 1024 + 1 - len(original.encode("utf-8"))
+        )
+
+        with self.assertRaisesRegex(ContractValidationError, "1 MiB"):
+            validate_normalized_result(payload)
+
+    def test_normalized_result_enforces_aggregate_five_mib_limit(self):
+        limit = 5 * 1024 * 1024
+        at_limit = self._provider_result_with_compact_size(limit)
+        validate_normalized_result(at_limit)
+
+        above_limit = copy.deepcopy(at_limit)
+        above_limit["pages"][-1]["canonical_text"] += "x"
+        with self.assertRaisesRegex(ContractValidationError, "5 MiB"):
+            validate_normalized_result(above_limit)
+
     def test_source_register_validates_license_size_and_sha256(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

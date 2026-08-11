@@ -109,22 +109,22 @@
       "sha256": "9201bcc6a584ffc5a3ec743b86a9c318c6d1c9c419e5970c41f97f83ab268e76"
     },
     {
-      "bytes": 374084,
+      "bytes": 393129,
       "kind": "document_fixture",
       "license": "CC0-1.0",
       "media_type": "image/jpeg",
       "path": "generated/invoice.jpg",
       "purpose": "Direct JPEG OCR input",
-      "sha256": "0e90828eed65fb8a737c3102b89dd0ef802154cfa5ff0ba6a9a73ce2c8c7e78c"
+      "sha256": "1bcbf7f05866abf540a912bac96c1f1fe73179f318a6b4af74e437fda899e807"
     },
     {
-      "bytes": 55254,
+      "bytes": 64513,
       "kind": "document_fixture",
       "license": "CC0-1.0",
       "media_type": "image/png",
       "path": "generated/invoice.png",
       "purpose": "Direct PNG OCR input",
-      "sha256": "9d6a3f0ddde5bc7187ec49d11a365c491a22a5da6f1049815ec434e52a7634f4"
+      "sha256": "9035c6a4c0ceaac5bcea02a253e7038205b68dcf071dc8b8a9774ffe85356ccf"
     },
     {
       "bytes": 22851,
@@ -136,13 +136,13 @@
       "sha256": "002a63dede487a4390f0178b5c64581a31edbbbad4948798403796d17bb56bdf"
     },
     {
-      "bytes": 174899,
+      "bytes": 317794,
       "kind": "document_fixture",
       "license": "CC0-1.0",
       "media_type": "application/pdf",
       "path": "generated/rotated-low-quality-invoice.pdf",
       "purpose": "Reviewed Partial path for rotated/degraded OCR",
-      "sha256": "a0219d75ae4bdbb9d642916027769bce0471e52dfb06661a456ce3b69cabe8e5"
+      "sha256": "296e6705c9f75947809127b90375f73dec9d05d7667a4635a072c9f0c293e648"
     },
     {
       "bytes": 143461,
@@ -229,7 +229,7 @@
   ],
   "generator": {
     "name": "phase2-synthetic-invoice",
-    "source_sha256": "8ae137110af4c36b22ff68b80f7a7c344198555c0d2619f5fe1dd059bb7ae2e8",
+    "source_sha256": "f1356cdd5eef9956b49f0c55f91e89c648ef7aacf619595adf9f974c4669d36f",
     "version": "1.0.0"
   },
   "register_schema_version": "1.0",
@@ -246,7 +246,7 @@
     {
       "license": "repository",
       "path": "apps/api/app/fixture_contract.py",
-      "sha256": "ee35fd80aafdb1b47240dfb47f23468acf93f9b9debcc7924f195ca0f3e82978"
+      "sha256": "39bd3f182c557f8e90c3b51986a2484ff4cf6bcfc17c51f9a7cbe37f453ad365"
     },
     {
       "license": "repository",
@@ -261,8 +261,8 @@
     {
       "license": "repository",
       "path": "tools/phase2_fixtures.py",
-      "sha256": "8ae137110af4c36b22ff68b80f7a7c344198555c0d2619f5fe1dd059bb7ae2e8"
+      "sha256": "f1356cdd5eef9956b49f0c55f91e89c648ef7aacf619595adf9f974c4669d36f"
     }
   ],
-  "total_bytes": 827913
+  "total_bytes": 999112
 }

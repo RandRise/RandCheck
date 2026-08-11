@@ -151,6 +151,27 @@ def _canonical_pages(invoice: dict[str, str]) -> list[str]:
     ]
 
 
+def _canonical_single_page(invoice: dict[str, str]) -> str:
+    """Complete one-page invoice used by the PNG/JPEG and degraded OCR paths."""
+    return (
+        "SYNTHETIC TEST DOCUMENT - NOT A REAL TAX INVOICE\n"
+        "DESERT HORIZON TECHNOLOGY L.L.C.\n"
+        "TAX INVOICE\n"
+        f"Invoice Number: {invoice['invoice_number']}\n"
+        f"Invoice Date: {invoice['invoice_date']}\n"
+        f"Supplier TRN: {invoice['supplier_trn']}\n"
+        f"Customer: {invoice['customer']}\n"
+        f"Customer Email: {invoice['customer_email']}\n"
+        f"Currency: {invoice['currency']}\n\n"
+        "Description | Quantity | Unit Price | Line Total\n"
+        "Document Intelligence Setup | 1 | 1,000.00 | 1,000.00\n\n"
+        f"Subtotal: {invoice['subtotal']}\n"
+        f"VAT 5%: {invoice['vat']}\n"
+        f"Total: {invoice['total']}\n"
+        f"Payment Terms: {invoice['payment_terms']}\n"
+    )
+
+
 def _evidence(
     pages: list[str],
     page_number: int,
@@ -377,7 +398,7 @@ def _render_page_image(
             shade = 175 + ((y_position // 173) % 4) * 12
             draw.line((100, y_position, size[0] - 100, y_position + 24), fill=shade, width=3)
         image = image.filter(ImageFilter.GaussianBlur(radius=1.35))
-        image = image.rotate(90, expand=False, fillcolor=245)
+        image = image.rotate(90, expand=True, fillcolor=245)
     return image
 
 
@@ -639,6 +660,7 @@ def generate(output: Path) -> dict[str, Any]:
     source = _source()
     invoice = source["invoice"]
     pages = _canonical_pages(invoice)
+    single_page = _canonical_single_page(invoice)
     exact_label = _exact_result_label(invoice, pages, pdfmetrics, page_size)
     validate_expectation(exact_label)
 
@@ -653,7 +675,8 @@ def generate(output: Path) -> dict[str, Any]:
     licenses.mkdir()
 
     images = [_render_page_image(text, pil, font_path) for text in pages]
-    degraded_image = _render_page_image(pages[0], pil, font_path, degraded=True)
+    single_page_image = _render_page_image(single_page, pil, font_path)
+    degraded_image = _render_page_image(single_page, pil, font_path, degraded=True)
     _write_native_pdf(generated / "native-two-page-invoice.pdf", pages, dependencies)
     _write_image_pdf(
         generated / "scanned-two-page-invoice-300dpi.pdf",
@@ -668,7 +691,7 @@ def generate(output: Path) -> dict[str, Any]:
         "Synthetic rotated and degraded invoice",
     )
     _write_encrypted_pdf(generated / "encrypted.pdf", pages, dependencies)
-    _write_direct_images(generated, images[0])
+    _write_direct_images(generated, single_page_image)
     vera_license = font_path.parent / "bitstream-vera-license.txt"
     vera_notice = vera_license.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
     (licenses / "bitstream-vera-license.txt").write_text(
