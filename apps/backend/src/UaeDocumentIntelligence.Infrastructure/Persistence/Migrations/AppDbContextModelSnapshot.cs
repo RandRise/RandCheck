@@ -160,9 +160,51 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_documents_size", "size_bytes > 0");
 
-                            t.HasCheckConstraint("ck_documents_status", "processing_status IN ('Stored','Processing','ReadyForReview','ExtractionFailed')");
+                            t.HasCheckConstraint("ck_documents_status", "processing_status IN ('Stored','Processing','ReadyForReview','ExtractionFailed','ProcessingCancelled')");
 
                             t.HasCheckConstraint("ck_documents_timestamps", "updated_at_utc >= created_at_utc");
+                        });
+                });
+
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionPage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CanonicalText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("canonical_text");
+
+                    b.Property<Guid>("ExtractionRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("extraction_run_id");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<int>("PageNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("page_number");
+
+                    b.Property<short>("RotationDegrees")
+                        .HasColumnType("smallint")
+                        .HasColumnName("rotation_degrees");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("OrganizationId", "ExtractionRunId", "PageNumber")
+                        .HasName("ak_extraction_pages_org_run_number");
+
+                    b.ToTable("extraction_pages", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_extraction_pages_number", "page_number >= 1");
+
+                            t.HasCheckConstraint("ck_extraction_pages_rotation", "rotation_degrees IN (0,90,180,270)");
+
+                            t.HasCheckConstraint("ck_extraction_pages_text_bytes", "octet_length(canonical_text) <= 1048576");
                         });
                 });
 
@@ -182,6 +224,11 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("correlation_id");
 
+                    b.Property<string>("CostCurrency")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("cost_currency");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
@@ -199,6 +246,11 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("duration_ms");
 
+                    b.Property<decimal?>("EstimatedCost")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("estimated_cost");
+
                     b.Property<string>("ExtractionSchemaVersion")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -215,6 +267,11 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("language");
 
+                    b.Property<string>("ModelName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("model_name");
+
                     b.Property<string>("ModelVersion")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -223,6 +280,19 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid")
                         .HasColumnName("organization_id");
+
+                    b.Property<int?>("PageCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("page_count");
+
+                    b.Property<string>("PriceBasis")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("price_basis");
+
+                    b.Property<long?>("ProviderDurationMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("provider_duration_ms");
 
                     b.Property<string>("ProviderName")
                         .IsRequired()
@@ -266,11 +336,100 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                     b.ToTable("extraction_runs", null, t =>
                         {
+                            t.HasCheckConstraint("ck_extraction_runs_cost", "(estimated_cost IS NULL AND cost_currency IS NULL AND price_basis IS NULL) OR (estimated_cost >= 0 AND cost_currency IS NOT NULL)");
+
                             t.HasCheckConstraint("ck_extraction_runs_duration", "duration_ms IS NULL OR duration_ms >= 0");
 
                             t.HasCheckConstraint("ck_extraction_runs_number", "run_number > 0");
 
+                            t.HasCheckConstraint("ck_extraction_runs_page_count", "page_count IS NULL OR (page_count >= 1 AND page_count <= 50)");
+
+                            t.HasCheckConstraint("ck_extraction_runs_provider_duration", "provider_duration_ms IS NULL OR provider_duration_ms >= 0");
+
                             t.HasCheckConstraint("ck_extraction_runs_status", "status IN ('Queued','Running','Succeeded','Partial','Failed','Cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionWarning", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("code");
+
+                    b.Property<Guid>("ExtractionRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("extraction_run_id");
+
+                    b.Property<string>("FieldKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("field_key");
+
+                    b.Property<int?>("OccurrenceIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("occurrence_index");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<int?>("PageNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("page_number");
+
+                    b.Property<string>("SafeSummary")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("safe_summary");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("severity");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "PageNumber");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "Code", "Severity")
+                        .IsUnique()
+                        .HasDatabaseName("ux_extraction_warnings_global")
+                        .HasFilter("page_number IS NULL AND field_key IS NULL");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "FieldKey", "OccurrenceIndex");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "Code", "Severity", "PageNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ux_extraction_warnings_page")
+                        .HasFilter("page_number IS NOT NULL AND field_key IS NULL");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "Code", "Severity", "FieldKey", "OccurrenceIndex")
+                        .IsUnique()
+                        .HasDatabaseName("ux_extraction_warnings_field")
+                        .HasFilter("page_number IS NULL AND field_key IS NOT NULL");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "Code", "Severity", "PageNumber", "FieldKey", "OccurrenceIndex")
+                        .IsUnique()
+                        .HasDatabaseName("ux_extraction_warnings_page_field")
+                        .HasFilter("page_number IS NOT NULL AND field_key IS NOT NULL");
+
+                    b.ToTable("extraction_warnings", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_extraction_warnings_code", "code ~ '^[a-z][a-z0-9_]{0,99}$'");
+
+                            t.HasCheckConstraint("ck_extraction_warnings_field_scope", "(field_key IS NULL AND occurrence_index IS NULL) OR (field_key IS NOT NULL AND occurrence_index IS NOT NULL AND occurrence_index >= 0)");
+
+                            t.HasCheckConstraint("ck_extraction_warnings_page", "page_number IS NULL OR page_number >= 1");
+
+                            t.HasCheckConstraint("ck_extraction_warnings_severity", "severity IN ('Info','Degraded')");
                         });
                 });
 
@@ -281,21 +440,25 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("BoundingPolygon")
-                        .HasColumnType("text")
+                        .HasColumnType("jsonb")
                         .HasColumnName("bounding_polygon");
 
-                    b.Property<int?>("CharacterEnd")
+                    b.Property<int?>("ByteEnd")
                         .HasColumnType("integer")
-                        .HasColumnName("character_end");
+                        .HasColumnName("byte_end");
 
-                    b.Property<int?>("CharacterStart")
+                    b.Property<int?>("ByteStart")
                         .HasColumnType("integer")
-                        .HasColumnName("character_start");
+                        .HasColumnName("byte_start");
 
                     b.Property<string>("CoordinateUnit")
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
                         .HasColumnName("coordinate_unit");
+
+                    b.Property<Guid>("ExtractionRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("extraction_run_id");
 
                     b.Property<Guid>("MachineFieldValueId")
                         .HasColumnType("uuid")
@@ -315,16 +478,24 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "MachineFieldValueId");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId", "PageNumber");
+
                     b.HasIndex("OrganizationId", "MachineFieldValueId", "PageNumber")
                         .HasDatabaseName("ix_field_evidence_org_field_page");
 
                     b.ToTable("field_evidence", null, t =>
                         {
-                            t.HasCheckConstraint("ck_field_evidence_offsets", "(character_start IS NULL AND character_end IS NULL) OR (character_start >= 0 AND character_end >= character_start)");
+                            t.HasCheckConstraint("ck_field_evidence_offsets", "(byte_start IS NULL AND byte_end IS NULL) OR (byte_start >= 0 AND byte_end >= byte_start)");
 
                             t.HasCheckConstraint("ck_field_evidence_page", "page_number >= 1");
 
-                            t.HasCheckConstraint("ck_field_evidence_polygon_unit", "bounding_polygon IS NULL OR coordinate_unit IS NOT NULL");
+                            t.HasCheckConstraint("ck_field_evidence_polygon_shape", "bounding_polygon IS NULL OR (jsonb_typeof(bounding_polygon) = 'array' AND jsonb_array_length(bounding_polygon) = 4)");
+
+                            t.HasCheckConstraint("ck_field_evidence_polygon_unit", "(bounding_polygon IS NULL AND coordinate_unit IS NULL) OR (bounding_polygon IS NOT NULL AND coordinate_unit = 'normalized')");
+
+                            t.HasCheckConstraint("ck_field_evidence_quote_offsets", "(quoted_text IS NULL AND byte_start IS NULL AND byte_end IS NULL) OR (quoted_text IS NOT NULL AND byte_start IS NOT NULL AND byte_end IS NOT NULL)");
                         });
                 });
 
@@ -334,7 +505,7 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<decimal>("Confidence")
+                    b.Property<decimal?>("Confidence")
                         .HasPrecision(5, 4)
                         .HasColumnType("numeric(5,4)")
                         .HasColumnName("confidence");
@@ -380,13 +551,14 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId", "ExtractionRunId", "FieldKey", "OccurrenceIndex")
-                        .IsUnique()
-                        .HasDatabaseName("ux_machine_fields_org_run_key_occurrence");
+                    b.HasAlternateKey("OrganizationId", "Id");
+
+                    b.HasAlternateKey("OrganizationId", "ExtractionRunId", "FieldKey", "OccurrenceIndex")
+                        .HasName("ak_machine_fields_org_run_key_occurrence");
 
                     b.ToTable("machine_field_values", null, t =>
                         {
-                            t.HasCheckConstraint("ck_machine_fields_confidence", "confidence >= 0 AND confidence <= 1");
+                            t.HasCheckConstraint("ck_machine_fields_confidence", "confidence IS NULL OR (confidence >= 0 AND confidence <= 1)");
 
                             t.HasCheckConstraint("ck_machine_fields_occurrence", "occurrence_index >= 0");
 
@@ -626,6 +798,16 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionPage", b =>
+                {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ExtractionRun", null)
+                        .WithMany("Pages")
+                        .HasForeignKey("OrganizationId", "ExtractionRunId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionRun", b =>
                 {
                     b.HasOne("UaeDocumentIntelligence.Domain.Model.Document", null)
@@ -636,12 +818,41 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionWarning", b =>
+                {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ExtractionRun", null)
+                        .WithMany("Warnings")
+                        .HasForeignKey("OrganizationId", "ExtractionRunId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ExtractionPage", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ExtractionRunId", "PageNumber")
+                        .HasPrincipalKey("OrganizationId", "ExtractionRunId", "PageNumber")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.MachineFieldValue", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ExtractionRunId", "FieldKey", "OccurrenceIndex")
+                        .HasPrincipalKey("OrganizationId", "ExtractionRunId", "FieldKey", "OccurrenceIndex")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.FieldEvidence", b =>
                 {
                     b.HasOne("UaeDocumentIntelligence.Domain.Model.MachineFieldValue", null)
                         .WithMany("Evidence")
-                        .HasForeignKey("OrganizationId", "MachineFieldValueId")
-                        .HasPrincipalKey("OrganizationId", "Id")
+                        .HasForeignKey("OrganizationId", "ExtractionRunId", "MachineFieldValueId")
+                        .HasPrincipalKey("OrganizationId", "ExtractionRunId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ExtractionPage", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ExtractionRunId", "PageNumber")
+                        .HasPrincipalKey("OrganizationId", "ExtractionRunId", "PageNumber")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -718,6 +929,10 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionRun", b =>
                 {
                     b.Navigation("Fields");
+
+                    b.Navigation("Pages");
+
+                    b.Navigation("Warnings");
                 });
 
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.MachineFieldValue", b =>

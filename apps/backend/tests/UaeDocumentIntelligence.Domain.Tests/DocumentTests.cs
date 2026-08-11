@@ -42,7 +42,8 @@ public sealed class DocumentTests
         var document = CreateDocument();
         var firstRun = document.QueueExtraction(Guid.NewGuid(), 1, "mock", "1", "invoice-v1", "request-1", Now);
         firstRun.Start(Now.AddSeconds(1));
-        firstRun.Succeed("invoice", "en", Now.AddSeconds(2));
+        AddReviewableResult(firstRun, Now.AddSeconds(1));
+        firstRun.Succeed("invoice", "en", Now.AddSeconds(2), "mock-model", "v1");
         document.RecordExtractionSuccess(firstRun, Now.AddSeconds(2));
 
         var tokenAfterSuccess = document.ConcurrencyToken;
@@ -86,18 +87,87 @@ public sealed class DocumentTests
         var otherDocument = CreateDocument();
         var run = otherDocument.QueueExtraction(Guid.NewGuid(), 1, "mock", "1", "invoice-v1", "request", Now);
         run.Start(Now);
-        run.Succeed("invoice", "en", Now.AddSeconds(1));
+        AddReviewableResult(run, Now);
+        run.Succeed("invoice", "en", Now.AddSeconds(1), "mock-model", "v1");
 
         Assert.Throws<InvalidOperationException>(() => document.RecordExtractionSuccess(run, Now.AddSeconds(1)));
+    }
+
+    [Fact]
+    public void Latest_partial_result_is_reviewable_and_selected()
+    {
+        var document = CreateDocument();
+        var succeeded = CompleteSuccessfulRun(document, 1, Now);
+        var partial = document.QueueExtraction(Guid.NewGuid(), 2, "mock", "1", "2.0",
+            "request-2", Now.AddMinutes(1));
+        partial.Start(Now.AddMinutes(1));
+        AddReviewableResult(partial, Now.AddMinutes(1));
+        partial.AddWarning(Guid.NewGuid(), "page_ocr_degraded", ExtractionWarningSeverity.Degraded,
+            "One page produced incomplete OCR text.", 1);
+        partial.CompletePartial("invoice", "en", Now.AddMinutes(1).AddSeconds(1), "mock-model", "v1");
+        document.RecordExtractionSuccess(partial, Now.AddMinutes(1).AddSeconds(1));
+
+        Assert.NotSame(succeeded, partial);
+        Assert.Equal(DocumentProcessingStatus.ReadyForReview, document.ProcessingStatus);
+        Assert.Same(partial, document.SelectedExtractionRun());
+    }
+
+    [Fact]
+    public void Cancellation_without_reviewable_output_sets_processing_cancelled()
+    {
+        var document = CreateDocument();
+        var run = document.QueueExtraction(Guid.NewGuid(), 1, "mock", "1", "2.0",
+            "request-1", Now);
+        run.Start(Now);
+        run.Cancel("request_cancelled", "Extraction was cancelled before completion.", Now.AddSeconds(1));
+
+        document.RecordExtractionFailure(run, Now.AddSeconds(1));
+
+        Assert.Equal(ExtractionRunStatus.Cancelled, run.Status);
+        Assert.Equal(DocumentProcessingStatus.ProcessingCancelled, document.ProcessingStatus);
+        Assert.Null(document.SelectedExtractionRun());
+    }
+
+    [Fact]
+    public void Failed_retry_preserves_prior_partial_output()
+    {
+        var document = CreateDocument();
+        var partial = document.QueueExtraction(Guid.NewGuid(), 1, "mock", "1", "2.0",
+            "request-1", Now);
+        partial.Start(Now);
+        AddReviewableResult(partial, Now);
+        partial.AddWarning(Guid.NewGuid(), "page_ocr_degraded", ExtractionWarningSeverity.Degraded,
+            "One page produced incomplete OCR text.", 1);
+        partial.CompletePartial("invoice", "en", Now.AddSeconds(1), "mock-model", "v1");
+        document.RecordExtractionSuccess(partial, Now.AddSeconds(1));
+        var retry = document.QueueExtraction(Guid.NewGuid(), 2, "mock", "1", "2.0",
+            "request-2", Now.AddSeconds(2));
+        retry.Start(Now.AddSeconds(2));
+        retry.Fail("provider_failure", "Provider was unavailable.", Now.AddSeconds(3));
+
+        document.RecordExtractionFailure(retry, Now.AddSeconds(3));
+
+        Assert.Equal(DocumentProcessingStatus.ReadyForReview, document.ProcessingStatus);
+        Assert.Same(partial, document.SelectedExtractionRun());
     }
 
     private static ExtractionRun CompleteSuccessfulRun(Document document, int runNumber, DateTimeOffset now)
     {
         var run = document.QueueExtraction(Guid.NewGuid(), runNumber, "mock", "1", "invoice-v1", $"request-{runNumber}", now);
         run.Start(now.AddSeconds(1));
-        run.Succeed("invoice", "en", now.AddSeconds(2));
+        AddReviewableResult(run, now.AddSeconds(1));
+        run.Succeed("invoice", "en", now.AddSeconds(2), "mock-model", "v1");
         document.RecordExtractionSuccess(run, now.AddSeconds(2));
         return run;
+    }
+
+    private static void AddReviewableResult(ExtractionRun run, DateTimeOffset now)
+    {
+        run.AddPage(Guid.NewGuid(), 1, "Total 100.00", 0);
+        var field = run.AddField(Guid.NewGuid(), "total", 0, FieldValueType.Decimal,
+            "100.00", 0.9m, now);
+        run.AddEvidence(field, Guid.NewGuid(), 1, "100.00", 6, 12);
+        run.RecordProviderMetrics(25, 1, null, null, null);
     }
 
     private static Document CreateDocument(long sizeBytes = 100, string sha256 = ValidSha256) =>

@@ -14,8 +14,11 @@ public sealed class CollectionEncapsulationTests
             "opaque.pdf", "application/pdf", 100, ValidSha256, Now);
         var run = document.QueueExtraction(Guid.NewGuid(), 1, "mock", "1", "invoice-v1", "request", Now);
         run.Start(Now);
+        var page = run.AddPage(Guid.NewGuid(), 1, "Total 100.00", 0);
         var field = run.AddField(Guid.NewGuid(), "total", 0, FieldValueType.Decimal, "100.00", 0.9m, Now);
-        var evidence = run.AddEvidence(field, Guid.NewGuid(), 1);
+        var evidence = run.AddEvidence(field, Guid.NewGuid(), 1, "100.00", 6, 12);
+        var warning = run.AddWarning(Guid.NewGuid(), "layout_detected", ExtractionWarningSeverity.Info,
+            "A supported layout was detected.", 1, "total", 0);
         var session = new ReviewSession(Guid.NewGuid(), document.OrganizationId, document.Id, run.Id, 1, Now);
         session.Start(Now);
         var action = session.AddAction(Guid.NewGuid(), Guid.NewGuid(), 1, ReviewActionType.Confirmed,
@@ -23,7 +26,9 @@ public sealed class CollectionEncapsulationTests
 
         AssertReadOnly(document.ExtractionRuns, run);
         AssertReadOnly(document.ReviewSessions, session, expectedCount: 0);
+        AssertReadOnly(run.Pages, page);
         AssertReadOnly(run.Fields, field);
+        AssertReadOnly(run.Warnings, warning);
         AssertReadOnly(field.Evidence, evidence);
         AssertReadOnly(session.Actions, action);
     }

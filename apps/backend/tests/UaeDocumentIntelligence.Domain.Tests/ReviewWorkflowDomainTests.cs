@@ -120,10 +120,15 @@ public sealed class ReviewWorkflowDomainTests
         var run = document.QueueExtraction(Guid.NewGuid(), number, "mock", "1", "invoice-v1",
             correlation, now);
         run.Start(now);
+        run.AddPage(Guid.NewGuid(), 1, "Synthetic invoice", 0);
         for (var index = 0; index < fieldCount; index++)
-            run.AddField(Guid.NewGuid(), $"field_{index}", 0, FieldValueType.Decimal,
+        {
+            var field = run.AddField(Guid.NewGuid(), $"field_{index}", 0, FieldValueType.Decimal,
                 $"{100 + index}.00", 0.9m, now);
-        run.Succeed("invoice", "en", now);
+            run.AddEvidence(field, Guid.NewGuid(), 1);
+        }
+        run.RecordProviderMetrics(25, 1, null, null, null);
+        run.Succeed("invoice", "en", now, "mock-model", "v1");
         document.RecordExtractionSuccess(run, now);
         return run;
     }

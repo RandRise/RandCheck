@@ -2,7 +2,7 @@ using UaeDocumentIntelligence.Domain.Model;
 
 namespace UaeDocumentIntelligence.Application.Documents;
 
-public sealed record FieldView(string Name, string Value, decimal Confidence, int Page);
+public sealed record FieldView(string Name, string Value, decimal? Confidence, int Page);
 
 public sealed record DocumentView(
     Guid Id,
@@ -27,6 +27,7 @@ public sealed record DocumentView(
         {
             DocumentProcessingStatus.ReadyForReview => "Ready",
             DocumentProcessingStatus.ExtractionFailed => "Failed",
+            DocumentProcessingStatus.ProcessingCancelled => "Cancelled",
             _ => "Processing"
         };
         var fields = selected?.Fields.Select(x => new FieldView(
@@ -34,7 +35,7 @@ public sealed record DocumentView(
         )).OrderBy(x => x.Name).ToList() ?? [];
         return new DocumentView(document.Id, document.OriginalFilename, document.DeclaredContentType,
             document.SizeBytes, document.Sha256, status, selected?.DocumentType, selected?.Language,
-            selected?.ModelVersion ?? selected?.ProviderName, latest?.SafeFailureSummary,
+            selected?.ModelName ?? selected?.ProviderName, latest?.SafeFailureSummary,
             latest?.DurationMs, document.CreatedAtUtc, fields);
     }
 }

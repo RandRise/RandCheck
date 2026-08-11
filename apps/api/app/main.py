@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -14,18 +15,65 @@ class ExtractRequest(BaseModel):
     content_type: str = Field(alias="contentType")
 
 
+class PageResponse(BaseModel):
+    page_number: int
+    canonical_text: str
+    rotation_degrees: int
+
+
+class EvidenceResponse(BaseModel):
+    page_number: int
+    quote: str | None
+    start_utf8: int | None
+    end_utf8: int | None
+    polygon: list[list[float]] | None
+    coordinate_unit: str | None
+
+
 class FieldResponse(BaseModel):
-    name: str
+    key: str
+    occurrence: int
+    value_type: str
     value: str
-    confidence: float
-    page: int
+    normalized_value: str | None
+    confidence: float | None
+    evidence: list[EvidenceResponse]
+
+
+class ProviderResponse(BaseModel):
+    alias: str
+    adapter_version: str
+    model: str
+    model_version: str
+
+
+class MetricsResponse(BaseModel):
+    provider_duration_ms: int
+    page_count: int
+    estimated_cost: float | None
+    cost_currency: str | None
+    price_basis: str | None
+
+
+class WarningResponse(BaseModel):
+    code: str
+    severity: str
+    safe_summary: str
+    page_number: int | None
+    field_key: str | None
+    occurrence: int | None
 
 
 class ExtractResponse(BaseModel):
+    schema_version: str
+    outcome: str
     document_type: str
     language: str
-    extractor: str
+    provider: ProviderResponse
+    metrics: MetricsResponse
+    pages: list[PageResponse]
     fields: list[FieldResponse]
+    warnings: list[WarningResponse]
 
 
 @app.get("/health")
@@ -39,9 +87,4 @@ def extract(request: ExtractRequest) -> ExtractResponse:
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Shared document not found")
     result = get_extractor(get_settings().extraction_provider).extract(path, request.content_type)
-    return ExtractResponse(
-        document_type=result.document_type,
-        language=result.language,
-        extractor=result.extractor,
-        fields=[FieldResponse(**field.__dict__) for field in result.fields],
-    )
+    return ExtractResponse.model_validate(asdict(result))

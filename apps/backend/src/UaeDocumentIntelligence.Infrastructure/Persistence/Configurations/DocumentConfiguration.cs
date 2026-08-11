@@ -12,7 +12,7 @@ internal sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
         {
             t.HasCheckConstraint("ck_documents_size", "size_bytes > 0");
             t.HasCheckConstraint("ck_documents_sha256", "sha256 ~ '^[0-9a-f]{64}$'");
-            t.HasCheckConstraint("ck_documents_status", "processing_status IN ('Stored','Processing','ReadyForReview','ExtractionFailed')");
+            t.HasCheckConstraint("ck_documents_status", "processing_status IN ('Stored','Processing','ReadyForReview','ExtractionFailed','ProcessingCancelled')");
             t.HasCheckConstraint("ck_documents_timestamps", "updated_at_utc >= created_at_utc");
         });
         b.HasKey(x => x.Id);

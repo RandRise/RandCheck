@@ -30,7 +30,8 @@ public sealed class UploadDocumentHandler(
                 stored.SizeBytes, stored.Sha256, now);
             await documents.AddAsync(document, cancellationToken);
             var runNumber = await documents.NextRunNumberAsync(execution.OrganizationId, document.Id, cancellationToken);
-            var run = document.QueueExtraction(Guid.NewGuid(), runNumber, extraction.ProviderName, extraction.ProviderVersion, "invoice-v1",
+            var run = document.QueueExtraction(Guid.NewGuid(), runNumber, extraction.ProviderName,
+                extraction.ProviderVersion, extraction.SchemaVersion,
                 command.CorrelationId, clock.UtcNow);
             run.Start(clock.UtcNow);
             await documents.SaveChangesAsync(cancellationToken);
@@ -38,13 +39,38 @@ public sealed class UploadDocumentHandler(
             try
             {
                 var result = await extraction.ExtractAsync(stored.AbsolutePath, command.ContentType, cancellationToken);
+                if (!string.Equals(result.SchemaVersion, extraction.SchemaVersion, StringComparison.Ordinal))
+                    throw new InvalidDataException("The extraction result schema is unsupported.");
+                if (!string.Equals(result.Provider.Alias, extraction.ProviderName, StringComparison.Ordinal))
+                    throw new InvalidDataException("The extraction provider identity does not match the requested adapter.");
+                if (!string.Equals(result.Provider.AdapterVersion, extraction.ProviderVersion,
+                        StringComparison.Ordinal))
+                    throw new InvalidDataException("The extraction adapter version does not match the requested adapter.");
+                if (string.IsNullOrWhiteSpace(result.Provider.Model) ||
+                    string.IsNullOrWhiteSpace(result.Provider.ModelVersion))
+                    throw new InvalidDataException("The extraction model identity is incomplete.");
+                foreach (var item in result.Pages.OrderBy(page => page.PageNumber))
+                    run.AddPage(Guid.NewGuid(), item.PageNumber, item.CanonicalText, item.RotationDegrees);
                 foreach (var item in result.Fields)
                 {
-                    var field = run.AddField(Guid.NewGuid(), item.Name, 0, FieldValueType.String,
-                        item.Value, item.Confidence, clock.UtcNow);
-                    run.AddEvidence(field, Guid.NewGuid(), item.Page);
+                    var field = run.AddField(Guid.NewGuid(), item.Key, item.Occurrence, item.ValueType,
+                        item.Value, item.Confidence, clock.UtcNow, item.NormalizedValue);
+                    foreach (var evidence in item.Evidence)
+                        run.AddEvidence(field, Guid.NewGuid(), evidence.PageNumber, evidence.Quote,
+                            evidence.ByteStart, evidence.ByteEnd, evidence.BoundingPolygon,
+                            evidence.CoordinateUnit);
                 }
-                run.Succeed(result.DocumentType, result.Language, clock.UtcNow, result.Extractor);
+                foreach (var warning in result.Warnings)
+                    run.AddWarning(Guid.NewGuid(), warning.Code, warning.Severity, warning.SafeSummary,
+                        warning.PageNumber, warning.FieldKey, warning.Occurrence);
+                run.RecordProviderMetrics(result.Metrics.ProviderDurationMs, result.Metrics.PageCount,
+                    result.Metrics.EstimatedCost, result.Metrics.CostCurrency, result.Metrics.PriceBasis);
+                if (result.Outcome == ExtractionOutcome.Ready)
+                    run.Succeed(result.DocumentType, result.Language, clock.UtcNow,
+                        result.Provider.Model, result.Provider.ModelVersion);
+                else
+                    run.CompletePartial(result.DocumentType, result.Language, clock.UtcNow,
+                        result.Provider.Model, result.Provider.ModelVersion);
                 document.RecordExtractionSuccess(run, clock.UtcNow);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -57,7 +83,7 @@ public sealed class UploadDocumentHandler(
             }
             catch (OperationCanceledException)
             {
-                run.Cancel("provider_timeout", "The extraction provider timed out.", clock.UtcNow);
+                run.Fail("provider_timeout", "The extraction provider timed out.", clock.UtcNow);
                 document.RecordExtractionFailure(run, clock.UtcNow);
             }
             catch (Exception exception) when (exception is not OperationCanceledException)

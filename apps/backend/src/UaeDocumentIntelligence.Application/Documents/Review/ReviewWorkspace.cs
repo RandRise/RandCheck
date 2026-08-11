@@ -4,7 +4,7 @@ namespace UaeDocumentIntelligence.Application.Documents.Review;
 
 public sealed record ReviewEvidenceView(int Page, string? QuotedText);
 public sealed record ReviewMachineValueView(Guid Id, string Value, string ValueType,
-    decimal Confidence, IReadOnlyList<ReviewEvidenceView> Evidence);
+    decimal? Confidence, IReadOnlyList<ReviewEvidenceView> Evidence);
 public sealed record ReviewDecisionView(Guid Id, string Action, string? ValueType, string? Value,
     string? Reason, int SequenceNumber, DateTimeOffset CreatedAt);
 public sealed record ReviewEffectiveValueView(bool IsPresent, string? Value, string? ValueType, string Source);

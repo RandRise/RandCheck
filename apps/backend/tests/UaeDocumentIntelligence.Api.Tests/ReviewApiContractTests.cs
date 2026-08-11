@@ -200,10 +200,15 @@ public sealed class ReviewApiContractTests : IClassFixture<WebApplicationFactory
             "storage.pdf", "application/pdf", 100, ValidSha, Now);
         var run = document.QueueExtraction(Guid.NewGuid(), 1, "mock", "1", "invoice-v1", "request", Now);
         run.Start(Now);
+        run.AddPage(Guid.NewGuid(), 1, string.Empty, 0);
         for (var index = 0; index < fieldCount; index++)
-            run.AddField(Guid.NewGuid(), $"field_{index}", 0, FieldValueType.Decimal,
+        {
+            var field = run.AddField(Guid.NewGuid(), $"field_{index}", 0, FieldValueType.Decimal,
                 $"{100 + index}.00", 0.9m, Now);
-        run.Succeed("invoice", "en", Now);
+            run.AddEvidence(field, Guid.NewGuid(), 1);
+        }
+        run.RecordProviderMetrics(1, 1, null, null, null);
+        run.Succeed("invoice", "en", Now, "mock-model", "v1");
         document.RecordExtractionSuccess(run, Now);
         return (document, run);
     }

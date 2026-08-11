@@ -61,7 +61,8 @@ public sealed partial class Document
     public void RecordExtractionSuccess(ExtractionRun run, DateTimeOffset now)
     {
         RequireOwnedRun(run);
-        if (run.Status != ExtractionRunStatus.Succeeded) throw new InvalidOperationException("Run is not successful.");
+        if (run.Status is not (ExtractionRunStatus.Succeeded or ExtractionRunStatus.Partial))
+            throw new InvalidOperationException("Run is not reviewable.");
         ProcessingStatus = DocumentProcessingStatus.ReadyForReview;
         Touch(now);
     }
@@ -69,15 +70,17 @@ public sealed partial class Document
     public void RecordExtractionFailure(ExtractionRun run, DateTimeOffset now)
     {
         RequireOwnedRun(run);
-        if (run.Status is not (ExtractionRunStatus.Failed or ExtractionRunStatus.Partial or ExtractionRunStatus.Cancelled))
+        if (run.Status is not (ExtractionRunStatus.Failed or ExtractionRunStatus.Cancelled))
             throw new InvalidOperationException("Run is not a failed terminal attempt.");
-        if (!_extractionRuns.Any(x => x.Status == ExtractionRunStatus.Succeeded))
-            ProcessingStatus = DocumentProcessingStatus.ExtractionFailed;
+        if (!_extractionRuns.Any(IsReviewable))
+            ProcessingStatus = run.Status == ExtractionRunStatus.Cancelled
+                ? DocumentProcessingStatus.ProcessingCancelled
+                : DocumentProcessingStatus.ExtractionFailed;
         Touch(now);
     }
 
     public ExtractionRun? SelectedExtractionRun() => _extractionRuns
-        .Where(x => x.Status == ExtractionRunStatus.Succeeded)
+        .Where(IsReviewable)
         .OrderByDescending(x => x.RunNumber)
         .FirstOrDefault();
 
@@ -107,6 +110,9 @@ public sealed partial class Document
     {
         if (!_extractionRuns.Contains(run)) throw new InvalidOperationException("Extraction run does not belong to document.");
     }
+
+    private static bool IsReviewable(ExtractionRun run) =>
+        run.Status is ExtractionRunStatus.Succeeded or ExtractionRunStatus.Partial;
 
     private void Touch(DateTimeOffset now)
     {

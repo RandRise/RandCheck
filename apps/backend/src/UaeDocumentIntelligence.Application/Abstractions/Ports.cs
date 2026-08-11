@@ -30,12 +30,37 @@ public interface IExtractionClient
 {
     string ProviderName { get; }
     string ProviderVersion { get; }
+    string SchemaVersion { get; }
     Task<ExtractionResult> ExtractAsync(string absolutePath, string contentType, CancellationToken cancellationToken);
 }
 
-public sealed record ExtractionField(string Name, string Value, decimal Confidence, int Page);
-public sealed record ExtractionResult(string DocumentType, string Language, string Extractor,
-    IReadOnlyList<ExtractionField> Fields);
+public enum ExtractionOutcome { Ready, Partial }
+
+public sealed record ExtractionProviderResult(
+    string Alias, string AdapterVersion, string Model, string ModelVersion);
+
+public sealed record ExtractionMetricsResult(
+    long ProviderDurationMs, int PageCount, decimal? EstimatedCost, string? CostCurrency, string? PriceBasis);
+
+public sealed record ExtractionPageResult(int PageNumber, string CanonicalText, short RotationDegrees);
+
+public sealed record ExtractionEvidenceResult(
+    int PageNumber, string? Quote, int? ByteStart, int? ByteEnd,
+    string? BoundingPolygon, string? CoordinateUnit);
+
+public sealed record ExtractionField(
+    string Key, int Occurrence, FieldValueType ValueType, string Value,
+    string? NormalizedValue, decimal? Confidence, IReadOnlyList<ExtractionEvidenceResult> Evidence);
+
+public sealed record ExtractionWarningResult(
+    string Code, ExtractionWarningSeverity Severity, string SafeSummary,
+    int? PageNumber, string? FieldKey, int? Occurrence);
+
+public sealed record ExtractionResult(
+    string SchemaVersion, ExtractionOutcome Outcome, string DocumentType, string Language,
+    ExtractionProviderResult Provider, ExtractionMetricsResult Metrics,
+    IReadOnlyList<ExtractionPageResult> Pages, IReadOnlyList<ExtractionField> Fields,
+    IReadOnlyList<ExtractionWarningResult> Warnings);
 
 public interface IExecutionContext
 {

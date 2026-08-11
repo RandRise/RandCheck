@@ -31,6 +31,18 @@ export default defineConfig({
         ]
       },
       {
+        text: "Phase 2 planning",
+        collapsed: false,
+        items: [
+          { text: "Phase 2 specification", link: "/phases/phase-2-document-processing" },
+          { text: "Phase 2 tasks", link: "/tasks/phase-2" },
+          { text: "Extraction provider contract", link: "/design/phase-2-extraction-provider-contract" },
+          { text: "Synthetic sample plan", link: "/data/phase-2-sample-plan" },
+          { text: "Phase 2 quality plan", link: "/testing/phase-2-quality-plan" },
+          { text: "P2-T02 verification", link: "/evidence/phase-2/P2-T02-contract-persistence-verification" }
+        ]
+      },
+      {
         text: "Delivery phases",
         collapsed: false,
         items: [

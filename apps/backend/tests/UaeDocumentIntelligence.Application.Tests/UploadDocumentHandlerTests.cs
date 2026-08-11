@@ -72,10 +72,7 @@ public sealed class UploadDocumentHandlerTests
         var storage = new FakeDocumentStorage();
         var extraction = new FakeExtractionClient
         {
-            Result = new ExtractionResult("invoice", "en", "provider-returned-extractor-v7",
-            [
-                new ExtractionField("total", "105.00", 0.98m, 2)
-            ])
+            Result = CreateReadyResult("provider-returned-extractor-v7", pageNumber: 2)
         };
         var handler = CreateHandler(repository, storage, extraction);
 
@@ -93,6 +90,145 @@ public sealed class UploadDocumentHandlerTests
         Assert.Equal(2, field.Page);
         Assert.Equal(2, repository.SaveCallCount);
         Assert.Empty(storage.DeletedStorageKeys);
+        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
+        Assert.Equal(extraction.SchemaVersion, run.ExtractionSchemaVersion);
+        Assert.Equal(extraction.ProviderName, run.ProviderName);
+        Assert.Equal(extraction.ProviderVersion, run.ProviderVersion);
+        Assert.Equal("provider-returned-extractor-v7", run.ModelName);
+        Assert.Equal("v1", run.ModelVersion);
+    }
+
+    [Fact]
+    public async Task Matching_nondefault_client_schema_is_accepted_and_persisted()
+    {
+        var repository = new FakeDocumentRepository();
+        var extraction = new FakeExtractionClient
+        {
+            SchemaVersion = "2.1",
+            Result = CreateReadyResult() with { SchemaVersion = "2.1" }
+        };
+
+        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Assert.Equal("Ready", result.Status);
+        Assert.Equal("2.1", Assert.Single(repository.AddedDocument!.ExtractionRuns).ExtractionSchemaVersion);
+    }
+
+    [Theory]
+    [InlineData("2.1", "2.0")]
+    [InlineData("2.0", "1.0")]
+    public async Task Result_schema_must_match_client_schema_version(string clientSchema, string resultSchema)
+    {
+        var repository = new FakeDocumentRepository();
+        var extraction = new FakeExtractionClient
+        {
+            SchemaVersion = clientSchema,
+            Result = CreateReadyResult() with { SchemaVersion = resultSchema }
+        };
+
+        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Assert.Equal("Failed", result.Status);
+        Assert.Equal("extraction_failed", Assert.Single(repository.AddedDocument!.ExtractionRuns).FailureCode);
+    }
+
+    [Fact]
+    public async Task Result_adapter_version_must_match_requested_provider_version()
+    {
+        var repository = new FakeDocumentRepository();
+        var ready = CreateReadyResult();
+        var extraction = new FakeExtractionClient
+        {
+            Result = ready with
+            {
+                Provider = ready.Provider with { AdapterVersion = "unexpected-adapter-version" }
+            }
+        };
+
+        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Assert.Equal("Failed", result.Status);
+        Assert.Equal("extraction_failed", Assert.Single(repository.AddedDocument!.ExtractionRuns).FailureCode);
+    }
+
+    [Theory]
+    [InlineData("", "v1")]
+    [InlineData("mock-model", "")]
+    public async Task Result_requires_model_and_model_version(string model, string modelVersion)
+    {
+        var repository = new FakeDocumentRepository();
+        var ready = CreateReadyResult();
+        var extraction = new FakeExtractionClient
+        {
+            Result = ready with
+            {
+                Provider = ready.Provider with { Model = model, ModelVersion = modelVersion }
+            }
+        };
+
+        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Assert.Equal("Failed", result.Status);
+        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
+        Assert.Equal("extraction_failed", run.FailureCode);
+        Assert.Null(run.ModelName);
+        Assert.Null(run.ModelVersion);
+    }
+
+    [Fact]
+    public async Task Partial_result_is_reviewable_and_preserves_null_confidence_and_warning()
+    {
+        var repository = new FakeDocumentRepository();
+        var storage = new FakeDocumentStorage();
+        var ready = CreateReadyResult();
+        var field = ready.Fields.Single() with { Confidence = null };
+        var extraction = new FakeExtractionClient
+        {
+            Result = ready with
+            {
+                Outcome = ExtractionOutcome.Partial,
+                Fields = [field],
+                Warnings = [new ExtractionWarningResult("page_ocr_degraded",
+                    ExtractionWarningSeverity.Degraded, "One page produced incomplete OCR text.",
+                    1, null, null)]
+            }
+        };
+
+        var result = await CreateHandler(repository, storage, extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Assert.Equal("Ready", result.Status);
+        Assert.Null(Assert.Single(result.Fields).Confidence);
+        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
+        Assert.Equal(ExtractionRunStatus.Partial, run.Status);
+        Assert.Single(run.Warnings);
+        Assert.Same(run, repository.AddedDocument.SelectedExtractionRun());
+    }
+
+    [Fact]
+    public async Task Invalid_normalized_result_fails_safely_without_persisting_partial_output()
+    {
+        var repository = new FakeDocumentRepository();
+        var storage = new FakeDocumentStorage();
+        var ready = CreateReadyResult();
+        var invalidEvidence = ready.Fields.Single().Evidence.Single() with { ByteEnd = 4 };
+        var invalidField = ready.Fields.Single() with { Evidence = [invalidEvidence] };
+        var extraction = new FakeExtractionClient { Result = ready with { Fields = [invalidField] } };
+
+        var result = await CreateHandler(repository, storage, extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Assert.Equal("Failed", result.Status);
+        Assert.Equal("The extraction provider could not process this document.", result.ErrorMessage);
+        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
+        Assert.Equal(ExtractionRunStatus.Failed, run.Status);
+        Assert.Empty(run.Pages);
+        Assert.Empty(run.Fields);
+        Assert.Empty(run.Warnings);
     }
 
     [Fact]
@@ -157,7 +293,7 @@ public sealed class UploadDocumentHandlerTests
         Assert.Equal("Failed", result.Status);
         Assert.Equal("The extraction provider timed out.", result.ErrorMessage);
         var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(ExtractionRunStatus.Cancelled, run.Status);
+        Assert.Equal(ExtractionRunStatus.Failed, run.Status);
         Assert.Equal("provider_timeout", run.FailureCode);
         Assert.NotNull(run.CompletedAtUtc);
         Assert.Equal(2, repository.SaveCallCount);
@@ -170,6 +306,18 @@ public sealed class UploadDocumentHandlerTests
 
     private static UploadDocumentCommand CreateCommand(string correlationId = "request-123") =>
         new("invoice.pdf", "application/pdf", 4, new MemoryStream([1, 2, 3, 4]), correlationId);
+
+    private static ExtractionResult CreateReadyResult(string model = "fake-extractor", int pageNumber = 1)
+    {
+        var pages = Enumerable.Range(1, pageNumber)
+            .Select(number => new ExtractionPageResult(number, number == pageNumber ? "105.00" : string.Empty, 0))
+            .ToList();
+        return new ExtractionResult("2.0", ExtractionOutcome.Ready, "invoice", "en",
+            new ExtractionProviderResult("fake-provider", "1", model, "v1"),
+            new ExtractionMetricsResult(1, pages.Count, null, null, null), pages,
+            [new ExtractionField("total", 0, FieldValueType.Decimal, "105.00", "105.00", 0.98m,
+                [new ExtractionEvidenceResult(pageNumber, "105.00", 0, 6, null, null)])], []);
+    }
 
     private sealed class FakeDocumentRepository : IDocumentRepository
     {
@@ -241,11 +389,12 @@ public sealed class UploadDocumentHandlerTests
 
     private sealed class FakeExtractionClient : IExtractionClient
     {
-        public string ProviderName => "fake-provider";
-        public string ProviderVersion => "1";
+        public string SchemaVersion { get; init; } = "2.0";
+        public string ProviderName { get; init; } = "fake-provider";
+        public string ProviderVersion { get; init; } = "1";
         public Action? BeforeCompletion { get; init; }
         public Exception? Exception { get; init; }
-        public ExtractionResult Result { get; init; } = new("invoice", "en", "fake-extractor", []);
+        public ExtractionResult Result { get; init; } = CreateReadyResult();
 
         public Task<ExtractionResult> ExtractAsync(string absolutePath, string contentType,
             CancellationToken cancellationToken)

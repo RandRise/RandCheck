@@ -18,7 +18,7 @@ internal sealed class DocumentRepository(AppDbContext db) : IDocumentRepository
             cancellationToken);
 
     public async Task<IReadOnlyList<Document>> ListAsync(Guid organizationId, CancellationToken cancellationToken) =>
-        await MachineOutputQuery().Where(x => x.OrganizationId == organizationId).OrderByDescending(x => x.CreatedAtUtc)
+        await ListQuery().Where(x => x.OrganizationId == organizationId).OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 
     public async Task<int> NextRunNumberAsync(Guid organizationId, Guid documentId, CancellationToken cancellationToken) =>
@@ -57,9 +57,18 @@ internal sealed class DocumentRepository(AppDbContext db) : IDocumentRepository
             await durations.Select(x => (double?)x.DurationMs).AverageAsync(cancellationToken));
     }
 
-    private IQueryable<Document> MachineOutputQuery() => db.Documents
+    private IQueryable<Document> ListQuery() => db.Documents
+        .AsSplitQuery()
         .Include(x => x.ExtractionRuns).ThenInclude(x => x.Fields).ThenInclude(x => x.Evidence);
 
-    private IQueryable<Document> ReviewQuery() => MachineOutputQuery()
+    private IQueryable<Document> MachineOutputQuery() => db.Documents
+        .AsSplitQuery()
+        .Include(x => x.ExtractionRuns).ThenInclude(x => x.Pages)
+        .Include(x => x.ExtractionRuns).ThenInclude(x => x.Fields).ThenInclude(x => x.Evidence)
+        .Include(x => x.ExtractionRuns).ThenInclude(x => x.Warnings);
+
+    private IQueryable<Document> ReviewQuery() => db.Documents
+        .AsSplitQuery()
+        .Include(x => x.ExtractionRuns).ThenInclude(x => x.Fields).ThenInclude(x => x.Evidence)
         .Include(x => x.ReviewSessions).ThenInclude(x => x.Actions);
 }

@@ -15,7 +15,7 @@ The roadmap is outcome-based. Dates are intentionally omitted until Phase 0 is a
 | --- | --- | --- | --- |
 | 0. Product definition | Agreed problem, persona, scope, naming direction, and success measures | In progress | Product brief and decision log |
 | 1. Invoice foundation | One English invoice moves through upload, extraction, persistence, and review | Complete | [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md) |
-| 2. Real document processing | Native PDFs and scans produce page-aware fields through replaceable providers | Proposed | OCR/provider comparison and failure handling |
+| 2. Real document processing | Native PDFs and scans produce page-aware fields through replaceable providers | In progress | Approved contract and quality plan; implementation evidence pending |
 | 3. Review and evaluation | Corrections and versioned evaluation create honest accuracy measurements | Proposed | Reproducible evaluation report |
 | 4. Reconciliation | Quotations, POs, and invoices are linked and compared with explainable rules | Proposed | End-to-end discrepancy demonstration |
 | 5. Cited questions | Users receive grounded answers with document/page evidence | Proposed | RAG and citation evaluation |
