@@ -1,0 +1,129 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using UaeDocumentIntelligence.Application.Abstractions;
+using UaeDocumentIntelligence.Application.Documents.Upload;
+
+namespace UaeDocumentIntelligence.Api.Tests;
+
+public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public ApiContractTests(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+    }
+
+    [Fact]
+    public async Task Health_route_returns_camel_case_contract_and_normalized_request_id()
+    {
+        using var client = _factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/health");
+        request.Headers.TryAddWithoutValidation("X-Request-ID", "  reviewer-request-42  ");
+
+        using var response = await client.SendAsync(request);
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("reviewer-request-42", response.Headers.GetValues("X-Request-ID").Single());
+        Assert.Equal("ok", json.GetProperty("status").GetString());
+        Assert.Equal("document-intelligence-api", json.GetProperty("service").GetString());
+        Assert.False(json.TryGetProperty("Status", out _));
+    }
+
+    [Fact]
+    public async Task Invalid_request_id_is_replaced_with_normalized_32_character_guid()
+    {
+        using var client = _factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/health");
+        request.Headers.TryAddWithoutValidation("X-Request-ID", new string('x', 101));
+
+        using var response = await client.SendAsync(request);
+        var requestId = response.Headers.GetValues("X-Request-ID").Single();
+
+        Assert.Equal(32, requestId.Length);
+        Assert.True(Guid.TryParseExact(requestId, "N", out _));
+    }
+
+    [Fact]
+    public async Task Cors_exposes_etag_to_allowed_browser_origin()
+    {
+        using var client = _factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/health");
+        request.Headers.TryAddWithoutValidation("Origin", "http://localhost:3000");
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal("http://localhost:3000",
+            response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+        var exposed = response.Headers.GetValues("Access-Control-Expose-Headers")
+            .SelectMany(value => value.Split(',', StringSplitOptions.TrimEntries));
+        Assert.Contains(exposed, value => string.Equals(value, "ETag", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Upload_route_returns_415_problem_contract_for_unsupported_content_type()
+    {
+        using var client = _factory.CreateClient();
+        using var content = CreateUpload("application/octet-stream");
+
+        using var response = await client.PostAsync("/api/documents", content);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(415, problem.GetProperty("status").GetInt32());
+        Assert.Equal("Unsupported file type", problem.GetProperty("detail").GetString());
+        Assert.False(problem.TryGetProperty("Status", out _));
+    }
+
+    [Fact]
+    public async Task Upload_route_returns_413_when_storage_rejects_declared_size()
+    {
+        using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IDocumentStorage>();
+            services.AddScoped<IDocumentStorage, RejectingStorage>();
+        }));
+        using var client = factory.CreateClient();
+        using var content = CreateUpload("application/pdf");
+
+        using var response = await client.PostAsync("/api/documents", content);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
+        Assert.Equal(413, problem.GetProperty("status").GetInt32());
+        Assert.Equal("File is empty or exceeds the upload limit", problem.GetProperty("detail").GetString());
+    }
+
+    [Fact]
+    public async Task Unknown_route_returns_not_found()
+    {
+        using var client = _factory.CreateClient();
+        using var response = await client.GetAsync("/api/not-a-route");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private static MultipartFormDataContent CreateUpload(string contentType)
+    {
+        var multipart = new MultipartFormDataContent();
+        var file = new ByteArrayContent([1, 2, 3, 4]);
+        file.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        multipart.Add(file, "file", "invoice.pdf");
+        return multipart;
+    }
+
+    private sealed class RejectingStorage : IDocumentStorage
+    {
+        public Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize,
+            CancellationToken cancellationToken) => throw new DocumentTooLargeException();
+
+        public Task DeleteAsync(string storageKey, CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+}

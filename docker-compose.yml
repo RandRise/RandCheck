@@ -1,0 +1,43 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    ports: ["55432:5432"]
+    environment:
+      POSTGRES_DB: document_intelligence
+      POSTGRES_USER: document_intelligence
+      POSTGRES_PASSWORD: local_development_only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U document_intelligence"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+  ai:
+    build: {context: ., dockerfile: apps/api/Dockerfile}
+    environment:
+      EXTRACTION_PROVIDER: mock
+    ports: ["8001:8001"]
+    volumes: ["uploads:/data/uploads:ro"]
+  backend:
+    build: {context: ., dockerfile: apps/backend/src/UaeDocumentIntelligence.Api/Dockerfile}
+    environment:
+      ConnectionStrings__Database: Host=db;Port=5432;Database=document_intelligence;Username=document_intelligence;Password=local_development_only
+      Storage__UploadDirectory: /data/uploads
+      AiService__BaseUrl: http://ai:8001
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      DevelopmentData__Seed: "true"
+    ports: ["8080:8080"]
+    depends_on:
+      db: {condition: service_healthy}
+      ai: {condition: service_started}
+    volumes: ["uploads:/data/uploads"]
+  web:
+    build: {context: apps/web}
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports: ["3000:3000"]
+    depends_on: [backend]
+volumes:
+  postgres_data:
+  uploads:

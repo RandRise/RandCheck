@@ -1,0 +1,73 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Domain", "src\UaeDocumentIntelligence.Domain\UaeDocumentIntelligence.Domain.csproj", "{0C079D6C-B53D-4A59-9478-E79D056C96DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Application", "src\UaeDocumentIntelligence.Application\UaeDocumentIntelligence.Application.csproj", "{61CFAF32-C2DA-43A8-A7BB-ECE9B1097B78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Infrastructure", "src\UaeDocumentIntelligence.Infrastructure\UaeDocumentIntelligence.Infrastructure.csproj", "{326833D7-8E57-448B-8BA1-2B14186C360F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Api", "src\UaeDocumentIntelligence.Api\UaeDocumentIntelligence.Api.csproj", "{9C158CE8-E7C2-4F53-A55D-2DCEACFD93F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Domain.Tests", "tests\UaeDocumentIntelligence.Domain.Tests\UaeDocumentIntelligence.Domain.Tests.csproj", "{77E18C7A-75A6-4AA2-939B-6C5D9B377868}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Architecture.Tests", "tests\UaeDocumentIntelligence.Architecture.Tests\UaeDocumentIntelligence.Architecture.Tests.csproj", "{B1D07F8A-2D7A-414F-8A02-CFBC22AA78B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Persistence.Tests", "tests\UaeDocumentIntelligence.Persistence.Tests\UaeDocumentIntelligence.Persistence.Tests.csproj", "{D369E291-BB8E-4609-8AA5-95405508CEB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Application.Tests", "tests\UaeDocumentIntelligence.Application.Tests\UaeDocumentIntelligence.Application.Tests.csproj", "{AC30C65D-D919-441C-A2C8-6848FEE5A1CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Infrastructure.Tests", "tests\UaeDocumentIntelligence.Infrastructure.Tests\UaeDocumentIntelligence.Infrastructure.Tests.csproj", "{CFC10916-A87E-48DB-BCFC-9457E49A8D47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Api.Tests", "tests\UaeDocumentIntelligence.Api.Tests\UaeDocumentIntelligence.Api.Tests.csproj", "{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C079D6C-B53D-4A59-9478-E79D056C96DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C079D6C-B53D-4A59-9478-E79D056C96DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C079D6C-B53D-4A59-9478-E79D056C96DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C079D6C-B53D-4A59-9478-E79D056C96DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61CFAF32-C2DA-43A8-A7BB-ECE9B1097B78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61CFAF32-C2DA-43A8-A7BB-ECE9B1097B78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61CFAF32-C2DA-43A8-A7BB-ECE9B1097B78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61CFAF32-C2DA-43A8-A7BB-ECE9B1097B78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{326833D7-8E57-448B-8BA1-2B14186C360F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{326833D7-8E57-448B-8BA1-2B14186C360F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{326833D7-8E57-448B-8BA1-2B14186C360F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{326833D7-8E57-448B-8BA1-2B14186C360F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C158CE8-E7C2-4F53-A55D-2DCEACFD93F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C158CE8-E7C2-4F53-A55D-2DCEACFD93F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C158CE8-E7C2-4F53-A55D-2DCEACFD93F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C158CE8-E7C2-4F53-A55D-2DCEACFD93F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77E18C7A-75A6-4AA2-939B-6C5D9B377868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77E18C7A-75A6-4AA2-939B-6C5D9B377868}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77E18C7A-75A6-4AA2-939B-6C5D9B377868}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77E18C7A-75A6-4AA2-939B-6C5D9B377868}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1D07F8A-2D7A-414F-8A02-CFBC22AA78B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1D07F8A-2D7A-414F-8A02-CFBC22AA78B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1D07F8A-2D7A-414F-8A02-CFBC22AA78B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1D07F8A-2D7A-414F-8A02-CFBC22AA78B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D369E291-BB8E-4609-8AA5-95405508CEB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D369E291-BB8E-4609-8AA5-95405508CEB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D369E291-BB8E-4609-8AA5-95405508CEB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D369E291-BB8E-4609-8AA5-95405508CEB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC30C65D-D919-441C-A2C8-6848FEE5A1CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC30C65D-D919-441C-A2C8-6848FEE5A1CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC30C65D-D919-441C-A2C8-6848FEE5A1CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC30C65D-D919-441C-A2C8-6848FEE5A1CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFC10916-A87E-48DB-BCFC-9457E49A8D47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFC10916-A87E-48DB-BCFC-9457E49A8D47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFC10916-A87E-48DB-BCFC-9457E49A8D47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFC10916-A87E-48DB-BCFC-9457E49A8D47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

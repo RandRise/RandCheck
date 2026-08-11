@@ -1,0 +1,29 @@
+{
+  "name": "uae-document-intelligence-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest run && node --test app/review-request.test.mjs"
+  },
+  "dependencies": {
+    "next": "^16.3.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.3",
+    "@types/node": "20.14.12",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.0",
+    "jsdom": "^26.1.0",
+    "typescript": "5.5.4",
+    "vitest": "^3.2.6"
+  }
+}

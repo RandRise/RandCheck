@@ -1,0 +1,12 @@
+BAYAAN SYNTHETIC SAMPLE / عينة اصطناعية
+Document Type: Invoice
+Invoice Number: INV-AE-2026-001
+Supplier: Desert Cloud Technology LLC
+Supplier Arabic: ديزرت كلاود تكنولوجي ذ.م.م
+Invoice Date: 2026-08-01
+Currency: AED
+Subtotal: 1000.00
+VAT: 50.00
+Total: 1050.00
+TRN: 100000000000003
+This file is fictional and intended only for software demonstration.
