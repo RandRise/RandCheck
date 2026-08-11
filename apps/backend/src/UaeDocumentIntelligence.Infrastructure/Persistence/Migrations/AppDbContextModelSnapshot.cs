@@ -166,6 +166,126 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTimeOffset>("AvailableAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("available_at_utc");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at_utc");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<Guid>("ExtractionRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("extraction_run_id");
+
+                    b.Property<DateTimeOffset?>("LastClaimedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_claimed_at_utc");
+
+                    b.Property<string>("LastErrorCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_error_code");
+
+                    b.Property<DateTimeOffset?>("LastHeartbeatAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_heartbeat_at_utc");
+
+                    b.Property<string>("LastSafeErrorSummary")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_safe_error_summary");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_expires_at_utc");
+
+                    b.Property<string>("LeaseOwner")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("lease_owner");
+
+                    b.Property<Guid?>("LeaseToken")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("lease_token");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<string>("ResultOutcome")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("result_outcome");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaseExpiresAtUtc")
+                        .HasDatabaseName("ix_extraction_jobs_expired_lease")
+                        .HasFilter("status = 'Leased'");
+
+                    b.HasIndex("OrganizationId", "DocumentId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_extraction_jobs_org_document_active")
+                        .HasFilter("status IN ('Pending','Leased','RetryScheduled')");
+
+                    b.HasIndex("OrganizationId", "ExtractionRunId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_extraction_jobs_org_run");
+
+                    b.HasIndex("AvailableAtUtc", "CreatedAtUtc", "Id")
+                        .HasDatabaseName("ix_extraction_jobs_due")
+                        .HasFilter("status IN ('Pending','RetryScheduled')");
+
+                    b.HasIndex("OrganizationId", "DocumentId", "ExtractionRunId");
+
+                    b.ToTable("extraction_jobs", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_extraction_jobs_attempts", "attempt_count >= 0 AND attempt_count <= 3");
+
+                            t.HasCheckConstraint("ck_extraction_jobs_completion", "(status IN ('Succeeded','Failed','Cancelled') AND completed_at_utc IS NOT NULL) OR (status NOT IN ('Succeeded','Failed','Cancelled') AND completed_at_utc IS NULL)");
+
+                            t.HasCheckConstraint("ck_extraction_jobs_lease_shape", "(status = 'Leased' AND lease_token IS NOT NULL AND lease_owner IS NOT NULL AND lease_expires_at_utc IS NOT NULL AND last_heartbeat_at_utc IS NOT NULL) OR (status <> 'Leased' AND lease_token IS NULL AND lease_owner IS NULL AND lease_expires_at_utc IS NULL AND last_heartbeat_at_utc IS NULL)");
+
+                            t.HasCheckConstraint("ck_extraction_jobs_result", "(status = 'Succeeded' AND result_outcome IN ('Ready','Partial')) OR (status <> 'Succeeded' AND result_outcome IS NULL)");
+
+                            t.HasCheckConstraint("ck_extraction_jobs_status", "status IN ('Pending','Leased','RetryScheduled','Succeeded','Failed','Cancelled')");
+
+                            t.HasCheckConstraint("ck_extraction_jobs_timestamps", "updated_at_utc >= created_at_utc AND available_at_utc >= created_at_utc");
+                        });
+                });
+
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionPage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -794,6 +914,16 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("OrganizationId", "CreatedByActorId")
                         .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionJob", b =>
+                {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ExtractionRun", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "DocumentId", "ExtractionRunId")
+                        .HasPrincipalKey("OrganizationId", "DocumentId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

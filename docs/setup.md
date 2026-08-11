@@ -1,6 +1,6 @@
 # Local development setup
 
-The verified local path uses PostgreSQL, the private Python mock extractor, the ASP.NET API, and the Next.js review workspace. No paid credentials are required.
+The verified local stack uses PostgreSQL, ASP.NET, the private Python mock/local providers, and Next.js without paid credentials. P2-T06 completes the durable queue/worker path for covered synthetic native/scanned invoices.
 
 ## Prerequisites
 
@@ -50,7 +50,11 @@ Useful tables:
 
 - `documents`
 - `extraction_runs`
+- `extraction_jobs`
+- `extraction_pages`
 - `machine_field_values`
+- `field_evidence`
+- `extraction_warnings`
 - `review_sessions`
 - `review_actions`
 - `__EFMigrationsHistory`
@@ -66,7 +70,7 @@ pip install -e ".[dev]"
 uvicorn app.main:app --app-dir apps/api --reload --port 8001
 ```
 
-The local provider is deterministic and uses synthetic fixtures. Azure credentials are not required.
+The mock provider is deterministic. The pinned local provider processes synthetic native/scanned English fixtures; host discovery intentionally skips five runtime-gated tests unless that OCR runtime is present. Azure credentials are not required.
 
 ## 3. Start the ASP.NET API
 
@@ -78,6 +82,8 @@ dotnet run --project apps/backend/src/UaeDocumentIntelligence.Api
 
 Development configuration seeds one fixed local organization and system actor. This provides attribution for local workflows; it is not authentication or tenant authorization.
 
+The example environment keeps `ExtractionWorker__Enabled=false` and `StorageMaintenance__Enabled=false` for explicit host control. P2-T06 requires the same development secret in `AiService__WorkerToken` and `WORKER_SHARED_SECRET`, a shared upload root, and migration `20260811131151_AddDurableExtractionQueue`. Do not enable the worker against an unmigrated database.
+
 ## 4. Start the Next.js workspace
 
 In a third terminal:
@@ -88,7 +94,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000` and upload `samples/uae-invoice.txt`.
+Open `http://localhost:3000`. Verified P2-T06 fixtures include `samples/phase-2/generated/native-two-page-invoice.pdf` and `samples/phase-2/generated/scanned-two-page-invoice-300dpi.pdf`.
 
 ## Compose alternative
 
@@ -97,6 +103,8 @@ After the database migration has been applied:
 ```powershell
 docker compose up --build
 ```
+
+`docker compose config --quiet`, the current AI/backend image builds, and synthetic native/scanned Compose workflows pass. See [P2-T06 verification](./evidence/phase-2/P2-T06-queue-worker-verification.md) for exact image identities and results.
 
 ## Verification commands
 
@@ -116,3 +124,5 @@ npm run build
 ```
 
 See the [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md) for the final Phase 1 results and limitations.
+
+See [P2-T06 verification](./evidence/phase-2/P2-T06-queue-worker-verification.md) for final queue/worker totals and honest local limitations.

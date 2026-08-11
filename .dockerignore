@@ -1,0 +1,12 @@
+.git
+.ruff_cache
+**/bin
+**/obj
+**/node_modules
+**/.next
+docs/.vitepress/cache
+docs/.vitepress/dist
+data/uploads
+outputs
+samples
+work

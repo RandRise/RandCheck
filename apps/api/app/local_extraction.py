@@ -111,17 +111,29 @@ class LocalInvoiceExtractor:
             render_dpi=dpi,
         )
 
-    def extract(self, path: Path, content_type: str) -> ExtractionResult:
+    def extract(
+        self, path: Path, content_type: str, deadline_monotonic: float | None = None
+    ) -> ExtractionResult:
         started = time.perf_counter()
+        self._remaining(deadline_monotonic)
         self._verify_python_runtime()
+        self._remaining(deadline_monotonic)
         media_type = self._detect_media_type(path, content_type)
         if media_type == "application/pdf":
-            pages, used_ocr = self._extract_pdf(path)
+            pages, used_ocr = self._extract_pdf(path, deadline_monotonic)
         else:
+            self._remaining(deadline_monotonic)
             image, exif_rotation = self._open_image(path)
-            pages = [self._ocr_image(image, 1, applied_rotation=exif_rotation)]
+            self._remaining(deadline_monotonic)
+            pages = [self._ocr_image(
+                image,
+                1,
+                applied_rotation=exif_rotation,
+                deadline_monotonic=deadline_monotonic,
+            )]
             used_ocr = True
 
+        self._remaining(deadline_monotonic)
         fields = self._fields(pages)
         if not any(page.canonical_text.strip() for page in pages):
             raise ExtractionError(
@@ -214,7 +226,9 @@ class LocalInvoiceExtractor:
             "The local provider supports PDF, PNG, and JPEG documents only.",
         )
 
-    def _extract_pdf(self, path: Path) -> tuple[list[_ExtractedPage], bool]:
+    def _extract_pdf(
+        self, path: Path, deadline_monotonic: float | None = None
+    ) -> tuple[list[_ExtractedPage], bool]:
         try:
             import pdfplumber
             import pypdfium2 as pdfium
@@ -224,8 +238,10 @@ class LocalInvoiceExtractor:
             raise self._runtime_unavailable("Native PDF dependencies are unavailable.") from error
 
         try:
+            self._remaining(deadline_monotonic)
             preflight = pdfium.PdfDocument(path)
             preflight.close()
+            self._remaining(deadline_monotonic)
         except Exception as error:
             if getattr(error, "err_code", None) == 4:
                 raise ExtractionError(
@@ -244,10 +260,11 @@ class LocalInvoiceExtractor:
                         "page_limit_exceeded",
                         f"The document must contain between 1 and {MAX_PAGES} pages.",
                     )
-                native_pages = [
-                    self._native_page(page, index)
-                    for index, page in enumerate(document.pages, start=1)
-                ]
+                native_pages = []
+                for index, page in enumerate(document.pages, start=1):
+                    self._remaining(deadline_monotonic)
+                    native_pages.append(self._native_page(page, index))
+                    self._remaining(deadline_monotonic)
         except PDFPasswordIncorrect as error:
             raise ExtractionError(
                 "encrypted_document",
@@ -276,9 +293,12 @@ class LocalInvoiceExtractor:
         ]
         if not blank_page_numbers:
             return native_pages, False
-        ocr_pages = {
-            page.page_number: page for page in self._ocr_pdf(path, blank_page_numbers)
-        }
+        ocr_results = (
+            self._ocr_pdf(path, blank_page_numbers)
+            if deadline_monotonic is None
+            else self._ocr_pdf(path, blank_page_numbers, deadline_monotonic)
+        )
+        ocr_pages = {page.page_number: page for page in ocr_results}
         combined = [ocr_pages.get(page.page_number, page) for page in native_pages]
         return combined, True
 
@@ -325,13 +345,17 @@ class LocalInvoiceExtractor:
         )
 
     def _ocr_pdf(
-        self, path: Path, page_numbers: list[int] | None = None
+        self,
+        path: Path,
+        page_numbers: list[int] | None = None,
+        deadline_monotonic: float | None = None,
     ) -> list[_ExtractedPage]:
         try:
             import pypdfium2 as pdfium
         except ImportError as error:
             raise self._runtime_unavailable("PDF rendering is unavailable.") from error
         try:
+            self._remaining(deadline_monotonic)
             document = pdfium.PdfDocument(path)
             if not 1 <= len(document) <= MAX_PAGES:
                 raise ExtractionError(
@@ -342,17 +366,22 @@ class LocalInvoiceExtractor:
             pages = []
             scale = self.render_dpi / 72
             for page_number in selected:
+                self._remaining(deadline_monotonic)
                 page = document[page_number - 1]
                 page_width, page_height = page.get_size()
                 self._check_pixel_dimensions(
                     math.ceil(page_width * scale), math.ceil(page_height * scale)
                 )
                 image = page.render(scale=scale).to_pil()
+                self._remaining(deadline_monotonic)
                 self._check_pixel_budget(image)
                 pdf_rotation = int(page.get_rotation())
                 pages.append(
                     self._ocr_image(
-                        image, page_number, applied_rotation=pdf_rotation % 360
+                        image,
+                        page_number,
+                        applied_rotation=pdf_rotation % 360,
+                        deadline_monotonic=deadline_monotonic,
                     )
                 )
             return pages
@@ -401,11 +430,17 @@ class LocalInvoiceExtractor:
             ) from error
 
     def _ocr_image(
-        self, image: Any, page_number: int, *, applied_rotation: int = 0
+        self,
+        image: Any,
+        page_number: int,
+        *,
+        applied_rotation: int = 0,
+        deadline_monotonic: float | None = None,
     ) -> _ExtractedPage:
         from PIL import ImageFilter, ImageOps
 
-        detected_rotation = self._ocr_orientation(image)
+        self._remaining(deadline_monotonic)
+        detected_rotation = self._ocr_orientation(image, deadline_monotonic)
         ocr_rotation = detected_rotation or 0
         corrected = (
             image.rotate(-ocr_rotation, expand=True, fillcolor="white")
@@ -414,7 +449,9 @@ class LocalInvoiceExtractor:
         )
         self._check_pixel_budget(corrected)
         prepared = ImageOps.autocontrast(corrected.convert("L")).filter(ImageFilter.SHARPEN)
-        data = self._ocr_data(prepared)
+        self._remaining(deadline_monotonic)
+        data = self._ocr_data(prepared, deadline_monotonic)
+        self._remaining(deadline_monotonic)
         orientation_uncertain = detected_rotation is None and self._label_score(data) < 2
         image_size = prepared.size
         clockwise_correction = (applied_rotation + ocr_rotation) % 360
@@ -435,7 +472,9 @@ class LocalInvoiceExtractor:
             "ocr",
         )
 
-    def _ocr_orientation(self, image: Any) -> int | None:
+    def _ocr_orientation(
+        self, image: Any, deadline_monotonic: float | None = None
+    ) -> int | None:
         try:
             import pytesseract
             from pytesseract import Output
@@ -444,17 +483,29 @@ class LocalInvoiceExtractor:
             result = pytesseract.image_to_osd(
                 image,
                 output_type=Output.DICT,
-                timeout=min(self.timeout_seconds, 15),
+                timeout=min(self.timeout_seconds, 15, self._remaining(deadline_monotonic)),
             )
             rotation = int(result.get("rotate", 0))
             confidence = float(result.get("orientation_conf", 0))
             if rotation not in {0, 90, 180, 270} or confidence < 5:
                 return None
             return rotation
+        except ExtractionError:
+            raise
+        except RuntimeError as error:
+            if "timeout" in str(error).lower():
+                raise ExtractionError(
+                    "provider_timeout",
+                    "The local OCR engine did not finish within this attempt.",
+                    retryable=True,
+                ) from error
+            return None
         except Exception:
             return None
 
-    def _ocr_data(self, image: Any) -> dict[str, list[Any]]:
+    def _ocr_data(
+        self, image: Any, deadline_monotonic: float | None = None
+    ) -> dict[str, list[Any]]:
         try:
             import pytesseract
             from pytesseract import Output, TesseractNotFoundError
@@ -465,7 +516,7 @@ class LocalInvoiceExtractor:
                 lang=self.language,
                 config="--oem 1 --psm 6",
                 output_type=Output.DICT,
-                timeout=self.timeout_seconds,
+                timeout=min(self.timeout_seconds, self._remaining(deadline_monotonic)),
             )
         except ImportError as error:
             raise self._runtime_unavailable("The OCR adapter is unavailable.") from error
@@ -483,6 +534,19 @@ class LocalInvoiceExtractor:
                 "The local OCR engine could not process this page.",
                 retryable=True,
             ) from error
+
+    @staticmethod
+    def _remaining(deadline_monotonic: float | None) -> float:
+        if deadline_monotonic is None:
+            return 120.0
+        remaining = deadline_monotonic - time.monotonic()
+        if remaining <= 0:
+            raise ExtractionError(
+                "provider_timeout",
+                "The extraction provider did not finish within this attempt.",
+                retryable=True,
+            )
+        return remaining
 
     def _verify_ocr_engine(self, pytesseract: Any) -> None:
         languages = pytesseract.get_languages(config="")

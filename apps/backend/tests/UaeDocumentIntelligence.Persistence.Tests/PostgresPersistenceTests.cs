@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using UaeDocumentIntelligence.Application.Abstractions;
 using UaeDocumentIntelligence.Domain.Model;
 using UaeDocumentIntelligence.Infrastructure;
 
@@ -23,7 +24,7 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
     {
         await using var context = _database.CreateContext();
         var before = (await context.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(5, before.Length);
+        Assert.Equal(6, before.Length);
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
 
         await context.Database.MigrateAsync();
@@ -79,7 +80,7 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
             "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name");
         Assert.Equal(new[]
         {
-            "__EFMigrationsHistory", "actors", "documents", "extraction_pages", "extraction_runs",
+            "__EFMigrationsHistory", "actors", "documents", "extraction_jobs", "extraction_pages", "extraction_runs",
             "extraction_warnings", "field_evidence", "machine_field_values", "organizations",
             "review_actions", "review_sessions"
         }, tables);
@@ -89,6 +90,9 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
         var expectedConstraints = new[]
         {
             "ck_documents_sha256", "ck_documents_size", "ck_documents_status",
+            "ck_extraction_jobs_attempts", "ck_extraction_jobs_completion",
+            "ck_extraction_jobs_lease_shape", "ck_extraction_jobs_result",
+            "ck_extraction_jobs_status", "ck_extraction_jobs_timestamps",
             "ck_extraction_pages_number", "ck_extraction_pages_rotation", "ck_extraction_pages_text_bytes",
             "ck_extraction_runs_cost", "ck_extraction_runs_duration", "ck_extraction_runs_number",
             "ck_extraction_runs_page_count", "ck_extraction_runs_provider_duration",
@@ -104,6 +108,10 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
         Assert.Contains("ix_documents_org_sha256", indexes);
         Assert.Contains("ux_documents_storage_key", indexes);
         Assert.Contains("ux_extraction_runs_org_document_number", indexes);
+        Assert.Contains("ux_extraction_jobs_org_run", indexes);
+        Assert.Contains("ux_extraction_jobs_org_document_active", indexes);
+        Assert.Contains("ix_extraction_jobs_due", indexes);
+        Assert.Contains("ix_extraction_jobs_expired_lease", indexes);
         Assert.Contains("ux_extraction_warnings_global", indexes);
         Assert.Contains("ux_extraction_warnings_page", indexes);
         Assert.Contains("ux_extraction_warnings_field", indexes);
@@ -473,6 +481,505 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
             ("session", seed.SessionA)));
     }
 
+    [Fact]
+    public async Task Upload_store_inserts_document_run_and_job_atomically_and_enforces_unique_run_job()
+    {
+        using var services = CreateQueueServices();
+        var tenant = await SeedTenantAsync();
+        var documentId = Guid.NewGuid();
+        var document = CreateQueuedDocument(tenant, documentId, DateTimeOffset.UtcNow);
+        var run = Assert.Single(document.ExtractionRuns);
+        var invalidJobId = Guid.NewGuid();
+        using (var scope = services.CreateScope())
+        {
+            await Assert.ThrowsAsync<DbUpdateException>(() => scope.ServiceProvider
+                .GetRequiredService<IUploadQueueStore>()
+                .AddAsync(document, Guid.NewGuid(), invalidJobId, CancellationToken.None));
+        }
+
+        Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM documents WHERE id=@id",
+            ("id", documentId)));
+        Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM extraction_runs WHERE id=@id",
+            ("id", run.Id)));
+        Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM extraction_jobs WHERE id=@id",
+            ("id", invalidJobId)));
+
+        var queued = await SeedQueuedUploadAsync(services);
+        await ExecuteAsync("""
+            UPDATE extraction_jobs
+            SET status='Cancelled', completed_at_utc=clock_timestamp(), updated_at_utc=clock_timestamp(),
+                last_error_code='request_cancelled', last_safe_error_summary='Cancelled.'
+            WHERE id=@id
+            """, ("id", queued.JobId));
+        var duplicate = new ExtractionJob(Guid.NewGuid(), queued.OrganizationId, queued.DocumentId,
+            queued.RunId, DateTimeOffset.UtcNow);
+        await using var context = _database.CreateContext();
+        context.ExtractionJobs.Add(duplicate);
+        var exception = await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+        var postgres = Assert.IsType<PostgresException>(exception.InnerException);
+        Assert.Equal(PostgresErrorCodes.UniqueViolation, postgres.SqlState);
+        Assert.Equal("ux_extraction_jobs_org_run", postgres.ConstraintName);
+    }
+
+    [Fact]
+    public async Task Claim_skips_a_locked_first_job_and_claims_the_next_due_job()
+    {
+        using var services = CreateQueueServices();
+        var first = await SeedQueuedUploadAsync(services, DateTimeOffset.UtcNow.AddMinutes(-2));
+        var second = await SeedQueuedUploadAsync(services, DateTimeOffset.UtcNow.AddMinutes(-1));
+        await using var lockConnection = await _database.OpenConnectionAsync();
+        await using var transaction = await lockConnection.BeginTransactionAsync();
+        await using (var command = new NpgsqlCommand(
+            "SELECT id FROM extraction_jobs WHERE id=@id FOR UPDATE", lockConnection, transaction))
+        {
+            command.Parameters.AddWithValue("id", first.JobId);
+            Assert.Equal(first.JobId, await command.ExecuteScalarAsync());
+        }
+
+        using var scope = services.CreateScope();
+        var claim = await scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>()
+            .ClaimAsync("worker-skip-locked", CancellationToken.None);
+
+        Assert.NotNull(claim);
+        Assert.Equal(second.JobId, claim.JobId);
+        await transaction.RollbackAsync();
+    }
+
+    [Fact]
+    public async Task Concurrent_claimers_never_receive_the_same_job()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        using var firstScope = services.CreateScope();
+        using var secondScope = services.CreateScope();
+        var firstQueue = firstScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var secondQueue = secondScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+
+        var claims = await Task.WhenAll(
+            firstQueue.ClaimAsync("worker-a", CancellationToken.None),
+            secondQueue.ClaimAsync("worker-b", CancellationToken.None));
+
+        var claimed = Assert.Single(claims.Where(item => item is not null));
+        Assert.Equal(queued.JobId, claimed!.JobId);
+        Assert.Single(claims.Where(item => item is null));
+        Assert.Equal(1, await ScalarAsync<long>(
+            "SELECT attempt_count FROM extraction_jobs WHERE id=@id", ("id", queued.JobId)));
+    }
+
+    [Fact]
+    public async Task Claim_and_heartbeat_use_database_time_and_enforce_lease_fencing()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        var before = await DatabaseNowAsync();
+        using var scope = services.CreateScope();
+        var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+
+        var claim = Assert.IsType<ClaimedExtractionJob>(
+            await queue.ClaimAsync("worker-clock", CancellationToken.None));
+        var after = await DatabaseNowAsync();
+        await using var context = _database.CreateContext();
+        var leased = await context.ExtractionJobs.AsNoTracking().SingleAsync(x => x.Id == queued.JobId);
+
+        Assert.InRange(leased.LastClaimedAtUtc!.Value, before, after);
+        Assert.InRange(leased.LeaseExpiresAtUtc!.Value,
+            leased.LastClaimedAtUtc.Value.AddSeconds(179),
+            leased.LastClaimedAtUtc.Value.AddSeconds(181));
+        Assert.InRange(claim.DeadlineUtc,
+            leased.LastClaimedAtUtc.Value.AddSeconds(119),
+            leased.LastClaimedAtUtc.Value.AddSeconds(121));
+        Assert.False(await queue.HeartbeatAsync(claim.JobId, "wrong-worker", claim.LeaseToken,
+            CancellationToken.None));
+        Assert.False(await queue.HeartbeatAsync(claim.JobId, claim.LeaseOwner, Guid.NewGuid(),
+            CancellationToken.None));
+        Assert.True(await queue.HeartbeatAsync(claim.JobId, claim.LeaseOwner, claim.LeaseToken,
+            CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Upload_job_uses_database_clock_despite_future_application_clock_and_remains_claimable()
+    {
+        using var services = CreateQueueServices();
+        var tenant = await SeedTenantAsync();
+        var before = await DatabaseNowAsync();
+        var applicationNow = before.AddDays(2);
+        var document = CreateQueuedDocument(tenant, Guid.NewGuid(), applicationNow);
+        var run = Assert.Single(document.ExtractionRuns);
+        ExtractionJob job;
+        using (var uploadScope = services.CreateScope())
+        {
+            job = await uploadScope.ServiceProvider.GetRequiredService<IUploadQueueStore>()
+                .AddAsync(document, run.Id, Guid.NewGuid(), CancellationToken.None);
+        }
+        var after = await DatabaseNowAsync();
+
+        Assert.InRange(job.CreatedAtUtc, before, after);
+        Assert.Equal(job.CreatedAtUtc, job.AvailableAtUtc);
+        Assert.Equal(job.CreatedAtUtc, job.UpdatedAtUtc);
+        Assert.True(job.CreatedAtUtc < document.CreatedAtUtc);
+        using var queueScope = services.CreateScope();
+        var queue = queueScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var claim = Assert.IsType<ClaimedExtractionJob>(
+            await queue.ClaimAsync("worker-clock-skew", CancellationToken.None));
+        Assert.Equal(job.Id, claim.JobId);
+        Assert.True(await queue.RecordFailureAsync(claim, "provider_timeout", "Timed out.",
+            true, CancellationToken.None));
+        var retried = await ReadJobAsync(job.Id);
+        Assert.Equal(ExtractionJobStatus.RetryScheduled, retried.Status);
+        Assert.True(retried.AvailableAtUtc >= retried.UpdatedAtUtc.AddSeconds(5));
+        await ExecuteAsync(
+            "UPDATE extraction_jobs SET available_at_utc=created_at_utc WHERE id=@id",
+            ("id", job.Id));
+        using (var reclaimScope = services.CreateScope())
+        {
+            var reclaimQueue = reclaimScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+            var reclaimed = Assert.IsType<ClaimedExtractionJob>(
+                await reclaimQueue.ClaimAsync("worker-clock-skew-reclaim", CancellationToken.None));
+            Assert.Equal(job.Id, reclaimed.JobId);
+            Assert.Equal(2, reclaimed.Attempt);
+            Assert.True(await reclaimQueue.CompleteAsync(reclaimed, CreateReadyResult(reclaimed),
+                CancellationToken.None));
+        }
+        var terminal = await ReadJobAsync(job.Id);
+        Assert.Equal(ExtractionJobStatus.Succeeded, terminal.Status);
+        await using var context = _database.CreateContext();
+        var persistedDocument = await context.Documents.AsNoTracking()
+            .SingleAsync(item => item.Id == document.Id);
+        var persistedRun = await context.ExtractionRuns.AsNoTracking()
+            .SingleAsync(item => item.Id == run.Id);
+        Assert.Equal(DocumentProcessingStatus.ReadyForReview, persistedDocument.ProcessingStatus);
+        Assert.Equal(ExtractionRunStatus.Succeeded, persistedRun.Status);
+        Assert.True(persistedDocument.UpdatedAtUtc >= document.CreatedAtUtc);
+        Assert.True(persistedRun.CompletedAtUtc >= run.CreatedAtUtc);
+    }
+
+    [Fact]
+    public async Task Retry_schedule_is_transient_only_and_uses_exact_five_then_thirty_second_delays()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        using var firstScope = services.CreateScope();
+        var firstQueue = firstScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var first = Assert.IsType<ClaimedExtractionJob>(
+            await firstQueue.ClaimAsync("worker-retry-1", CancellationToken.None));
+        var beforeFive = await DatabaseNowAsync();
+        Assert.True(await firstQueue.RecordFailureAsync(first, "provider_timeout", "Timed out.",
+            true, CancellationToken.None));
+        var afterFive = await DatabaseNowAsync();
+        var afterFirst = await ReadJobAsync(queued.JobId);
+        Assert.Equal(ExtractionJobStatus.RetryScheduled, afterFirst.Status);
+        Assert.InRange(afterFirst.AvailableAtUtc, beforeFive.AddSeconds(5), afterFive.AddSeconds(5));
+
+        await ExecuteAsync(
+            "UPDATE extraction_jobs SET available_at_utc=created_at_utc WHERE id=@id",
+            ("id", queued.JobId));
+        using var secondScope = services.CreateScope();
+        var secondQueue = secondScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var second = Assert.IsType<ClaimedExtractionJob>(
+            await secondQueue.ClaimAsync("worker-retry-2", CancellationToken.None));
+        Assert.Equal(first.JobId, second.JobId);
+        Assert.Equal(first.ExtractionRunId, second.ExtractionRunId);
+        var beforeThirty = await DatabaseNowAsync();
+        Assert.True(await secondQueue.RecordFailureAsync(second, "provider_unavailable", "Unavailable.",
+            true, CancellationToken.None));
+        var afterThirty = await DatabaseNowAsync();
+        var afterSecond = await ReadJobAsync(queued.JobId);
+        Assert.Equal(ExtractionJobStatus.RetryScheduled, afterSecond.Status);
+        Assert.InRange(afterSecond.AvailableAtUtc,
+            beforeThirty.AddSeconds(30), afterThirty.AddSeconds(30));
+
+        var permanent = await SeedQueuedUploadAsync(services);
+        using var permanentScope = services.CreateScope();
+        var permanentQueue = permanentScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var permanentClaim = Assert.IsType<ClaimedExtractionJob>(
+            await permanentQueue.ClaimAsync("worker-permanent", CancellationToken.None));
+        Assert.True(await permanentQueue.RecordFailureAsync(permanentClaim,
+            "unsupported_document", "Unsupported.", true, CancellationToken.None));
+        Assert.Equal(ExtractionJobStatus.Failed, (await ReadJobAsync(permanent.JobId)).Status);
+    }
+
+    [Fact]
+    public async Task Manual_reprocess_after_terminal_creates_new_run_and_job_and_preserves_reviewable_output()
+    {
+        using var services = CreateQueueServices();
+        var initial = await SeedQueuedUploadAsync(services);
+        using (var completionScope = services.CreateScope())
+        {
+            var queue = completionScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+            var claim = Assert.IsType<ClaimedExtractionJob>(
+                await queue.ClaimAsync("worker-initial", CancellationToken.None));
+            Assert.True(await queue.CompleteAsync(claim, CreateReadyResult(claim),
+                CancellationToken.None));
+        }
+
+        QueuedReprocess? reprocess;
+        ExtractionJobSnapshot? latest;
+        using (var reprocessScope = services.CreateScope())
+        {
+            var queue = reprocessScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+            reprocess = await queue.QueueReprocessAsync(initial.OrganizationId, initial.DocumentId,
+                Guid.NewGuid(), Guid.NewGuid(), "local", "local-1.0.0", "2.0",
+                "request-reprocess", CancellationToken.None);
+            latest = await queue.GetLatestAsync(initial.OrganizationId, initial.DocumentId,
+                CancellationToken.None);
+        }
+
+        Assert.NotNull(reprocess);
+        Assert.Equal(2, reprocess.RunNumber);
+        Assert.NotEqual(initial.RunId, reprocess.ExtractionRunId);
+        Assert.NotEqual(initial.JobId, reprocess.JobId);
+        Assert.NotNull(latest);
+        Assert.Equal(reprocess.JobId, latest.JobId);
+        Assert.Equal(reprocess.ExtractionRunId, latest.ExtractionRunId);
+        Assert.Equal(ExtractionJobStatus.Pending, latest.Status);
+        await using var context = _database.CreateContext();
+        var document = await context.Documents.AsSplitQuery()
+            .Include(item => item.ExtractionRuns).ThenInclude(run => run.Pages)
+            .Include(item => item.ExtractionRuns).ThenInclude(run => run.Fields)
+                .ThenInclude(field => field.Evidence)
+            .SingleAsync(item => item.Id == initial.DocumentId);
+        Assert.Equal(DocumentProcessingStatus.ReadyForReview, document.ProcessingStatus);
+        Assert.Equal(initial.RunId, document.SelectedExtractionRun()!.Id);
+        Assert.Equal(2, document.ExtractionRuns.Count);
+        Assert.Equal(ExtractionRunStatus.Queued,
+            document.ExtractionRuns.Single(run => run.Id == reprocess.ExtractionRunId).Status);
+    }
+
+    [Fact]
+    public async Task Active_job_blocks_manual_reprocess_and_latest_is_tenant_scoped()
+    {
+        using var services = CreateQueueServices();
+        var initial = await SeedQueuedUploadAsync(services);
+        using var scope = services.CreateScope();
+        var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+
+        var blocked = await queue.QueueReprocessAsync(initial.OrganizationId, initial.DocumentId,
+            Guid.NewGuid(), Guid.NewGuid(), "local", "local-1.0.0", "2.0",
+            "request-blocked", CancellationToken.None);
+        var correctTenant = await queue.GetLatestAsync(initial.OrganizationId, initial.DocumentId,
+            CancellationToken.None);
+        var wrongTenant = await queue.GetLatestAsync(Guid.NewGuid(), initial.DocumentId,
+            CancellationToken.None);
+
+        Assert.Null(blocked);
+        Assert.NotNull(correctTenant);
+        Assert.Equal(initial.JobId, correctTenant.JobId);
+        Assert.Null(wrongTenant);
+        Assert.Equal(1, await ScalarAsync<long>(
+            "SELECT count(*) FROM extraction_runs WHERE document_id=@document",
+            ("document", initial.DocumentId)));
+        Assert.Equal(1, await ScalarAsync<long>(
+            "SELECT count(*) FROM extraction_jobs WHERE document_id=@document",
+            ("document", initial.DocumentId)));
+    }
+
+    [Fact]
+    public async Task Reclaimed_job_rejects_stale_completion_and_current_completion_is_idempotent()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        using var oldScope = services.CreateScope();
+        var oldQueue = oldScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var oldClaim = Assert.IsType<ClaimedExtractionJob>(
+            await oldQueue.ClaimAsync("worker-old", CancellationToken.None));
+        await ExecuteAsync(
+            "UPDATE extraction_jobs SET lease_expires_at_utc=clock_timestamp()-interval '1 second' WHERE id=@id",
+            ("id", queued.JobId));
+        using var currentScope = services.CreateScope();
+        var currentQueue = currentScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var currentClaim = Assert.IsType<ClaimedExtractionJob>(
+            await currentQueue.ClaimAsync("worker-current", CancellationToken.None));
+        var result = CreateReadyResult(currentClaim);
+
+        Assert.False(await oldQueue.CompleteAsync(oldClaim, result, CancellationToken.None));
+        Assert.Equal(0, await ScalarAsync<long>(
+            "SELECT count(*) FROM extraction_pages WHERE extraction_run_id=@run", ("run", queued.RunId)));
+        Assert.True(await currentQueue.CompleteAsync(currentClaim, result, CancellationToken.None));
+        Assert.False(await currentQueue.CompleteAsync(currentClaim, result, CancellationToken.None));
+        Assert.Equal(1, await ScalarAsync<long>(
+            "SELECT count(*) FROM extraction_pages WHERE extraction_run_id=@run", ("run", queued.RunId)));
+        Assert.Equal(1, await ScalarAsync<long>(
+            "SELECT count(*) FROM machine_field_values WHERE extraction_run_id=@run", ("run", queued.RunId)));
+        var job = await ReadJobAsync(queued.JobId);
+        Assert.Equal(ExtractionJobStatus.Succeeded, job.Status);
+        Assert.Equal(ExtractionOutcomeValue.Ready, job.ResultOutcome);
+    }
+
+    [Fact]
+    public async Task Cancelling_a_leased_job_invalidates_token_and_stale_worker_writes_nothing()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        using var scope = services.CreateScope();
+        var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        var claim = Assert.IsType<ClaimedExtractionJob>(
+            await queue.ClaimAsync("worker-cancel", CancellationToken.None));
+
+        Assert.True(await queue.CancelAsync(queued.OrganizationId, queued.JobId,
+            "request_cancelled", "Cancelled.", CancellationToken.None));
+        Assert.False(await queue.CompleteAsync(claim, CreateReadyResult(claim), CancellationToken.None));
+        Assert.False(await queue.HeartbeatAsync(claim.JobId, claim.LeaseOwner, claim.LeaseToken,
+            CancellationToken.None));
+        var job = await ReadJobAsync(queued.JobId);
+        Assert.Equal(ExtractionJobStatus.Cancelled, job.Status);
+        Assert.Null(job.LeaseToken);
+        await using var context = _database.CreateContext();
+        var run = await context.ExtractionRuns.AsNoTracking().SingleAsync(x => x.Id == queued.RunId);
+        var document = await context.Documents.AsNoTracking().SingleAsync(x => x.Id == queued.DocumentId);
+        Assert.Equal(ExtractionRunStatus.Cancelled, run.Status);
+        Assert.Equal(DocumentProcessingStatus.ProcessingCancelled, document.ProcessingStatus);
+    }
+
+    [Fact]
+    public async Task Cancelling_a_pending_job_terminalizes_job_run_and_document_without_a_worker_claim()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        using var scope = services.CreateScope();
+        var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+
+        Assert.True(await queue.CancelAsync(queued.OrganizationId, queued.JobId,
+            "request_cancelled", "Cancelled.", CancellationToken.None));
+        Assert.Null(await queue.ClaimAsync("worker-after-cancel", CancellationToken.None));
+
+        var job = await ReadJobAsync(queued.JobId);
+        Assert.Equal(ExtractionJobStatus.Cancelled, job.Status);
+        Assert.Equal(0, job.AttemptCount);
+        Assert.Null(job.LeaseOwner);
+        Assert.Null(job.LeaseToken);
+        Assert.Null(job.LeaseExpiresAtUtc);
+        Assert.Null(job.LastHeartbeatAtUtc);
+
+        await using var context = _database.CreateContext();
+        var run = await context.ExtractionRuns.AsNoTracking().SingleAsync(x => x.Id == queued.RunId);
+        var document = await context.Documents.AsNoTracking().SingleAsync(x => x.Id == queued.DocumentId);
+        Assert.Equal(ExtractionRunStatus.Cancelled, run.Status);
+        Assert.Equal(DocumentProcessingStatus.ProcessingCancelled, document.ProcessingStatus);
+    }
+
+    [Fact]
+    public async Task Final_expired_claim_is_terminalized_as_worker_lease_expired()
+    {
+        using var services = CreateQueueServices();
+        var queued = await SeedQueuedUploadAsync(services);
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            using var scope = services.CreateScope();
+            var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+            var claim = Assert.IsType<ClaimedExtractionJob>(
+                await queue.ClaimAsync($"worker-{attempt}", CancellationToken.None));
+            await ExecuteAsync(
+                "UPDATE extraction_jobs SET lease_expires_at_utc=clock_timestamp()-interval '1 second' WHERE id=@id",
+                ("id", queued.JobId));
+            if (attempt < 3)
+            {
+                using var reclaimScope = services.CreateScope();
+                var reclaim = reclaimScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+                var next = Assert.IsType<ClaimedExtractionJob>(
+                    await reclaim.ClaimAsync($"worker-{attempt}-reclaim", CancellationToken.None));
+                Assert.Equal(attempt + 1, next.Attempt);
+                attempt++;
+                await ExecuteAsync(
+                    "UPDATE extraction_jobs SET lease_expires_at_utc=clock_timestamp()-interval '1 second' WHERE id=@id",
+                    ("id", queued.JobId));
+            }
+        }
+
+        using var terminalScope = services.CreateScope();
+        var terminalQueue = terminalScope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        Assert.True(await terminalQueue.TerminalizeOneExpiredAsync(CancellationToken.None));
+        Assert.False(await terminalQueue.TerminalizeOneExpiredAsync(CancellationToken.None));
+        var job = await ReadJobAsync(queued.JobId);
+        Assert.Equal(ExtractionJobStatus.Failed, job.Status);
+        Assert.Equal(3, job.AttemptCount);
+        Assert.Equal("worker_lease_expired", job.LastErrorCode);
+    }
+
+    private ServiceProvider CreateQueueServices()
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:Database"] = _database.TestConnectionString,
+            ["Storage:UploadDirectory"] = Path.Combine(Path.GetTempPath(), "queue-persistence-tests"),
+            ["AiService:BaseUrl"] = "http://localhost:8001",
+            ["ExtractionWorker:Enabled"] = "false"
+        };
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
+        var services = new ServiceCollection();
+        services.AddInfrastructure(configuration);
+        return services.BuildServiceProvider();
+    }
+
+    private async Task<QueueSeed> SeedQueuedUploadAsync(ServiceProvider services,
+        DateTimeOffset? createdAt = null)
+    {
+        var tenant = await SeedTenantAsync();
+        var now = createdAt ?? DateTimeOffset.UtcNow;
+        var document = CreateQueuedDocument(tenant, Guid.NewGuid(), now);
+        var run = Assert.Single(document.ExtractionRuns);
+        using var scope = services.CreateScope();
+        var jobId = Guid.NewGuid();
+        var job = await scope.ServiceProvider.GetRequiredService<IUploadQueueStore>()
+            .AddAsync(document, run.Id, jobId, CancellationToken.None);
+        return new QueueSeed(tenant.OrganizationId, tenant.ActorId, document.Id, run.Id, job.Id);
+    }
+
+    private async Task<TenantSeed> SeedTenantAsync()
+    {
+        var tenant = new TenantSeed(Guid.NewGuid(), Guid.NewGuid());
+        var slug = $"queue-{tenant.OrganizationId:N}";
+        var now = DateTimeOffset.UtcNow;
+        await ExecuteAsync(
+            "INSERT INTO organizations (id,slug,display_name,created_at_utc) VALUES (@id,@slug,'Queue Test',@now)",
+            ("id", tenant.OrganizationId), ("slug", slug), ("now", now));
+        await ExecuteAsync(
+            "INSERT INTO actors (id,organization_id,kind,display_name,is_active,created_at_utc) VALUES (@id,@org,'System','Queue Actor',true,@now)",
+            ("id", tenant.ActorId), ("org", tenant.OrganizationId), ("now", now));
+        return tenant;
+    }
+
+    private static Document CreateQueuedDocument(TenantSeed tenant, Guid documentId,
+        DateTimeOffset now)
+    {
+        var document = new Document(documentId, tenant.OrganizationId, tenant.ActorId,
+            "invoice.pdf",
+            $"organizations/{tenant.OrganizationId:N}/documents/{documentId:N}/source.pdf",
+            "application/pdf", 12345, ValidSha, now);
+        document.QueueExtraction(Guid.NewGuid(), 1, "local", "local-1.0.0", "2.0",
+            $"request-{documentId:N}", now);
+        return document;
+    }
+
+    private async Task<ExtractionJob> ReadJobAsync(Guid jobId)
+    {
+        await using var context = _database.CreateContext();
+        return await context.ExtractionJobs.AsNoTracking().SingleAsync(x => x.Id == jobId);
+    }
+
+    private async Task<DateTimeOffset> DatabaseNowAsync()
+    {
+        await using var connection = await _database.OpenConnectionAsync();
+        await using var command = new NpgsqlCommand("SELECT clock_timestamp()", connection);
+        var value = await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("PostgreSQL clock was unavailable.");
+        return value switch
+        {
+            DateTimeOffset offset => offset,
+            DateTime dateTime => new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)),
+            _ => throw new InvalidOperationException("PostgreSQL returned an unexpected clock value.")
+        };
+    }
+
+    private static ExtractionResult CreateReadyResult(ClaimedExtractionJob claim) => new(
+        claim.SchemaVersion, ExtractionOutcome.Ready, "invoice", "en",
+        new ExtractionProviderResult(claim.ProviderAlias, claim.ProviderVersion,
+            "tesseract-eng", "5.3.0"),
+        new ExtractionMetricsResult(25, 1, null, null, null),
+        [new ExtractionPageResult(1, "105.00", 0)],
+        [new ExtractionField("total", 0, FieldValueType.Decimal, "105.00", "105.00", 0.98m,
+            [new ExtractionEvidenceResult(1, "105.00", 0, 6,
+                "[[0.1,0.1],[0.9,0.1],[0.9,0.9],[0.1,0.9]]", "normalized")])], []);
+
     private static Task<Document> LoadDocumentAsync(
         UaeDocumentIntelligence.Infrastructure.Persistence.AppDbContext context, Guid documentId) =>
         context.Documents
@@ -706,4 +1213,8 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
             Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
             Guid.NewGuid(), Guid.NewGuid());
     }
+
+    private sealed record TenantSeed(Guid OrganizationId, Guid ActorId);
+    private sealed record QueueSeed(Guid OrganizationId, Guid ActorId, Guid DocumentId,
+        Guid RunId, Guid JobId);
 }

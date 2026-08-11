@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\UaeDocumentIntelligence.Application\UaeDocumentIntelligence.Application.csproj" />
     <ProjectReference Include="..\UaeDocumentIntelligence.Domain\UaeDocumentIntelligence.Domain.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">

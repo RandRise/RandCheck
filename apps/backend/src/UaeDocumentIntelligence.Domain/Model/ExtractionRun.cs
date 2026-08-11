@@ -188,7 +188,8 @@ public sealed class ExtractionRun
 
     public void Cancel(string failureCode, string safeSummary, DateTimeOffset now)
     {
-        RequireRunning();
+        if (Status is not (ExtractionRunStatus.Queued or ExtractionRunStatus.Running))
+            throw new InvalidOperationException("Only queued or running runs can be cancelled.");
         DiscardNonTerminalResult();
         FailureCode = Guard.Required(failureCode, nameof(failureCode), 100);
         SafeFailureSummary = Guard.Required(safeSummary, nameof(safeSummary), 500);
@@ -199,7 +200,9 @@ public sealed class ExtractionRun
     {
         Status = status;
         CompletedAtUtc = now;
-        DurationMs = Math.Max(0, (long)(now - StartedAtUtc!.Value).TotalMilliseconds);
+        DurationMs = StartedAtUtc.HasValue
+            ? Math.Max(0, (long)(now - StartedAtUtc.Value).TotalMilliseconds)
+            : 0;
     }
 
     private void RequireRunning()

@@ -20,7 +20,8 @@ public sealed record DocumentMetrics(int TotalDocuments, int ReadyDocuments, int
 
 public interface IDocumentStorage
 {
-    Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize, CancellationToken cancellationToken);
+    Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize,
+        Guid organizationId, Guid documentId, CancellationToken cancellationToken);
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken);
 }
 
@@ -31,8 +32,62 @@ public interface IExtractionClient
     string ProviderName { get; }
     string ProviderVersion { get; }
     string SchemaVersion { get; }
-    Task<ExtractionResult> ExtractAsync(string absolutePath, string contentType, CancellationToken cancellationToken);
+    Task<ExtractionResult> ExtractAsync(WorkerExtractionRequest request, CancellationToken cancellationToken);
 }
+
+public sealed record WorkerExtractionRequest(
+    string SchemaVersion, Guid JobId, Guid DocumentId, Guid ExtractionRunId,
+    string StorageKey, string Sha256, long Bytes, string DeclaredContentType,
+    string ProviderAlias, int Attempt, DateTimeOffset DeadlineUtc, string CorrelationId);
+
+public sealed class ExtractionProviderException(
+    string code, string safeSummary, bool retryable = false, Exception? innerException = null)
+    : Exception(safeSummary, innerException)
+{
+    public string Code { get; } = code;
+    public string SafeSummary { get; } = safeSummary;
+    public bool Retryable { get; } = retryable;
+}
+
+public interface IUploadQueueStore
+{
+    Task<ExtractionJob> AddAsync(Document document, Guid extractionRunId, Guid jobId,
+        CancellationToken cancellationToken);
+}
+
+public sealed record ClaimedExtractionJob(
+    Guid JobId, Guid OrganizationId, Guid DocumentId, Guid ExtractionRunId,
+    string StorageKey, string Sha256, long Bytes, string DeclaredContentType,
+    string ProviderAlias, string ProviderVersion, string SchemaVersion,
+    string CorrelationId, int Attempt, Guid LeaseToken, string LeaseOwner,
+    DateTimeOffset DeadlineUtc, DateTimeOffset CreatedAtUtc);
+
+public interface IExtractionJobQueue
+{
+    Task<bool> TerminalizeOneExpiredAsync(CancellationToken cancellationToken);
+    Task<ClaimedExtractionJob?> ClaimAsync(string owner, CancellationToken cancellationToken);
+    Task<bool> HeartbeatAsync(Guid jobId, string owner, Guid leaseToken,
+        CancellationToken cancellationToken);
+    Task<bool> CompleteAsync(ClaimedExtractionJob claim, ExtractionResult result,
+        CancellationToken cancellationToken);
+    Task<bool> RecordFailureAsync(ClaimedExtractionJob claim, string code, string safeSummary,
+        bool retryable, CancellationToken cancellationToken);
+    Task<bool> CancelAsync(Guid organizationId, Guid jobId, string code, string safeSummary,
+        CancellationToken cancellationToken);
+    Task<ExtractionJobSnapshot?> GetLatestAsync(Guid organizationId, Guid documentId,
+        CancellationToken cancellationToken);
+    Task<QueuedReprocess?> QueueReprocessAsync(Guid organizationId, Guid documentId,
+        Guid runId, Guid jobId, string providerAlias, string providerVersion,
+        string schemaVersion, string correlationId, CancellationToken cancellationToken);
+}
+
+public sealed record ExtractionJobSnapshot(
+    Guid JobId, Guid ExtractionRunId, ExtractionJobStatus Status, int AttemptCount,
+    string? LastErrorCode, string? LastSafeErrorSummary, ExtractionOutcomeValue? ResultOutcome,
+    DateTimeOffset AvailableAtUtc, DateTimeOffset? LeaseExpiresAtUtc,
+    DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? CompletedAtUtc);
+
+public sealed record QueuedReprocess(Guid JobId, Guid ExtractionRunId, int RunNumber);
 
 public enum ExtractionOutcome { Ready, Partial }
 

@@ -9,6 +9,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Actor> Actors => Set<Actor>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<ExtractionRun> ExtractionRuns => Set<ExtractionRun>();
+    public DbSet<ExtractionJob> ExtractionJobs => Set<ExtractionJob>();
     public DbSet<ExtractionPage> ExtractionPages => Set<ExtractionPage>();
     public DbSet<MachineFieldValue> MachineFieldValues => Set<MachineFieldValue>();
     public DbSet<FieldEvidence> FieldEvidence => Set<FieldEvidence>();

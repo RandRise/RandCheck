@@ -565,6 +565,86 @@ class LocalProviderFailureTests(unittest.TestCase):
         self.assertTrue(captured.exception.retryable)
         self.assertNotIn("sensitive", captured.exception.summary.lower())
 
+    def test_remaining_attempt_deadline_is_passed_to_tesseract_timeout(self):
+        captured_timeouts = []
+
+        class FakeTesseractNotFoundError(RuntimeError):
+            pass
+
+        def image_to_data(*args, **kwargs):
+            del args
+            captured_timeouts.append(kwargs["timeout"])
+            return {"text": [], "conf": []}
+
+        fake = types.SimpleNamespace(
+            Output=types.SimpleNamespace(DICT="dict"),
+            TesseractNotFoundError=FakeTesseractNotFoundError,
+            get_languages=lambda config: ["eng", "osd"],
+            get_tesseract_version=lambda: TESSERACT_VERSION,
+            image_to_data=image_to_data,
+        )
+        with (
+            patch.dict(sys.modules, {"pytesseract": fake}),
+            patch.object(LocalInvoiceExtractor, "_verify_model_hashes"),
+            patch("app.local_extraction.time.monotonic", return_value=100.0),
+        ):
+            LocalInvoiceExtractor(timeout_seconds=30)._ocr_data(
+                object(), deadline_monotonic=107.5
+            )
+
+        self.assertEqual([7.5], captured_timeouts)
+
+    def test_deadline_crossed_between_pdf_pages_returns_safe_retryable_timeout(self):
+        class PreflightDocument:
+            def close(self):
+                return None
+
+        class NativeDocument:
+            pages = [object(), object()]
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                del args
+                return False
+
+        fake_pdfium = types.ModuleType("pypdfium2")
+        fake_pdfium.PdfDocument = lambda path: PreflightDocument()
+        fake_pdfplumber = types.ModuleType("pdfplumber")
+        fake_pdfplumber.open = lambda path: NativeDocument()
+        fake_pdfdocument = types.ModuleType("pdfminer.pdfdocument")
+        fake_pdfdocument.PDFPasswordIncorrect = type(
+            "PDFPasswordIncorrect", (Exception,), {}
+        )
+        fake_pdfparser = types.ModuleType("pdfminer.pdfparser")
+        fake_pdfparser.PDFSyntaxError = type("PDFSyntaxError", (Exception,), {})
+        extractor = LocalInvoiceExtractor()
+        native = _ExtractedPage(1, "Invoice", [], 0, None, False, False, "native")
+        with (
+            patch.dict(
+                sys.modules,
+                {
+                    "pypdfium2": fake_pdfium,
+                    "pdfplumber": fake_pdfplumber,
+                    "pdfminer.pdfdocument": fake_pdfdocument,
+                    "pdfminer.pdfparser": fake_pdfparser,
+                },
+            ),
+            patch.object(extractor, "_native_page", return_value=native) as native_page,
+            patch(
+                "app.local_extraction.time.monotonic",
+                side_effect=[0.0, 1.0, 2.0, 3.0, 11.0],
+            ),
+        ):
+            with self.assertRaises(ExtractionError) as captured:
+                extractor._extract_pdf(Path("two-pages.pdf"), deadline_monotonic=10.0)
+
+        self.assertEqual("provider_timeout", captured.exception.code)
+        self.assertTrue(captured.exception.retryable)
+        self.assertEqual(1, native_page.call_count)
+        self.assertNotIn("two-pages.pdf", captured.exception.summary)
+
 class LocalProviderApiTests(unittest.TestCase):
     def test_safe_error_envelope_and_status_mapping(self):
         import httpx
@@ -594,7 +674,13 @@ class LocalProviderApiTests(unittest.TestCase):
                                     retryable=code == "provider_timeout",
                                 )
                             )
-                            with patch("app.main.get_extractor", return_value=provider):
+                            with (
+                                patch("app.main.get_settings", return_value=types.SimpleNamespace(
+                                    enable_legacy_extract=True,
+                                    extraction_provider="mock",
+                                )),
+                                patch("app.main.get_extractor", return_value=provider),
+                            ):
                                 response = await client.post(
                                     "/extract",
                                     headers={"x-request-id": "request-123"},
@@ -624,7 +710,13 @@ class LocalProviderApiTests(unittest.TestCase):
                     )
                 )
                 transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
-                with patch("app.main.get_extractor", return_value=provider):
+                with (
+                    patch("app.main.get_settings", return_value=types.SimpleNamespace(
+                        enable_legacy_extract=True,
+                        extraction_provider="mock",
+                    )),
+                    patch("app.main.get_extractor", return_value=provider),
+                ):
                     async with httpx.AsyncClient(
                         transport=transport, base_url="http://test"
                     ) as client:
@@ -642,14 +734,15 @@ class LocalProviderApiTests(unittest.TestCase):
 
         asyncio.run(exercise())
 
-    def test_legacy_local_route_is_path_independent_503_before_file_access(self):
+    def test_disabled_legacy_route_is_path_independent_404_before_file_access(self):
         import httpx
 
         async def exercise() -> None:
             transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
             with (
                 patch("app.main.get_settings", return_value=types.SimpleNamespace(
-                    extraction_provider="local"
+                    enable_legacy_extract=False,
+                    extraction_provider="local",
                 )),
                 patch("app.main.Path", side_effect=AssertionError("path must not be touched")),
             ):
@@ -664,7 +757,7 @@ class LocalProviderApiTests(unittest.TestCase):
                         "/extract",
                         json={"filePath": "missing.pdf", "contentType": "application/pdf"},
                     )
-            self.assertEqual(503, existing.status_code)
+            self.assertEqual(404, existing.status_code)
             self.assertEqual(existing.json(), missing.json())
 
         asyncio.run(exercise())

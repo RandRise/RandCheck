@@ -14,14 +14,17 @@ public sealed class StorageOptions
 internal sealed class LocalDocumentStorage(IOptions<StorageOptions> options) : IDocumentStorage
 {
     public async Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize,
-        CancellationToken cancellationToken)
+        Guid organizationId, Guid documentId, CancellationToken cancellationToken)
     {
         if (declaredSize <= 0 || declaredSize > options.Value.MaxUploadBytes) throw new DocumentTooLargeException();
-        Directory.CreateDirectory(options.Value.UploadDirectory);
+        var root = Path.GetFullPath(options.Value.UploadDirectory);
         var extension = Path.GetExtension(originalFilename).ToLowerInvariant();
-        if (extension.Length > 10) extension = string.Empty;
-        var key = $"{Guid.NewGuid()}{extension}";
-        var path = Path.GetFullPath(Path.Combine(options.Value.UploadDirectory, key));
+        if (extension.Length is < 2 or > 10 || extension.Skip(1).Any(character => !char.IsLetterOrDigit(character)))
+            extension = ".bin";
+        var key = Path.Combine("organizations", organizationId.ToString("N"), "documents",
+            documentId.ToString("N"), $"source{extension}").Replace('\\', '/');
+        var path = ResolveUnderRoot(root, key);
+        CreateSafeParent(root, key);
         try
         {
             await using (var destination = File.Create(path))
@@ -43,8 +46,57 @@ internal sealed class LocalDocumentStorage(IOptions<StorageOptions> options) : I
     public Task DeleteAsync(string storageKey, CancellationToken cancellationToken)
     {
         var root = Path.GetFullPath(options.Value.UploadDirectory);
-        var path = Path.GetFullPath(Path.Combine(root, storageKey));
-        if (Path.GetDirectoryName(path) == root) File.Delete(path);
+        var path = ResolveUnderRoot(root, storageKey);
+        EnsureNoReparsePoints(root, storageKey);
+        File.Delete(path);
+        var directory = Path.GetDirectoryName(path);
+        while (directory is not null && !string.Equals(directory, root, StringComparison.OrdinalIgnoreCase))
+        {
+            if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
+                Directory.Delete(directory);
+            directory = Path.GetDirectoryName(directory);
+        }
         return Task.CompletedTask;
+    }
+
+    internal static string ResolveUnderRoot(string root, string storageKey)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey) || storageKey.Contains('\\') ||
+            Path.IsPathRooted(storageKey))
+            throw new InvalidDataException("Storage key must be relative.");
+        var normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+        var path = Path.GetFullPath(Path.Combine(normalizedRoot,
+            storageKey.Replace('/', Path.DirectorySeparatorChar)));
+        if (!path.StartsWith(normalizedRoot + Path.DirectorySeparatorChar,
+                StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Storage key escapes the configured root.");
+        return path;
+    }
+
+    private static void CreateSafeParent(string root, string storageKey)
+    {
+        Directory.CreateDirectory(root);
+        if (File.GetAttributes(root).HasFlag(FileAttributes.ReparsePoint))
+            throw new InvalidDataException("Storage root cannot be a reparse point.");
+        var current = root;
+        foreach (var part in storageKey.Split('/').SkipLast(1))
+        {
+            current = Path.Combine(current, part);
+            if (Directory.Exists(current) && File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
+                throw new InvalidDataException("Storage key contains a reparse point.");
+            Directory.CreateDirectory(current);
+        }
+    }
+
+    private static void EnsureNoReparsePoints(string root, string storageKey)
+    {
+        var current = root;
+        foreach (var part in storageKey.Split('/'))
+        {
+            current = Path.Combine(current, part);
+            if ((Directory.Exists(current) || File.Exists(current)) &&
+                File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
+                throw new InvalidDataException("Storage key contains a reparse point.");
+        }
     }
 }

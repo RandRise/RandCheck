@@ -20,7 +20,8 @@ app.UseCors();
 app.Use(async (context, next) =>
 {
     var suppliedRequestId = context.Request.Headers["X-Request-ID"].FirstOrDefault()?.Trim();
-    var requestId = !string.IsNullOrEmpty(suppliedRequestId) && suppliedRequestId.Length <= 100
+    var requestId = !string.IsNullOrEmpty(suppliedRequestId) && suppliedRequestId.Length <= 100 &&
+        System.Text.RegularExpressions.Regex.IsMatch(suppliedRequestId, "^[A-Za-z0-9._:-]{1,100}$")
         ? suppliedRequestId
         : Guid.NewGuid().ToString("N");
     context.TraceIdentifier = requestId;
@@ -54,7 +55,7 @@ app.MapPost("/api/documents", async (HttpContext context, IFormFile file, Upload
         var command = new UploadDocumentCommand(file.FileName, file.ContentType, file.Length,
             file.OpenReadStream(), context.TraceIdentifier);
         var document = await handler.HandleAsync(command, cancellationToken);
-        return Results.Created($"/api/documents/{document.Id}", document);
+        return Results.Accepted($"/api/documents/{document.Id}", document);
     }
     catch (UnsupportedDocumentTypeException)
     {

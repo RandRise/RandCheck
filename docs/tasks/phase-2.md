@@ -1,9 +1,9 @@
 # Phase 2 task ledger
 
 **Phase status:** In progress  
-**Implementation status:** P2-T04 complete; P2-T05 and P2-T06 pending and ready
+**Implementation status:** P2-T06 complete; P2-T07 pending and ready
 
-P2-T01 through P2-T04 were completed on 2026-08-11. P2-T05 and P2-T06 are ready for an explicit start; neither is in progress.
+P2-T01 through P2-T04 and P2-T06 were completed on 2026-08-11. P2-T07 is the next ready task but has not started. P2-T05 remains ready but optional and has not started.
 
 | ID | Task | Status | Depends on | Planned evidence |
 |---|---|---|---|---|
@@ -12,8 +12,8 @@ P2-T01 through P2-T04 were completed on 2026-08-11. P2-T05 and P2-T06 are ready 
 | P2-T03 | Generate reproducible synthetic fixtures and versioned expected JSON labels | Complete | P2-T01 and P2-T02 complete | [P2-T03 verification](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md) |
 | P2-T04 | Implement local native-PDF and scanned-OCR providers | Complete | P2-T02 and P2-T03 complete | [P2-T04 local-provider verification](../evidence/phase-2/P2-T04-local-provider-verification.md) |
 | P2-T05 | Define the optional Azure Document Intelligence adapter and credential-free contract tests | Pending (ready) | P2-T02 complete | Stubbed contract tests; no credentials required |
-| P2-T06 | Implement the PostgreSQL durable queue and .NET worker | Pending (ready) | P2-T01 and P2-T02 complete | Transaction, claim, idempotency, retry, timeout, and recovery tests |
-| P2-T07 | Add public API and Next.js processing-state behavior | Blocked | P2-T06 | API contract and rendered UI tests |
+| P2-T06 | Implement the PostgreSQL durable queue and .NET worker | Complete | P2-T01 and P2-T02 complete | [P2-T06 verification](../evidence/phase-2/P2-T06-queue-worker-verification.md) |
+| P2-T07 | Add public API and Next.js processing-state behavior | Pending (ready) | P2-T06 complete | API contract and rendered UI tests |
 | P2-T08 | Run Phase 2 acceptance verification and publish evidence | Blocked | P2-T03–P2-T07 | Test totals, build results, and honest local demonstrations |
 
 ## P2-T02 completion gate
@@ -48,7 +48,25 @@ Final implementation and verification are recorded in the [P2-T03 evidence](../e
 - [x] Link automated host, container, fixture, golden, lint, and Compose verification.
 - [x] Record Integration Guardian **APPROVED** verdict with no blockers on 2026-08-11.
 
-The verified local extractor remains an internal/testable component. Docker Compose and the legacy HTTP extraction path remain on `mock` until P2-T06 supplies the trusted storage-key worker request and orchestration boundary. See the [P2-T04 evidence](../evidence/phase-2/P2-T04-local-provider-verification.md).
+The verified local extractor is wired through P2-T06's authenticated storage-key worker route. The arbitrary-path legacy HTTP route remains disabled; Compose's `EXTRACTION_PROVIDER=mock` setting applies to that disabled compatibility route, while worker requests explicitly select the verified `local` alias. See [P2-T04](../evidence/phase-2/P2-T04-local-provider-verification.md) and [P2-T06](../evidence/phase-2/P2-T06-queue-worker-verification.md) evidence.
+
+## P2-T06 implementation boundary
+
+The [approved extraction and orchestration contract](../design/phase-2-extraction-provider-contract.md) remains the source of truth. P2-T06 must not redefine queue states, transaction boundaries, leases, retry classification, cancellation, storage-key trust, result validation, or state mapping without a reviewed contract change.
+
+- [x] Persist document, extraction run, and `extraction_jobs` row transactionally after storage succeeds, with compensation/orphan cleanup for failure gaps.
+- [x] Implement deterministic PostgreSQL `FOR UPDATE SKIP LOCKED` claiming, database-clock leases, UUID fencing tokens, heartbeat, expiry recovery, and at-most-three claims.
+- [x] Invoke Python outside the claim transaction through the authenticated versioned storage-key request; reject traversal and verify size/SHA before provider work.
+- [x] Keep retries in .NET and only for classified transient network/timeout/408/429/5xx outcomes, using the approved 5-second then 30-second schedule.
+- [x] Finalize results and run/document/job states transactionally only when the current lease token matches; stale workers write nothing.
+- [x] Implement queued/leased cancellation, manual reprocessing versus delivery retry, prior reviewable-output preservation, and newest-job status primitives.
+- [x] Wire the verified `local` provider through the private worker boundary while keeping the arbitrary-path legacy route disabled.
+- [x] Add Activity/Meter instrumentation and unit/API/Python regression coverage.
+- [x] Complete the final PostgreSQL rerun including the newest reprocess and skew/terminalization tests.
+- [x] Complete the pinned container build and Compose native-PDF plus scanned-PDF workflow demonstrations.
+- [x] Record Integration Guardian **APPROVED** with no blockers on 2026-08-11.
+
+P2-T06 is intentionally sequenced before optional P2-T05 Azure work because it unlocks the existing local provider for the real workflow. This prioritization does not approve or implement Azure.
 
 ## P2-T01 review gate
 

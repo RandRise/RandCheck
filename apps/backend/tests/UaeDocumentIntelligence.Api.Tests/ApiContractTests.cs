@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UaeDocumentIntelligence.Application.Abstractions;
 using UaeDocumentIntelligence.Application.Documents.Upload;
+using UaeDocumentIntelligence.Domain.Model;
 
 namespace UaeDocumentIntelligence.Api.Tests;
 
@@ -103,6 +104,37 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
     }
 
     [Fact]
+    public async Task Upload_route_returns_202_and_location_without_invoking_provider()
+    {
+        var queue = new CapturingUploadQueueStore();
+        var extraction = new RejectIfCalledExtractionClient();
+        using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IDocumentStorage>();
+            services.RemoveAll<IUploadQueueStore>();
+            services.RemoveAll<IExtractionClient>();
+            services.AddSingleton<IDocumentStorage, SuccessfulStorage>();
+            services.AddSingleton<IUploadQueueStore>(queue);
+            services.AddSingleton<IExtractionClient>(extraction);
+        }));
+        using var client = factory.CreateClient();
+        using var content = CreateUpload("application/pdf");
+
+        using var response = await client.PostAsync("/api/documents", content);
+        var document = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        Assert.Equal($"/api/documents/{document.GetProperty("id").GetGuid()}",
+            response.Headers.Location?.OriginalString);
+        Assert.Equal("Processing", document.GetProperty("status").GetString());
+        Assert.Equal(0, extraction.CallCount);
+        Assert.NotNull(queue.Document);
+        Assert.Equal(document.GetProperty("id").GetGuid(), queue.Document.Id);
+        Assert.Equal(ExtractionJobStatus.Pending, queue.Job!.Status);
+        Assert.Equal(ExtractionRunStatus.Queued, Assert.Single(queue.Document.ExtractionRuns).Status);
+    }
+
+    [Fact]
     public async Task Unknown_route_returns_not_found()
     {
         using var client = _factory.CreateClient();
@@ -122,8 +154,51 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
     private sealed class RejectingStorage : IDocumentStorage
     {
         public Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize,
-            CancellationToken cancellationToken) => throw new DocumentTooLargeException();
+            Guid organizationId, Guid documentId, CancellationToken cancellationToken) =>
+            throw new DocumentTooLargeException();
 
         public Task DeleteAsync(string storageKey, CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class SuccessfulStorage : IDocumentStorage
+    {
+        public Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize,
+            Guid organizationId, Guid documentId, CancellationToken cancellationToken) =>
+            Task.FromResult(new StoredFile(
+                $"organizations/{organizationId:N}/documents/{documentId:N}/source.pdf",
+                @"C:\safe-test-storage\source.pdf", declaredSize,
+                "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"));
+
+        public Task DeleteAsync(string storageKey, CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class CapturingUploadQueueStore : IUploadQueueStore
+    {
+        public Document? Document { get; private set; }
+        public ExtractionJob? Job { get; private set; }
+
+        public Task<ExtractionJob> AddAsync(Document document, Guid extractionRunId, Guid jobId,
+            CancellationToken cancellationToken)
+        {
+            Document = document;
+            Job = new ExtractionJob(jobId, document.OrganizationId, document.Id, extractionRunId,
+                DateTimeOffset.UtcNow);
+            return Task.FromResult(Job);
+        }
+    }
+
+    private sealed class RejectIfCalledExtractionClient : IExtractionClient
+    {
+        public string ProviderName => "local";
+        public string ProviderVersion => "local-1.0.0";
+        public string SchemaVersion => "2.0";
+        public int CallCount { get; private set; }
+
+        public Task<ExtractionResult> ExtractAsync(WorkerExtractionRequest request,
+            CancellationToken cancellationToken)
+        {
+            CallCount++;
+            throw new InvalidOperationException("Upload must not call the provider.");
+        }
     }
 }

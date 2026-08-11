@@ -6,401 +6,179 @@ namespace UaeDocumentIntelligence.Application.Tests;
 
 public sealed class UploadDocumentHandlerTests
 {
-    private static readonly DateTimeOffset Now = new(2026, 8, 7, 12, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Now = new(2026, 8, 11, 12, 0, 0, TimeSpan.Zero);
+    private static readonly Guid OrganizationId = Guid.Parse("10000000-0000-0000-0000-000000000001");
+    private static readonly Guid ActorId = Guid.Parse("20000000-0000-0000-0000-000000000002");
 
     [Fact]
-    public async Task Pre_persistence_failure_deletes_newly_stored_file()
+    public async Task Queue_persistence_failure_deletes_the_stored_file_with_a_compensation_token()
     {
-        var repository = new FakeDocumentRepository { FailOnSaveCall = 1 };
+        using var requestCancellation = new CancellationTokenSource();
+        var queue = new FakeUploadQueueStore
+        {
+            BeforeFailure = requestCancellation.Cancel,
+            Exception = new InvalidOperationException("Synthetic database failure.")
+        };
         var storage = new FakeDocumentStorage();
-        var handler = CreateHandler(repository, storage, new FakeExtractionClient());
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            handler.HandleAsync(CreateCommand(), CancellationToken.None));
+            CreateHandler(queue, storage).HandleAsync(CreateCommand(), requestCancellation.Token));
 
-        Assert.Equal("Persistence failure on save 1.", exception.Message);
-        Assert.Equal(1, storage.SaveCallCount);
-        Assert.Equal(new[] { storage.StoredFile.StorageKey }, storage.DeletedStorageKeys);
+        Assert.Equal("Synthetic database failure.", exception.Message);
+        Assert.Single(storage.DeletedStorageKeys);
+        Assert.Equal(storage.StoredFile.StorageKey, storage.DeletedStorageKeys[0]);
+        Assert.Single(storage.DeleteTokens);
+        Assert.NotEqual(requestCancellation.Token, storage.DeleteTokens[0]);
+        Assert.False(storage.DeleteTokens[0].IsCancellationRequested);
     }
 
     [Fact]
-    public async Task Extraction_finalization_failure_does_not_delete_file_already_referenced_by_database()
+    public async Task Successful_upload_atomically_queues_document_run_and_job_without_calling_provider()
     {
-        var repository = new FakeDocumentRepository { FailOnSaveCall = 2 };
+        var queue = new FakeUploadQueueStore();
         var storage = new FakeDocumentStorage();
-        var handler = CreateHandler(repository, storage, new FakeExtractionClient());
+        var extraction = new FakeExtractionClient();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            handler.HandleAsync(CreateCommand(), CancellationToken.None));
+        var result = await CreateHandler(queue, storage, extraction)
+            .HandleAsync(CreateCommand(), CancellationToken.None);
 
-        Assert.Equal("Persistence failure on save 2.", exception.Message);
-        Assert.Equal(2, repository.SaveCallCount);
-        Assert.NotNull(repository.AddedDocument);
+        Assert.Equal("Processing", result.Status);
+        Assert.Null(result.DocumentType);
+        Assert.Empty(result.Fields);
         Assert.Empty(storage.DeletedStorageKeys);
+        Assert.Equal(0, extraction.ExtractCallCount);
+        Assert.Equal(1, queue.AddCallCount);
+        Assert.NotNull(queue.Document);
+        Assert.NotNull(queue.Job);
+        Assert.Equal(result.Id, queue.Document.Id);
+        Assert.Equal(OrganizationId, queue.Document.OrganizationId);
+        Assert.Equal(queue.Document.Id, queue.Job.DocumentId);
+        var run = Assert.Single(queue.Document.ExtractionRuns);
+        Assert.Equal(ExtractionRunStatus.Queued, run.Status);
+        Assert.Equal(run.Id, queue.Job.ExtractionRunId);
+        Assert.Equal(ExtractionJobStatus.Pending, queue.Job.Status);
+        Assert.Equal("local", run.ProviderName);
+        Assert.Equal("local-1.0.0", run.ProviderVersion);
+        Assert.Equal("2.0", run.ExtractionSchemaVersion);
+        Assert.Equal("request-123", run.CorrelationId);
     }
 
     [Fact]
-    public async Task Extraction_provider_exception_returns_failed_result_with_safe_summary()
+    public async Task Storage_receives_tenant_and_the_same_document_id_that_is_persisted()
     {
-        const string sensitiveMessage = @"Provider exposed C:\private\supplier\invoice.pdf and token secret-123";
-        var repository = new FakeDocumentRepository();
+        var queue = new FakeUploadQueueStore();
         var storage = new FakeDocumentStorage();
-        var extraction = new FakeExtractionClient
-        {
-            Exception = new InvalidOperationException(sensitiveMessage)
-        };
-        var handler = CreateHandler(repository, storage, extraction);
 
-        var result = await handler.HandleAsync(CreateCommand(), CancellationToken.None);
+        await CreateHandler(queue, storage).HandleAsync(CreateCommand(), CancellationToken.None);
 
-        Assert.Equal("Failed", result.Status);
-        Assert.Equal("The extraction provider could not process this document.", result.ErrorMessage);
-        Assert.DoesNotContain(sensitiveMessage, result.ErrorMessage, StringComparison.Ordinal);
-        Assert.DoesNotContain("C:\\private", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("secret-123", result.ErrorMessage, StringComparison.Ordinal);
-        Assert.Equal(2, repository.SaveCallCount);
-        Assert.Empty(storage.DeletedStorageKeys);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(ExtractionRunStatus.Failed, run.Status);
-        Assert.Equal("extraction_failed", run.FailureCode);
+        Assert.Equal(OrganizationId, storage.OrganizationId);
+        Assert.Equal(queue.Document!.Id, storage.DocumentId);
+        Assert.Equal(4, storage.DeclaredSize);
+        Assert.Equal("invoice.pdf", storage.OriginalFilename);
     }
 
     [Fact]
-    public async Task Successful_upload_returns_ready_output_with_extracted_field_and_evidence()
+    public async Task Oversized_correlation_id_is_rejected_before_storage_or_queue_persistence()
     {
-        var repository = new FakeDocumentRepository();
+        var queue = new FakeUploadQueueStore();
         var storage = new FakeDocumentStorage();
-        var extraction = new FakeExtractionClient
-        {
-            Result = CreateReadyResult("provider-returned-extractor-v7", pageNumber: 2)
-        };
-        var handler = CreateHandler(repository, storage, extraction);
 
-        var result = await handler.HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Ready", result.Status);
-        Assert.Equal("invoice", result.DocumentType);
-        Assert.Equal("en", result.Language);
-        Assert.Equal("provider-returned-extractor-v7", result.Extractor);
-        Assert.Null(result.ErrorMessage);
-        var field = Assert.Single(result.Fields);
-        Assert.Equal("total", field.Name);
-        Assert.Equal("105.00", field.Value);
-        Assert.Equal(0.98m, field.Confidence);
-        Assert.Equal(2, field.Page);
-        Assert.Equal(2, repository.SaveCallCount);
-        Assert.Empty(storage.DeletedStorageKeys);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(extraction.SchemaVersion, run.ExtractionSchemaVersion);
-        Assert.Equal(extraction.ProviderName, run.ProviderName);
-        Assert.Equal(extraction.ProviderVersion, run.ProviderVersion);
-        Assert.Equal("provider-returned-extractor-v7", run.ModelName);
-        Assert.Equal("v1", run.ModelVersion);
-    }
-
-    [Fact]
-    public async Task Matching_nondefault_client_schema_is_accepted_and_persisted()
-    {
-        var repository = new FakeDocumentRepository();
-        var extraction = new FakeExtractionClient
-        {
-            SchemaVersion = "2.1",
-            Result = CreateReadyResult() with { SchemaVersion = "2.1" }
-        };
-
-        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
-            .HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Ready", result.Status);
-        Assert.Equal("2.1", Assert.Single(repository.AddedDocument!.ExtractionRuns).ExtractionSchemaVersion);
-    }
-
-    [Theory]
-    [InlineData("2.1", "2.0")]
-    [InlineData("2.0", "1.0")]
-    public async Task Result_schema_must_match_client_schema_version(string clientSchema, string resultSchema)
-    {
-        var repository = new FakeDocumentRepository();
-        var extraction = new FakeExtractionClient
-        {
-            SchemaVersion = clientSchema,
-            Result = CreateReadyResult() with { SchemaVersion = resultSchema }
-        };
-
-        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
-            .HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Failed", result.Status);
-        Assert.Equal("extraction_failed", Assert.Single(repository.AddedDocument!.ExtractionRuns).FailureCode);
-    }
-
-    [Fact]
-    public async Task Result_adapter_version_must_match_requested_provider_version()
-    {
-        var repository = new FakeDocumentRepository();
-        var ready = CreateReadyResult();
-        var extraction = new FakeExtractionClient
-        {
-            Result = ready with
-            {
-                Provider = ready.Provider with { AdapterVersion = "unexpected-adapter-version" }
-            }
-        };
-
-        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
-            .HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Failed", result.Status);
-        Assert.Equal("extraction_failed", Assert.Single(repository.AddedDocument!.ExtractionRuns).FailureCode);
-    }
-
-    [Theory]
-    [InlineData("", "v1")]
-    [InlineData("mock-model", "")]
-    public async Task Result_requires_model_and_model_version(string model, string modelVersion)
-    {
-        var repository = new FakeDocumentRepository();
-        var ready = CreateReadyResult();
-        var extraction = new FakeExtractionClient
-        {
-            Result = ready with
-            {
-                Provider = ready.Provider with { Model = model, ModelVersion = modelVersion }
-            }
-        };
-
-        var result = await CreateHandler(repository, new FakeDocumentStorage(), extraction)
-            .HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Failed", result.Status);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal("extraction_failed", run.FailureCode);
-        Assert.Null(run.ModelName);
-        Assert.Null(run.ModelVersion);
-    }
-
-    [Fact]
-    public async Task Partial_result_is_reviewable_and_preserves_null_confidence_and_warning()
-    {
-        var repository = new FakeDocumentRepository();
-        var storage = new FakeDocumentStorage();
-        var ready = CreateReadyResult();
-        var field = ready.Fields.Single() with { Confidence = null };
-        var extraction = new FakeExtractionClient
-        {
-            Result = ready with
-            {
-                Outcome = ExtractionOutcome.Partial,
-                Fields = [field],
-                Warnings = [new ExtractionWarningResult("page_ocr_degraded",
-                    ExtractionWarningSeverity.Degraded, "One page produced incomplete OCR text.",
-                    1, null, null)]
-            }
-        };
-
-        var result = await CreateHandler(repository, storage, extraction)
-            .HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Ready", result.Status);
-        Assert.Null(Assert.Single(result.Fields).Confidence);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(ExtractionRunStatus.Partial, run.Status);
-        Assert.Single(run.Warnings);
-        Assert.Same(run, repository.AddedDocument.SelectedExtractionRun());
-    }
-
-    [Fact]
-    public async Task Invalid_normalized_result_fails_safely_without_persisting_partial_output()
-    {
-        var repository = new FakeDocumentRepository();
-        var storage = new FakeDocumentStorage();
-        var ready = CreateReadyResult();
-        var invalidEvidence = ready.Fields.Single().Evidence.Single() with { ByteEnd = 4 };
-        var invalidField = ready.Fields.Single() with { Evidence = [invalidEvidence] };
-        var extraction = new FakeExtractionClient { Result = ready with { Fields = [invalidField] } };
-
-        var result = await CreateHandler(repository, storage, extraction)
-            .HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Failed", result.Status);
-        Assert.Equal("The extraction provider could not process this document.", result.ErrorMessage);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(ExtractionRunStatus.Failed, run.Status);
-        Assert.Empty(run.Pages);
-        Assert.Empty(run.Fields);
-        Assert.Empty(run.Warnings);
-    }
-
-    [Fact]
-    public async Task Oversized_correlation_id_is_rejected_before_storage_or_persistence()
-    {
-        var repository = new FakeDocumentRepository();
-        var storage = new FakeDocumentStorage();
-        var handler = CreateHandler(repository, storage, new FakeExtractionClient());
-        var command = CreateCommand(correlationId: new string('x', 101));
-
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            handler.HandleAsync(command, CancellationToken.None));
+        await Assert.ThrowsAsync<ArgumentException>(() => CreateHandler(queue, storage)
+            .HandleAsync(CreateCommand(new string('x', 101)), CancellationToken.None));
 
         Assert.Equal(0, storage.SaveCallCount);
-        Assert.Null(repository.AddedDocument);
-        Assert.Equal(0, repository.SaveCallCount);
+        Assert.Equal(0, queue.AddCallCount);
     }
 
     [Fact]
-    public async Task Request_cancellation_terminalizes_persisted_run_and_uses_compensation_token()
+    public async Task Unsupported_type_is_rejected_before_storage_or_queue_persistence()
     {
-        using var cancellation = new CancellationTokenSource();
-        var repository = new FakeDocumentRepository();
+        var queue = new FakeUploadQueueStore();
         var storage = new FakeDocumentStorage();
-        var extraction = new FakeExtractionClient
-        {
-            BeforeCompletion = cancellation.Cancel,
-            Exception = new OperationCanceledException(cancellation.Token)
-        };
-        var handler = CreateHandler(repository, storage, extraction);
+        var command = CreateCommand() with { ContentType = "application/octet-stream" };
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            handler.HandleAsync(CreateCommand(), cancellation.Token));
+        await Assert.ThrowsAsync<UnsupportedDocumentTypeException>(() => CreateHandler(queue, storage)
+            .HandleAsync(command, CancellationToken.None));
 
-        Assert.Equal(2, repository.SaveCallCount);
-        Assert.Equal(cancellation.Token, repository.SaveTokens[0]);
-        Assert.NotEqual(cancellation.Token, repository.SaveTokens[1]);
-        Assert.False(repository.SaveTokenWasCancelledAtCall[0]);
-        Assert.False(repository.SaveTokenWasCancelledAtCall[1]);
-        Assert.True(repository.SaveTokens[0].IsCancellationRequested);
-        Assert.False(repository.SaveTokens[1].IsCancellationRequested);
-        Assert.Empty(storage.DeletedStorageKeys);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(ExtractionRunStatus.Cancelled, run.Status);
-        Assert.Equal("request_cancelled", run.FailureCode);
-        Assert.NotNull(run.CompletedAtUtc);
+        Assert.Equal(0, storage.SaveCallCount);
+        Assert.Equal(0, queue.AddCallCount);
     }
 
-    [Fact]
-    public async Task Provider_timeout_becomes_terminal_failed_document_result()
-    {
-        var repository = new FakeDocumentRepository();
-        var storage = new FakeDocumentStorage();
-        var extraction = new FakeExtractionClient
-        {
-            Exception = new OperationCanceledException("Provider timeout without request cancellation.")
-        };
-        var handler = CreateHandler(repository, storage, extraction);
-
-        var result = await handler.HandleAsync(CreateCommand(), CancellationToken.None);
-
-        Assert.Equal("Failed", result.Status);
-        Assert.Equal("The extraction provider timed out.", result.ErrorMessage);
-        var run = Assert.Single(repository.AddedDocument!.ExtractionRuns);
-        Assert.Equal(ExtractionRunStatus.Failed, run.Status);
-        Assert.Equal("provider_timeout", run.FailureCode);
-        Assert.NotNull(run.CompletedAtUtc);
-        Assert.Equal(2, repository.SaveCallCount);
-    }
-
-    private static UploadDocumentHandler CreateHandler(FakeDocumentRepository repository,
-        FakeDocumentStorage storage, FakeExtractionClient extraction) =>
-        new(repository, storage, extraction,
-            new FakeExecutionContext(Guid.NewGuid(), Guid.NewGuid()), new FakeClock(Now));
+    private static UploadDocumentHandler CreateHandler(FakeUploadQueueStore queue,
+        FakeDocumentStorage storage, FakeExtractionClient? extraction = null) =>
+        new(queue, storage, extraction ?? new FakeExtractionClient(),
+            new FakeExecutionContext(OrganizationId, ActorId), new FakeClock(Now));
 
     private static UploadDocumentCommand CreateCommand(string correlationId = "request-123") =>
         new("invoice.pdf", "application/pdf", 4, new MemoryStream([1, 2, 3, 4]), correlationId);
 
-    private static ExtractionResult CreateReadyResult(string model = "fake-extractor", int pageNumber = 1)
+    private sealed class FakeUploadQueueStore : IUploadQueueStore
     {
-        var pages = Enumerable.Range(1, pageNumber)
-            .Select(number => new ExtractionPageResult(number, number == pageNumber ? "105.00" : string.Empty, 0))
-            .ToList();
-        return new ExtractionResult("2.0", ExtractionOutcome.Ready, "invoice", "en",
-            new ExtractionProviderResult("fake-provider", "1", model, "v1"),
-            new ExtractionMetricsResult(1, pages.Count, null, null, null), pages,
-            [new ExtractionField("total", 0, FieldValueType.Decimal, "105.00", "105.00", 0.98m,
-                [new ExtractionEvidenceResult(pageNumber, "105.00", 0, 6, null, null)])], []);
-    }
+        public Exception? Exception { get; init; }
+        public Action? BeforeFailure { get; init; }
+        public int AddCallCount { get; private set; }
+        public Document? Document { get; private set; }
+        public ExtractionJob? Job { get; private set; }
 
-    private sealed class FakeDocumentRepository : IDocumentRepository
-    {
-        public int? FailOnSaveCall { get; init; }
-        public int SaveCallCount { get; private set; }
-        public List<CancellationToken> SaveTokens { get; } = [];
-        public List<bool> SaveTokenWasCancelledAtCall { get; } = [];
-        public Document? AddedDocument { get; private set; }
-
-        public Task AddAsync(Document document, CancellationToken cancellationToken)
+        public Task<ExtractionJob> AddAsync(Document document, Guid extractionRunId, Guid jobId,
+            CancellationToken cancellationToken)
         {
-            AddedDocument = document;
-            return Task.CompletedTask;
+            AddCallCount++;
+            Document = document;
+            Job = new ExtractionJob(jobId, document.OrganizationId, document.Id, extractionRunId, Now);
+            if (Exception is null) return Task.FromResult(Job);
+            BeforeFailure?.Invoke();
+            return Task.FromException<ExtractionJob>(Exception);
         }
-
-        public Task<Document?> GetAsync(Guid organizationId, Guid documentId, CancellationToken cancellationToken) =>
-            Task.FromResult(AddedDocument?.Id == documentId ? AddedDocument : null);
-
-        public Task<Document?> GetForReviewAsync(Guid organizationId, Guid documentId,
-            CancellationToken cancellationToken) => GetAsync(organizationId, documentId, cancellationToken);
-
-        public Task<IReadOnlyList<Document>> ListAsync(Guid organizationId, CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyList<Document>>(AddedDocument is null ? [] : [AddedDocument]);
-
-        public Task<int> NextRunNumberAsync(Guid organizationId, Guid documentId, CancellationToken cancellationToken) =>
-            Task.FromResult((AddedDocument?.ExtractionRuns.Count ?? 0) + 1);
-
-        public Task<DocumentMetrics> GetMetricsAsync(Guid organizationId, CancellationToken cancellationToken) =>
-            Task.FromResult(new DocumentMetrics(AddedDocument is null ? 0 : 1, 0, 0, null));
-
-        public Task SaveChangesAsync(CancellationToken cancellationToken)
-        {
-            SaveCallCount++;
-            SaveTokens.Add(cancellationToken);
-            SaveTokenWasCancelledAtCall.Add(cancellationToken.IsCancellationRequested);
-            if (SaveCallCount == FailOnSaveCall)
-                throw new InvalidOperationException($"Persistence failure on save {SaveCallCount}.");
-            return Task.CompletedTask;
-        }
-
-        public Task<ReviewSaveOutcome> SaveReviewChangesAsync(CancellationToken cancellationToken) =>
-            Task.FromResult(ReviewSaveOutcome.Saved);
     }
 
     private sealed class FakeDocumentStorage : IDocumentStorage
     {
         public StoredFile StoredFile { get; } = new(
-            "stored/opaque-invoice.pdf",
-            @"C:\safe-test-storage\opaque-invoice.pdf",
+            "organizations/test/documents/test/source.pdf",
+            @"C:\safe-test-storage\source.pdf",
             4,
             "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
 
         public int SaveCallCount { get; private set; }
+        public string? OriginalFilename { get; private set; }
+        public long? DeclaredSize { get; private set; }
+        public Guid? OrganizationId { get; private set; }
+        public Guid? DocumentId { get; private set; }
         public List<string> DeletedStorageKeys { get; } = [];
+        public List<CancellationToken> DeleteTokens { get; } = [];
 
         public Task<StoredFile> SaveAsync(Stream content, string originalFilename, long declaredSize,
-            CancellationToken cancellationToken)
+            Guid organizationId, Guid documentId, CancellationToken cancellationToken)
         {
             SaveCallCount++;
+            OriginalFilename = originalFilename;
+            DeclaredSize = declaredSize;
+            OrganizationId = organizationId;
+            DocumentId = documentId;
             return Task.FromResult(StoredFile);
         }
 
         public Task DeleteAsync(string storageKey, CancellationToken cancellationToken)
         {
             DeletedStorageKeys.Add(storageKey);
+            DeleteTokens.Add(cancellationToken);
             return Task.CompletedTask;
         }
     }
 
     private sealed class FakeExtractionClient : IExtractionClient
     {
-        public string SchemaVersion { get; init; } = "2.0";
-        public string ProviderName { get; init; } = "fake-provider";
-        public string ProviderVersion { get; init; } = "1";
-        public Action? BeforeCompletion { get; init; }
-        public Exception? Exception { get; init; }
-        public ExtractionResult Result { get; init; } = CreateReadyResult();
+        public string ProviderName => "local";
+        public string ProviderVersion => "local-1.0.0";
+        public string SchemaVersion => "2.0";
+        public int ExtractCallCount { get; private set; }
 
-        public Task<ExtractionResult> ExtractAsync(string absolutePath, string contentType,
+        public Task<ExtractionResult> ExtractAsync(WorkerExtractionRequest request,
             CancellationToken cancellationToken)
         {
-            BeforeCompletion?.Invoke();
-            return Exception is null ? Task.FromResult(Result) : Task.FromException<ExtractionResult>(Exception);
+            ExtractCallCount++;
+            throw new InvalidOperationException("Upload must not invoke the extraction provider.");
         }
     }
 

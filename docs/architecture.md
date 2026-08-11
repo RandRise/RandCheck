@@ -11,8 +11,11 @@ Browser / Next.js ---> ASP.NET API ---> Application ---> Domain
                      Infrastructure --------+
                        |          |
                        v          v
-                 PostgreSQL   Python/FastAPI
-                  :55432       mock extractor
+      PostgreSQL + extraction_jobs     .NET BackgroundService
+                  :55432                       |
+                                               v
+                                  private Python/FastAPI
+                                      mock / local
 ```
 
 The .NET solution now has four production projects:
@@ -21,16 +24,16 @@ The .NET solution now has four production projects:
 | --- | --- |
 | Domain | Document, extraction, evidence, and review entities plus invariants |
 | Application | Feature use cases, DTO projection, queries, and dependency interfaces |
-| Infrastructure | EF Core/Npgsql, repositories, storage, development identity/seed, and the Python client |
-| API | HTTP endpoints, composition, request IDs, CORS, and development Swagger |
+| Infrastructure | EF Core/Npgsql, repositories, scoped storage/cleanup, durable queue, background worker, observability hooks, and authenticated Python client |
+| API | HTTP endpoints including asynchronous upload and processing primitives, composition, request IDs, CORS, and development Swagger |
 
-The frontend consumes explicit ASP.NET DTOs rather than EF entities. ASP.NET validates and stores uploads, persists the document/extraction aggregate through EF Core, invokes the private AI service, and returns page-aware fields. PostgreSQL is canonical and is exposed locally on host port `55432`; the initial migration and database contract are exercised by PostgreSQL persistence tests.
+The frontend consumes explicit ASP.NET DTOs rather than EF entities. ASP.NET validates and stores uploads, transactionally queues document/run/job state, and returns `202` without invoking the provider in the request lifecycle. A .NET `BackgroundService` claims PostgreSQL work and invokes the authenticated private AI route outside the claim transaction. PostgreSQL is canonical and is exposed locally on host port `55432`.
 
-The current local extractor is deterministic and works with the bundled synthetic text fixture. It is a service-boundary demonstration, not production OCR or an accuracy claim.
+The P2-T04 local extractor handles synthetic native and scanned English documents behind the private boundary. P2-T06 connects it to the durable workflow through migration `20260811131151_AddDurableExtractionQueue`; PostgreSQL, image builds, and synthetic native/scanned Compose flows are verified.
 
 Architecture tests enforce that Domain has no outer-layer or persistence dependencies, Application has no Infrastructure/API/EF dependencies, and Infrastructure does not reference API.
 
-The upload workflow persists the document and running extraction attempt atomically before calling the provider. Request cancellation writes a terminal cancelled run using an independent bounded compensation token; provider timeout becomes a safe failed document result. Storage removes generated partial files after cancellation/failure, external request IDs are bounded before persistence, provider-returned extractor identity is retained, and aggregate collections expose read-only wrappers. These behaviors are covered by the final application, infrastructure, domain, and API contract regressions.
+The upload workflow stores the file, atomically persists document/queued run/job, and compensates storage if the transaction fails. Orphan cleanup is scoped to generated keys and skips reparse points. PostgreSQL-clock claims use `SKIP LOCKED`, lease fencing, heartbeats, bounded retries, cancellation, and reprocess/latest-job primitives. The authenticated Python request verifies storage-key containment, bytes, SHA-256, schema, deadline, provider identity, errors, and normalized results. Activity/Meter hooks expose bounded operational signals. Exact verification and limitations are recorded in P2-T06 evidence.
 
 ## Implemented human-review workflow
 
@@ -42,7 +45,7 @@ The Next.js workspace consumes this contract to confirm, correct, add, clear, co
 
 - **Two deliberate service boundaries:** ASP.NET demonstrates enterprise workflow/security strengths; Python isolates the changing AI ecosystem.
 - **Provider boundary:** `ExtractionProvider` keeps paid Azure OCR/LLM services replaceable and testable.
-- **Synchronous first slice:** simplest observable end-to-end proof. Background RabbitMQ/Celery work is deferred until processing warrants it.
+- **Durable PostgreSQL queue first:** a .NET worker avoids database/broker dual writes and unlocks local processing; RabbitMQ remains deferred until measured scale justifies it.
 - **Evidence-aware fields:** every field carries confidence and source page even before full bounding-box citations.
 - **Generated storage keys:** original filenames are display metadata only; paths cannot escape the upload directory.
 - **No implicit AI claims:** the mock provider parses a documented synthetic format and identifies itself in stored results.
@@ -80,7 +83,7 @@ Next.js on a managed web host; containerized ASP.NET and private FastAPI on Azur
 
 ## Security evolution
 
-Current controls include size/type validation, generated storage keys, safe provider errors, structural organization relationships, and organization-scoped repository queries. Local requests use a fixed development organization/system actor; this is not authentication or a production tenant boundary. Before real documents: malware scanning, private object storage, encryption, authenticated tenant-scoped access, RBAC, audit events, secret management, retention policies, signed downloads, rate limiting, and a DPIA/threat model appropriate to the organization.
+Current controls include size/type validation, generated/scoped storage keys, symlink/traversal rejection, size/SHA verification, a shared-secret private worker route, safe provider errors, structural organization relationships, and organization-scoped repository queries. The worker token is local service authentication, not user authentication or a production tenant boundary. Local requests still use a fixed development organization/system actor. Before real documents: malware scanning, private object storage, encryption, authenticated tenant-scoped access, RBAC, audit events, production secret management, retention policies, signed downloads, rate limiting, and a DPIA/threat model appropriate to the organization.
 
 ## Architecture principles
 
@@ -92,4 +95,4 @@ Current controls include size/type validation, generated storage keys, safe prov
 - Tenant authorization is enforced at the data-access boundary.
 - Metrics describe measured behavior only.
 
-See the [database design and ERD](./data/database-design.md), [P1-T04 database evidence](./evidence/phase-1/P1-T04-database-verification.md), and [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md). Phase 1 is complete; later enterprise, AI, and deployment capabilities remain roadmap work.
+See the [database design and ERD](./data/database-design.md), [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md), and [P2-T06 queue/worker verification](./evidence/phase-2/P2-T06-queue-worker-verification.md). Phase 1 and P2-T06 are complete; later Phase 2, enterprise, and deployment capabilities remain in progress or roadmap work.

@@ -41,7 +41,8 @@ export default defineConfig({
           { text: "Phase 2 quality plan", link: "/testing/phase-2-quality-plan" },
           { text: "P2-T02 verification", link: "/evidence/phase-2/P2-T02-contract-persistence-verification" },
           { text: "P2-T03 verification", link: "/evidence/phase-2/P2-T03-synthetic-fixture-verification" },
-          { text: "P2-T04 verification", link: "/evidence/phase-2/P2-T04-local-provider-verification" }
+          { text: "P2-T04 verification", link: "/evidence/phase-2/P2-T04-local-provider-verification" },
+          { text: "P2-T06 verification", link: "/evidence/phase-2/P2-T06-queue-worker-verification" }
         ]
       },
       {

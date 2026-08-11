@@ -2,11 +2,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UaeDocumentIntelligence.Application.Abstractions;
 using UaeDocumentIntelligence.Infrastructure;
+using UaeDocumentIntelligence.Infrastructure.Services;
 
 namespace UaeDocumentIntelligence.Infrastructure.Tests;
 
 public sealed class LocalDocumentStorageTests
 {
+    private static readonly Guid OrganizationId = Guid.Parse("10000000-0000-0000-0000-000000000001");
+    private static readonly Guid DocumentId = Guid.Parse("20000000-0000-0000-0000-000000000002");
+
     [Fact]
     public async Task Cancelled_stream_copy_deletes_exact_partial_file_and_preserves_existing_files()
     {
@@ -14,7 +18,8 @@ public sealed class LocalDocumentStorageTests
         await VerifyPartialFileCleanupAsync(
             () => new InterruptingStream(cancellation, failure: null),
             stream => Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                stream.Storage.SaveAsync(stream.Content, "invoice.pdf", 8, cancellation.Token)));
+                stream.Storage.SaveAsync(stream.Content, "invoice.pdf", 8,
+                    OrganizationId, DocumentId, cancellation.Token)));
     }
 
     [Fact]
@@ -23,7 +28,71 @@ public sealed class LocalDocumentStorageTests
         await VerifyPartialFileCleanupAsync(
             () => new InterruptingStream(cancellation: null, new IOException("Synthetic read failure.")),
             stream => Assert.ThrowsAsync<IOException>(() =>
-                stream.Storage.SaveAsync(stream.Content, "invoice.pdf", 8, CancellationToken.None)));
+                stream.Storage.SaveAsync(stream.Content, "invoice.pdf", 8,
+                    OrganizationId, DocumentId, CancellationToken.None)));
+    }
+
+    [Fact]
+    public async Task Successful_save_returns_a_tenant_scoped_relative_key_and_verified_hash_and_size()
+    {
+        var directory = CreateTestDirectory();
+        try
+        {
+            using var provider = CreateServiceProvider(directory);
+            using var scope = provider.CreateScope();
+            var storage = scope.ServiceProvider.GetRequiredService<IDocumentStorage>();
+            await using var content = new MemoryStream([1, 2, 3, 4]);
+
+            var stored = await storage.SaveAsync(content, "invoice.PDF", 4,
+                OrganizationId, DocumentId, CancellationToken.None);
+
+            Assert.Equal(
+                $"organizations/{OrganizationId:N}/documents/{DocumentId:N}/source.pdf",
+                stored.StorageKey);
+            Assert.False(Path.IsPathRooted(stored.StorageKey));
+            Assert.Equal(4, stored.SizeBytes);
+            Assert.Equal("9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a",
+                stored.Sha256);
+            Assert.True(File.Exists(stored.AbsolutePath));
+            Assert.StartsWith(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)) +
+                Path.DirectorySeparatorChar, stored.AbsolutePath, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            DeleteTestDirectory(directory);
+        }
+    }
+
+    [Theory]
+    [InlineData("../outside.pdf")]
+    [InlineData("organizations/../../outside.pdf")]
+    [InlineData("")]
+    public void Resolve_under_root_rejects_empty_and_traversal_keys(string key)
+    {
+        var root = CreateTestDirectory();
+        try
+        {
+            Assert.Throws<InvalidDataException>(() => LocalDocumentStorage.ResolveUnderRoot(root, key));
+        }
+        finally
+        {
+            DeleteTestDirectory(root);
+        }
+    }
+
+    [Fact]
+    public void Resolve_under_root_rejects_absolute_keys()
+    {
+        var root = CreateTestDirectory();
+        try
+        {
+            var absolute = Path.Combine(Path.GetPathRoot(root)!, "outside.pdf");
+            Assert.Throws<InvalidDataException>(() => LocalDocumentStorage.ResolveUnderRoot(root, absolute));
+        }
+        finally
+        {
+            DeleteTestDirectory(root);
+        }
     }
 
     private static async Task VerifyPartialFileCleanupAsync(Func<Stream> streamFactory,

@@ -3,7 +3,7 @@
 **Status:** In progress
 **Outcome:** English native-text and scanned invoices can be processed asynchronously into one page-aware, provider-neutral result without requiring paid credentials locally.
 
-P2-T01 through P2-T04, including the hardened local provider, were completed on 2026-08-11. P2-T05 and P2-T06 are ready but not started. Phase 2 remains in progress; no Azure, workflow orchestration, accuracy, or Phase 2 completion claim is made. Phase 1 remains complete.
+P2-T01 through P2-T04 and P2-T06, including the durable queue/local worker, were completed on 2026-08-11. P2-T07 is ready but not started; optional P2-T05 Azure work remains ready but unstarted. Phase 2 remains in progress; no Azure, extraction accuracy, or Phase 2 completion claim is made. Phase 1 remains complete.
 
 ## Planning set
 
@@ -15,6 +15,7 @@ P2-T01 through P2-T04, including the hardened local provider, were completed on 
 - [P2-T02 contract and persistence evidence](../evidence/phase-2/P2-T02-contract-persistence-verification.md)
 - [P2-T03 synthetic fixture evidence](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md)
 - [P2-T04 local-provider evidence](../evidence/phase-2/P2-T04-local-provider-verification.md)
+- [P2-T06 queue/worker evidence](../evidence/phase-2/P2-T06-queue-worker-verification.md)
 
 ## Problem and user outcome
 

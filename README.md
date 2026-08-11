@@ -20,15 +20,19 @@ The planning site covers the [product specification](docs/product-spec.md), [del
 - ASP.NET modular monolith with Domain, Application, Infrastructure, and API boundaries
 - EF Core Code First model with verified Npgsql migrations
 - Tenant-ready document, extraction-run, evidence, and review-history schema
-- Upload and deterministic offline invoice extraction through a private Python provider interface
+- Verified mock and local native/OCR providers behind the private Python provider interface
 - Explicit API DTOs preserving the document-review UI contract
 - Append-only human review with correction, confirmation, addition, clearing, completion, reload, and ETag concurrency
 - Next.js review UI that keeps machine and effective reviewed values visibly separate
-- 137 passing .NET tests: 72 domain, 23 application, 17 PostgreSQL persistence, 4 architecture, 15 API, and 6 infrastructure
-- 62 Python tests exercised across the host and pinned OCR runtime, 5 passing frontend tests, frontend lint/build, and VitePress production build
+- 184 passing .NET tests: 81 domain, 18 application, 36 infrastructure, 29 PostgreSQL persistence, 4 architecture, and 16 API
+- Python discovery: 71 total, with 66 passed and 5 expected host runtime-gated skips; those 5/5 pass in the pinned Docker runtime
 - Deterministic synthetic Phase 2 fixtures with versioned labels, source/license records, and byte-for-byte container reproducibility; these are contract fixtures, not accuracy evidence ([P2-T03 verification](docs/evidence/phase-2/P2-T03-synthetic-fixture-verification.md))
-- Zero-warning .NET Release build, no pending EF model changes, and valid Compose configuration
+- Zero-warning/error .NET Release build, no pending EF model changes, valid Compose configuration, and passing Next.js tests/lint/build
 - Reproduced review result: machine total `1050.00` unchanged, effective total `1155.00`, added `payment_terms = Net 30`, completion and reload persisted
+
+### P2-T06 durable workflow
+
+Migration `20260811131151_AddDurableExtractionQueue`, asynchronous `202` upload, PostgreSQL `extraction_jobs`, the .NET worker, authenticated private Python route, scoped storage/cleanup, fencing/cancellation/reprocess primitives, and Activity/Meter hooks are complete. Real local Compose demonstrations reached `Ready` for one synthetic native PDF and one synthetic scanned PDF. See the [P2-T06 verification](docs/evidence/phase-2/P2-T06-queue-worker-verification.md).
 
 ## Quick start
 
@@ -85,11 +89,13 @@ npm run dev
 
 Open `http://localhost:3000`. ASP.NET API docs are shown at its `/swagger` URL in development; private AI docs are at `http://localhost:8001/docs`.
 
-After the database is migrated, all application services can also be built with Compose:
+After the database is migrated, the application services are configured for Compose:
 
 ```powershell
 docker compose up --build
 ```
+
+`docker compose config --quiet`, the current AI/backend image builds, and synthetic native/scanned end-to-end flows are verified. These local synthetic demonstrations are not production or accuracy claims.
 
 ## Verification
 
@@ -104,7 +110,7 @@ cd ../../docs
 npm run build
 ```
 
-The completed Phase 1 result is recorded in the [P1-T08 acceptance verification](docs/evidence/phase-1/P1-T08-acceptance-verification.md), with the earlier database checkpoint preserved in [P1-T04 evidence](docs/evidence/phase-1/P1-T04-database-verification.md).
+The completed Phase 1 result is recorded in the [P1-T08 acceptance verification](docs/evidence/phase-1/P1-T08-acceptance-verification.md), with the earlier database checkpoint preserved in [P1-T04 evidence](docs/evidence/phase-1/P1-T04-database-verification.md). The durable local workflow is recorded in [P2-T06 verification](docs/evidence/phase-2/P2-T06-queue-worker-verification.md).
 
 See the [product specification](docs/product-spec.md), [architecture](docs/architecture.md), and [roadmap](docs/roadmap.md).
 

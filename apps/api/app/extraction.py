@@ -75,7 +75,9 @@ class ExtractionResult:
 
 
 class ExtractionProvider(Protocol):
-    def extract(self, path: Path, content_type: str) -> ExtractionResult: ...
+    def extract(
+        self, path: Path, content_type: str, deadline_monotonic: float | None = None
+    ) -> ExtractionResult: ...
 
 
 class ExtractionError(Exception):
@@ -104,9 +106,23 @@ class MockInvoiceExtractor:
         "trn": ("TRN", "الرقم الضريبي"),
     }
 
-    def extract(self, path: Path, content_type: str) -> ExtractionResult:
+    def extract(
+        self, path: Path, content_type: str, deadline_monotonic: float | None = None
+    ) -> ExtractionResult:
         started = time.perf_counter()
+        if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+            raise ExtractionError(
+                "provider_timeout",
+                "The extraction attempt deadline has expired.",
+                retryable=True,
+            )
         raw_text = path.read_text(encoding="utf-8", errors="ignore") if content_type == "text/plain" else ""
+        if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+            raise ExtractionError(
+                "provider_timeout",
+                "The extraction provider did not finish within this attempt.",
+                retryable=True,
+            )
         text = unicodedata.normalize("NFC", raw_text.replace("\r\n", "\n").replace("\r", "\n"))
         fields: list[FieldResult] = []
         for name, labels in self.labels.items():

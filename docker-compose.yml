@@ -20,10 +20,11 @@ services:
       OCR_TIMEOUT_SECONDS: "30"
       OCR_RENDER_DPI: "300"
       OCR_TESSDATA_DIR: /usr/share/tesseract-ocr/5/tessdata
+      STORAGE_SHARED_ROOT: /data/uploads
+      WORKER_SHARED_SECRET: local_worker_only_change_me
       OMP_THREAD_LIMIT: "1"
       TZ: UTC
       LANG: C.UTF-8
-    ports: ["8001:8001"]
     volumes: ["uploads:/data/uploads:ro"]
   backend:
     build: {context: ., dockerfile: apps/backend/src/UaeDocumentIntelligence.Api/Dockerfile}
@@ -31,6 +32,13 @@ services:
       ConnectionStrings__Database: Host=db;Port=5432;Database=document_intelligence;Username=document_intelligence;Password=local_development_only
       Storage__UploadDirectory: /data/uploads
       AiService__BaseUrl: http://ai:8001
+      AiService__ProviderAlias: local
+      AiService__AdapterVersion: local-1.0.0
+      AiService__SchemaVersion: "2.0"
+      AiService__WorkerToken: local_worker_only_change_me
+      ExtractionWorker__Enabled: "true"
+      StorageMaintenance__Enabled: "true"
+      StorageMaintenance__OrphanGraceMinutes: "60"
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_ENVIRONMENT: Development
       DevelopmentData__Seed: "true"
