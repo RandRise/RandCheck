@@ -1,9 +1,9 @@
 # Phase 2 task ledger
 
-**Phase status:** In progress  
-**Implementation status:** P2-T06 complete; P2-T07 pending and ready
+**Phase status:** Complete
+**Implementation status:** P2-T08 complete; optional P2-T05 remains pending
 
-P2-T01 through P2-T04 and P2-T06 were completed on 2026-08-11. P2-T07 is the next ready task but has not started. P2-T05 remains ready but optional and has not started.
+P2-T07 and P2-T08 completed the approved local Phase 2 outcome on 2026-08-12. P2-T05 remains optional and pending.
 
 | ID | Task | Status | Depends on | Planned evidence |
 |---|---|---|---|---|
@@ -13,8 +13,8 @@ P2-T01 through P2-T04 and P2-T06 were completed on 2026-08-11. P2-T07 is the nex
 | P2-T04 | Implement local native-PDF and scanned-OCR providers | Complete | P2-T02 and P2-T03 complete | [P2-T04 local-provider verification](../evidence/phase-2/P2-T04-local-provider-verification.md) |
 | P2-T05 | Define the optional Azure Document Intelligence adapter and credential-free contract tests | Pending (ready) | P2-T02 complete | Stubbed contract tests; no credentials required |
 | P2-T06 | Implement the PostgreSQL durable queue and .NET worker | Complete | P2-T01 and P2-T02 complete | [P2-T06 verification](../evidence/phase-2/P2-T06-queue-worker-verification.md) |
-| P2-T07 | Add public API and Next.js processing-state behavior | Pending (ready) | P2-T06 complete | API contract and rendered UI tests |
-| P2-T08 | Run Phase 2 acceptance verification and publish evidence | Blocked | P2-T03–P2-T07 | Test totals, build results, and honest local demonstrations |
+| P2-T07 | Add public API and Next.js processing-state behavior | Complete | P2-T06 complete | [P2-T08 acceptance evidence](../evidence/phase-2/P2-T08-acceptance-verification.md) |
+| P2-T08 | Run Phase 2 acceptance verification and publish evidence | Complete | P2-T03–P2-T07 | [P2-T08 acceptance evidence](../evidence/phase-2/P2-T08-acceptance-verification.md) |
 
 ## P2-T02 completion gate
 

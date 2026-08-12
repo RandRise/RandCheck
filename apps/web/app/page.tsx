@@ -5,9 +5,13 @@ import { readReviewResponse, requireSuccess, sendReviewMutation } from "./review
 
 type Field = { name: string; value: string; confidence: number; page: number };
 type Document = {
-  id: string; originalFilename: string; sizeBytes: number; status: "Processing" | "Ready" | "Failed";
+  id: string; originalFilename: string; sizeBytes: number; status: "Processing" | "Ready" | "Failed" | "Cancelled";
   documentType?: string; language?: string; extractor?: string; processingMs?: number;
   createdAt: string; fields: Field[]; errorMessage?: string;
+};
+type ProcessingStatus = {
+  jobId: string; extractionRunId: string; status: "Queued" | "Processing" | "Ready" | "Partial" | "Failed" | "Cancelled";
+  attemptCount: number; retryAt?: string; errorCode?: string; errorMessage?: string;
 };
 type MachineValue = { id: string; value: string; valueType: string; confidence: number; evidence: { page: number; quotedText?: string }[] };
 type ReviewDecision = { id: string; action: string; value?: string; valueType?: string; reason?: string; sequenceNumber: number };
@@ -38,6 +42,7 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [reviewBusy, setReviewBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [processing, setProcessing] = useState<ProcessingStatus | null>(null);
 
   const applyReview = useCallback((workspace: ReviewWorkspace, nextEtag: string | null) => {
     setReview(workspace);
@@ -48,7 +53,7 @@ export default function Home() {
 
   const loadReview = useCallback(async (document: Document) => {
     setReview(null); setEtag(null);
-    if (document.status !== "Ready") return;
+    if (document.status !== "Ready" && document.fields.length === 0) return;
     const response = await fetch(`${API}/api/documents/${document.id}/review`);
     try { await requireSuccess(response); }
     catch (error) { setMessage(error instanceof Error ? error.message : "Could not load review"); return; }
@@ -57,9 +62,18 @@ export default function Home() {
   }, [applyReview]);
 
   const chooseDocument = useCallback(async (document: Document) => {
-    setSelected(document); setMessage("");
+    setSelected(document); setProcessing(null); setMessage("");
     await loadReview(document);
   }, [loadReview]);
+
+  const loadProcessing = useCallback(async (documentId: string) => {
+    const response = await fetch(`${API}/api/documents/${documentId}/processing`);
+    if (response.status === 404) return null;
+    await requireSuccess(response);
+    const state: ProcessingStatus = await response.json();
+    setProcessing(state);
+    return state;
+  }, []);
 
   const loadDocuments = useCallback(async (preferredId?: string) => {
     const response = await fetch(`${API}/api/documents`);
@@ -89,19 +103,58 @@ export default function Home() {
     return () => { cancelled = true; };
   }, [applyReview]);
 
+  useEffect(() => {
+    if (!selected || (selected.status !== "Processing" && !processing) ||
+        processing && ["Ready", "Partial", "Failed", "Cancelled"].includes(processing.status)) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const state = await loadProcessing(selected.id);
+        if (!cancelled && state && ["Ready", "Partial", "Failed", "Cancelled"].includes(state.status))
+          await loadDocuments(selected.id);
+      } catch { if (!cancelled) setMessage("Processing status is temporarily unavailable. Retrying…"); }
+    };
+    void poll();
+    const timer = window.setInterval(poll, 1500);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [selected, processing, loadDocuments, loadProcessing]);
+
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formElement = event.currentTarget;
     const input = formElement.elements.namedItem("file") as HTMLInputElement;
     if (!input.files?.[0]) return;
-    setBusy(true); setMessage("Processing securely on your local services…");
+    setBusy(true); setMessage("Uploading securely to the processing queue…");
     const body = new FormData(); body.append("file", input.files[0]);
     try {
       const response = await fetch(`${API}/api/documents`, { method: "POST", body });
       await requireSuccess(response);
       const result: Document = await response.json();
-      await loadDocuments(result.id); setMessage("Document ready for review."); formElement.reset();
+      await loadDocuments(result.id); setMessage("Document queued. You can leave it processing in the background."); formElement.reset();
     } catch (error) { setMessage(error instanceof Error ? error.message : "Upload failed"); }
+    finally { setBusy(false); }
+  }
+
+  async function cancelProcessing() {
+    if (!processing || !selected) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`${API}/api/extraction-jobs/${processing.jobId}/cancel`, { method: "POST" });
+      await requireSuccess(response); await loadProcessing(selected.id); await loadDocuments(selected.id);
+      setMessage("Processing cancelled.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not cancel processing"); }
+    finally { setBusy(false); }
+  }
+
+  async function reprocess() {
+    if (!selected) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`${API}/api/documents/${selected.id}/reprocess`, { method: "POST" });
+      await requireSuccess(response); const state: ProcessingStatus = await response.json();
+      setProcessing(state); await loadDocuments(selected.id);
+      setMessage("Reprocessing queued. Existing reviewable output stays visible until replacement succeeds.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not queue reprocessing"); }
     finally { setBusy(false); }
   }
 
@@ -190,7 +243,7 @@ export default function Home() {
     </section>
     <div className="workspace">
       <aside><span className="step">02 / QUEUE</span><h2>Documents <b>{documents.length}</b></h2>
-        <div className="document-list">{documents.length === 0 && <p className="empty">No documents yet. Upload the synthetic sample in <code>samples/</code>.</p>}
+        <div className="document-list">{documents.length === 0 && <p className="empty">No documents yet. Upload a Phase 2 PDF from <code>samples/phase-2/</code>.</p>}
           {documents.map(doc => <button key={doc.id} className={selected?.id === doc.id ? "document active" : "document"} onClick={() => chooseDocument(doc)}>
             <span className="file-icon">{doc.documentType?.slice(0, 3).toUpperCase() || "DOC"}</span><span><strong>{doc.originalFilename}</strong><small>{new Date(doc.createdAt).toLocaleString()} · {(doc.sizeBytes / 1024).toFixed(1)} KB</small></span><i className={`status ${doc.status.toLowerCase()}`}>{doc.status}</i>
           </button>)}</div>
@@ -198,8 +251,15 @@ export default function Home() {
       <section className="review"><span className="step">03 / REVIEW</span>
         {!selected ? <div className="placeholder"><div>DI</div><h2>Evidence appears here</h2><p>Select or upload a document to inspect extracted fields and page provenance.</p></div> : <>
           <div className="review-head"><div><h2>{selected.originalFilename}</h2><p>{selected.documentType ?? "Unknown type"} · {selected.language ?? "—"} · {selected.processingMs ?? 0} ms</p></div><span className="provider">{selected.extractor ?? "pending"}</span></div>
+          {(selected.status === "Processing" || processing) && <div className={`processing-panel state-${(processing?.status ?? "Queued").toLowerCase()}`} aria-live="polite">
+            <div><strong>{processing?.status ?? "Queued"}</strong><small>{processing?.status === "Processing" ? `Extraction attempt ${processing.attemptCount} is running.` : processing?.retryAt ? `Retry scheduled for ${new Date(processing.retryAt).toLocaleTimeString()}.` : "Waiting for a durable worker claim."}</small></div>
+            {processing && ["Queued", "Processing"].includes(processing.status) && <button className="secondary" disabled={busy} onClick={cancelProcessing}>Cancel</button>}
+          </div>}
+          {processing?.status === "Partial" && <p className="warning">Extraction completed with warnings. Review the available fields and evidence carefully.</p>}
+          {(selected.status === "Failed" || selected.status === "Cancelled" || processing?.status === "Failed" || processing?.status === "Cancelled") && <div className="terminal-state"><p>{processing?.errorMessage ?? selected.errorMessage ?? (processing?.status === "Cancelled" ? "Processing was cancelled." : "Processing did not complete.")}</p><button disabled={busy} onClick={reprocess}>Try processing again</button></div>}
+          {selected.status === "Ready" && <div className="reprocess-row"><button className="secondary" disabled={busy || !!processing && ["Queued", "Processing"].includes(processing.status)} onClick={reprocess}>Reprocess document</button></div>}
           {selected.errorMessage && <p className="error">{selected.errorMessage}</p>}
-          {selected.status === "Ready" && review && <>
+          {(selected.status === "Ready" || selected.fields.length > 0) && review && <>
             <div className="review-toolbar">
               <div><strong>{review.session ? `Review ${review.session.revisionNumber} · ${review.session.status}` : "Not reviewed"}</strong><small>{review.session ? `${pendingCount} machine fields pending` : "Start a review to confirm or correct extracted values."}</small></div>
               {!review.session && <button onClick={startReview} disabled={reviewBusy === "start"}>Start review</button>}

@@ -135,6 +135,27 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
     }
 
     [Fact]
+    public async Task Processing_status_route_returns_public_string_state_and_safe_failure_fields()
+    {
+        var queue = new StatusQueue();
+        using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IExtractionJobQueue>();
+            services.AddSingleton<IExtractionJobQueue>(queue);
+        }));
+        using var client = factory.CreateClient();
+
+        using var response = await client.GetAsync($"/api/documents/{Guid.NewGuid()}/processing");
+        var status = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Queued", status.GetProperty("status").GetString());
+        Assert.Equal(2, status.GetProperty("attemptCount").GetInt32());
+        Assert.Equal("provider_timeout", status.GetProperty("errorCode").GetString());
+        Assert.Equal("The extraction provider timed out.", status.GetProperty("errorMessage").GetString());
+    }
+
+    [Fact]
     public async Task Unknown_route_returns_not_found()
     {
         using var client = _factory.CreateClient();
@@ -200,5 +221,30 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
             CallCount++;
             throw new InvalidOperationException("Upload must not call the provider.");
         }
+    }
+
+    private sealed class StatusQueue : IExtractionJobQueue
+    {
+        public Task<ExtractionJobSnapshot?> GetLatestAsync(Guid organizationId, Guid documentId,
+            CancellationToken cancellationToken) => Task.FromResult<ExtractionJobSnapshot?>(new(
+                Guid.NewGuid(), Guid.NewGuid(), ExtractionJobStatus.RetryScheduled, 2,
+                "provider_timeout", "The extraction provider timed out.", null,
+                DateTimeOffset.UtcNow.AddSeconds(30), null, DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow, null));
+        public Task<bool> CancelAsync(Guid organizationId, Guid jobId, string code, string safeSummary,
+            CancellationToken cancellationToken) => Task.FromResult(true);
+        public Task<QueuedReprocess?> QueueReprocessAsync(Guid organizationId, Guid documentId,
+            Guid runId, Guid jobId, string providerAlias, string providerVersion, string schemaVersion,
+            string correlationId, CancellationToken cancellationToken) =>
+            Task.FromResult<QueuedReprocess?>(new(jobId, runId, 2));
+        public Task<bool> TerminalizeOneExpiredAsync(CancellationToken cancellationToken) => Task.FromResult(false);
+        public Task<ClaimedExtractionJob?> ClaimAsync(string owner, CancellationToken cancellationToken) =>
+            Task.FromResult<ClaimedExtractionJob?>(null);
+        public Task<bool> HeartbeatAsync(Guid jobId, string owner, Guid leaseToken,
+            CancellationToken cancellationToken) => Task.FromResult(false);
+        public Task<bool> CompleteAsync(ClaimedExtractionJob claim, ExtractionResult result,
+            CancellationToken cancellationToken) => Task.FromResult(false);
+        public Task<bool> RecordFailureAsync(ClaimedExtractionJob claim, string code, string safeSummary,
+            bool retryable, CancellationToken cancellationToken) => Task.FromResult(false);
     }
 }

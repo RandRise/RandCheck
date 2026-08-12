@@ -65,9 +65,25 @@ describe("review workspace forms", () => {
     await user.upload(fileInput!, new File(["synthetic invoice"], "invoice.txt", { type: "text/plain" }));
     fireEvent.submit(formElement);
 
-    await screen.findByText("Document ready for review.");
+    await screen.findByText(/Document queued/);
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+
+  it("renders queued processing honestly and offers cancellation", async () => {
+    const queued = { ...document, status: "Processing", fields: [] };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse([queued]))
+      .mockResolvedValueOnce(jsonResponse({
+        jobId: "job-1", extractionRunId: "run-1", status: "Queued", attemptCount: 0,
+      }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<Home />);
+
+    await screen.findByText("Waiting for a durable worker claim.");
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
+    expect(fetchMock.mock.calls[1][0]).toContain("/api/documents/document-1/processing");
   });
 
   it("adds a reviewed field with the current ETag and resets the rendered form", async () => {

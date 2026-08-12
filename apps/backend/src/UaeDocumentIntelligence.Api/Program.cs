@@ -71,6 +71,7 @@ app.MapGet("/api/metrics", async (MetricsQuery query, CancellationToken cancella
     Results.Ok(await query.ExecuteAsync(cancellationToken)));
 
 app.MapReviewEndpoints();
+app.MapProcessingEndpoints();
 
 app.Run();
 

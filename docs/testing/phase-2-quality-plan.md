@@ -1,7 +1,7 @@
 # Phase 2 quality plan
 
 **Status:** Approved plan on 2026-08-11  
-**Execution status:** P2-T02 scope verified; later Phase 2 gates pending
+**Execution status:** Local Phase 2 release gate accepted through P2-T08
 
 All P0 tests must run offline. Live Azure tests are optional and cannot gate local or CI acceptance. Phase 3 owns formal accuracy and Phase 7 owns Arabic.
 
@@ -38,14 +38,14 @@ All P0 tests must run offline. Live Azure tests are optional and cannot gate loc
 
 ## Phase 2 release gate
 
-- [ ] Every P0 test passes offline.
-- [ ] PostgreSQL fencing, idempotency, cancellation, and crash tests pass under concurrent workers.
-- [ ] Upload returns `202` before any provider call.
-- [ ] Native and scanned Compose flows reach reviewable results without cloud credentials.
-- [ ] Canonical pages, fields, and evidence round-trip through PostgreSQL and the public review API.
-- [ ] Safe failure envelopes contain no fields, raw provider payloads, paths, document text, credentials, or stacks.
-- [ ] Required builds, migrations, tests, exact totals, and local demonstrations are recorded in P2-T08 evidence.
-- [ ] Integration Guardian reports no blocking cross-phase issue.
+- [x] Every required local P0 test passes offline in the recorded verification environment.
+- [x] PostgreSQL fencing, idempotency, cancellation, and crash tests pass under concurrent workers.
+- [x] Upload returns `202` before any provider call.
+- [x] Native and scanned Compose flows reach reviewable results without cloud credentials.
+- [x] Canonical pages, fields, and evidence round-trip through PostgreSQL and the public review API.
+- [x] Safe failure envelopes contain no fields, raw provider payloads, paths, document text, credentials, or stacks.
+- [x] Required builds, migrations, tests, exact totals, and local demonstrations are recorded in P2-T08 evidence.
+- [x] P2-T08 integration review found no blocking cross-phase issue; prior task Guardian verdicts remain recorded in their evidence.
 
 Fixture success proves deterministic behavior for the covered cases only. It must not be reported as extraction accuracy or production performance.
 
@@ -57,4 +57,4 @@ Fixture success proves deterministic behavior for the covered cases only. It mus
 - [x] API/list-detail behavior avoids heavy extraction hydration in list reads and returns it for detail reads.
 - [x] Guardian review passed with no blockers; exact suite totals and build results are in the [P2-T02 evidence record](../evidence/phase-2/P2-T02-contract-persistence-verification.md).
 
-These checks close only P2-T02. The unchecked Phase 2 release gates above remain open.
+These historical checks closed P2-T02; the complete local release gate is recorded in [P2-T08 evidence](../evidence/phase-2/P2-T08-acceptance-verification.md).

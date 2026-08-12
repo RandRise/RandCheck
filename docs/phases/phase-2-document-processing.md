@@ -1,9 +1,9 @@
 # Phase 2 — Real document processing
 
-**Status:** In progress
+**Status:** Complete
 **Outcome:** English native-text and scanned invoices can be processed asynchronously into one page-aware, provider-neutral result without requiring paid credentials locally.
 
-P2-T01 through P2-T04 and P2-T06, including the durable queue/local worker, were completed on 2026-08-11. P2-T07 is ready but not started; optional P2-T05 Azure work remains ready but unstarted. Phase 2 remains in progress; no Azure, extraction accuracy, or Phase 2 completion claim is made. Phase 1 remains complete.
+The approved local Phase 2 outcome was accepted on 2026-08-12 through P2-T08. Optional P2-T05 Azure work remains pending; no Azure, extraction-accuracy, or production-readiness claim is made.
 
 ## Planning set
 
@@ -16,6 +16,7 @@ P2-T01 through P2-T04 and P2-T06, including the durable queue/local worker, were
 - [P2-T03 synthetic fixture evidence](../evidence/phase-2/P2-T03-synthetic-fixture-verification.md)
 - [P2-T04 local-provider evidence](../evidence/phase-2/P2-T04-local-provider-verification.md)
 - [P2-T06 queue/worker evidence](../evidence/phase-2/P2-T06-queue-worker-verification.md)
+- [P2-T08 acceptance evidence](../evidence/phase-2/P2-T08-acceptance-verification.md)
 
 ## Problem and user outcome
 
@@ -55,18 +56,18 @@ This is a durable database queue, not an outbox. Phase 2 avoids database/broker 
 
 ## Acceptance gates
 
-- [ ] A reproducibly generated two-page native PDF completes through the local path.
-- [ ] A 300-DPI rasterized scan of the same invoice completes through OCR.
-- [ ] Normalized evidence uses page numbers, consistent quote/offsets, page rotation, and `[0,1]` polygons.
-- [ ] Canonical page text and pages persist through a new `extraction_pages` relation; UTF-8 offsets and evidence round-trip exactly.
-- [ ] The normalized contract is complete, versioned, and provider-neutral.
-- [ ] Local provider selection works without cloud credentials; invalid provider configuration fails fast.
-- [ ] Upload returns `202` without invoking a provider in the request lifecycle.
-- [ ] Concurrent workers cannot claim the same job; retry, timeout, cancellation, and crash-recovery behavior is verified.
-- [ ] Queue state transitions, lease expiry, heartbeat, stale-worker fencing, and the document/run/job state matrix pass PostgreSQL integration tests.
-- [ ] Partial and failed results are safe and do not duplicate documents, runs, jobs, or field values.
-- [ ] Provider/model/version, bytes/pages, queue delay, provider/total duration, retry count, outcome/failure, and nullable estimated-cost metadata are captured.
-- [ ] Native, scanned, low-quality, corrupt/encrypted, and simulated provider-failure fixtures are covered by tests.
+- [x] A reproducibly generated two-page native PDF completes through the local path.
+- [x] A 300-DPI rasterized scan of the same invoice completes through OCR.
+- [x] Normalized evidence uses page numbers, consistent quote/offsets, page rotation, and `[0,1]` polygons.
+- [x] Canonical page text and pages persist through a new `extraction_pages` relation; UTF-8 offsets and evidence round-trip exactly.
+- [x] The normalized contract is complete, versioned, and provider-neutral.
+- [x] Local provider selection works without cloud credentials; invalid provider configuration fails fast.
+- [x] Upload returns `202` without invoking a provider in the request lifecycle.
+- [x] Concurrent workers cannot claim the same job; retry, timeout, cancellation, and crash-recovery behavior is verified.
+- [x] Queue state transitions, lease expiry, heartbeat, stale-worker fencing, and the document/run/job state matrix pass PostgreSQL integration tests.
+- [x] Partial and failed results are safe and do not duplicate documents, runs, jobs, or field values.
+- [x] Provider/model/version, bytes/pages, queue delay, provider/total duration, retry count, outcome/failure, and nullable estimated-cost metadata are captured.
+- [x] Native, scanned, low-quality, corrupt/encrypted, and simulated provider-failure fixtures are covered by tests.
 
 ## Measurement boundary
 

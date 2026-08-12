@@ -95,4 +95,4 @@ Current controls include size/type validation, generated/scoped storage keys, sy
 - Tenant authorization is enforced at the data-access boundary.
 - Metrics describe measured behavior only.
 
-See the [database design and ERD](./data/database-design.md), [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md), and [P2-T06 queue/worker verification](./evidence/phase-2/P2-T06-queue-worker-verification.md). Phase 1 and P2-T06 are complete; later Phase 2, enterprise, and deployment capabilities remain in progress or roadmap work.
+See the [database design and ERD](./data/database-design.md), [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md), and [P2-T08 acceptance verification](./evidence/phase-2/P2-T08-acceptance-verification.md). Phases 1 and 2 are complete for their approved local boundaries; optional Azure, enterprise, and deployment capabilities remain roadmap work.
