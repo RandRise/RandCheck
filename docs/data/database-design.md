@@ -505,7 +505,7 @@ This deterministic rule avoids a nullable current-run pointer and prevents a fai
 
 ## Approved migration policy - Decision D-008
 
-- PostgreSQL 16 is the canonical persistent provider. The Compose image includes pgvector, but vector tables and extension usage are deferred to Phase 5.
+- PostgreSQL 16 is the canonical persistent provider. The Compose image includes pgvector. Phase 5 migration 14 now enables the extension and adds canonical chunk-vector storage; live embedding ingestion remains open.
 - EF Core Code First migrations own schema evolution.
 - `EnsureCreated` must not run against persistent databases.
 - Migrations are applied as a controlled deployment step, not concurrently by every application replica.
@@ -550,7 +550,29 @@ flowchart LR
 
 ### Phase 5 - RAG
 
-`DocumentChunk`, `ChunkEvidenceSpan`, `Embedding`, `RetrievalRun`, `RetrievalHit`, `Answer`, and `AnswerCitation`.
+Implemented provider-independent foundation as of 2026-09-07:
+
+- `cited_document_indexes` pins one completed review and versioned chunk profile.
+- `document_chunks` and `chunk_evidence_spans` store content and exact page evidence.
+- `cited_retrieval_runs`, `retrieval_sources`, and `retrieval_hits` freeze the corpus and ranked evidence.
+- `cited_answers`, `answer_claims`, and `answer_citations` persist cited claims and refusal outcomes.
+
+Migration `20260907001143_AddCitedQuestionFoundation` uses organization-scoped
+composite foreign keys, restrictive deletes, concurrency tokens, unique request
+keys, and a canonical-page quote-check trigger. Domain/EF guards protect tracked
+history writes. Embedding/vector storage was originally deferred until model selection;
+this foundation does not enable a retrieval API. See
+[P5-T03 evidence](../evidence/phase-5/P5-T03-persistence-verification.md).
+
+Migration `20260910005624_AddCitedChunkEmbeddings` adds the SQL-owned
+`cited_chunk_embeddings` table with pgvector `vector(1536)`, source-hash and
+organization foreign keys, settled-outcome provenance and immutable rows.
+`ICitedEmbeddingStore` verifies saved provider artifacts before insertion or
+exact cosine search. Chunk vectors are reusable; query vectors remain in their
+own journal outcomes and cannot populate this table. EF migrations own its DDL,
+while parameterized Npgsql commands own vector operations without mapping a
+vector type into the domain. See the
+[storage contract](../design/phase-5-embedding-storage-contract.md).
 
 ### Phase 6 - security and audit
 
@@ -585,6 +607,42 @@ Implementation, automated verification, and the Integration Guardian post-implem
 - [x] The application no longer mixes `EnsureCreated` with persistent migrations.
 
 ## Change history
+
+### 2026-09-09 - Cited generation artifacts
+
+- Migration `20260909123847_AddCitedGenerationArtifacts` adds immutable, bounded
+  preparation/outcome bytes and hashes scoped to the reservation's organization
+  and actor, with one record per kind per reservation.
+- Preparation/reservation and outcome/settlement commit atomically through the
+  existing ledger. Unknown usage retains its hold; saved synthetic results can
+  replay after current scope/source checks without another adapter request.
+- EF and SQL row guards are not encryption, privileged-owner protection or a
+  retention policy. After 541 backend tests passed, the retained synthetic
+  database was backed up and upgraded from migration 9 to 12 without resetting
+  its existing documents/history. Only the test fixture is reset/dropped.
+  See the [journal review](../evidence/phase-5/P5-generation-journal-transport-verification.md).
+
+### 2026-09-09 - Cited recovery audit
+
+- Migration `20260909002217_AddCitedRecoveryAudit` adds scoped, attributable
+  cancellation/settlement audits, stable request replay and unique evidence use.
+- A recovery event, reservation state and spending update commit together.
+  Original requester and active recovery operator remain separate identities.
+- EF and PostgreSQL row UPDATE/DELETE guards protect the new audit records;
+  privileged database tampering/backup restoration remain operational gates.
+- This migration is exercised only in the disposable fixture in this increment.
+  See the [execution review](../evidence/phase-5/P5-T08-recovery-execution-verification.md).
+
+### 2026-09-07 - Provider-independent lexical retrieval
+
+- Migration `20260907013111_AddLexicalRetrieval` adds an English full-text GIN
+  expression index on chunk content and the intermediate Retrieved run state.
+- Retrieved runs have fixed retrieval duration and ranked evidence, but no
+  required answer yet. Later answer/refusal completion remains separate.
+- Populated downgrade maps Retrieved to Failed (`schema_downgrade`) and retains
+  hits. No embedding dimension or vector extension was chosen.
+- See the [lexical retrieval contract](../design/phase-5-lexical-retrieval-contract.md)
+  and [verification](../evidence/phase-5/P5-T05-lexical-verification.md).
 
 ### 2026-08-11 - Review workflow completed
 

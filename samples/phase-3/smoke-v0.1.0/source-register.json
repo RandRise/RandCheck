@@ -1,0 +1,62 @@
+{
+  "source_register_schema_version": "1.0",
+  "register_id": "phase3-smoke-source-register-v1",
+  "dataset_id": "phase3-synthetic-contract-smoke",
+  "dataset_version": "0.1.0",
+  "sources": [
+    {
+      "sample_id": "synthetic-native-two-page-invoice",
+      "asset_id": "phase2-native-two-page-invoice",
+      "sha256": "002a63dede487a4390f0178b5c64581a31edbbbad4948798403796d17bb56bdf",
+      "bytes": 22851,
+      "media_type": "application/pdf",
+      "acquired_at_utc": "2026-08-11T00:00:00Z",
+      "provenance_type": "synthetic",
+      "rights": {
+        "reference": "samples/phase-2/source-license-register.json",
+        "store": true,
+        "label": true,
+        "process": true,
+        "publish_aggregate_results": true
+      },
+      "privacy": {
+        "contains_personal_data": false,
+        "contains_confidential_data": false,
+        "redaction_status": "not_required",
+        "review_reference": "Synthetic fixture source review"
+      },
+      "storage": {
+        "classification": "public",
+        "committed_to_git": true,
+        "location_reference": "samples/phase-2/generated/native-two-page-invoice.pdf"
+      }
+    },
+    {
+      "sample_id": "synthetic-scanned-two-page-invoice",
+      "asset_id": "phase2-scanned-two-page-invoice-300dpi",
+      "sha256": "2dff4ea3789bf0f61bc0157af796f084bb554583bcdd2abc6da259e8053679cf",
+      "bytes": 143461,
+      "media_type": "application/pdf",
+      "acquired_at_utc": "2026-08-11T00:00:00Z",
+      "provenance_type": "synthetic",
+      "rights": {
+        "reference": "samples/phase-2/source-license-register.json",
+        "store": true,
+        "label": true,
+        "process": true,
+        "publish_aggregate_results": true
+      },
+      "privacy": {
+        "contains_personal_data": false,
+        "contains_confidential_data": false,
+        "redaction_status": "not_required",
+        "review_reference": "Synthetic fixture source review"
+      },
+      "storage": {
+        "classification": "public",
+        "committed_to_git": true,
+        "location_reference": "samples/phase-2/generated/scanned-two-page-invoice-300dpi.pdf"
+      }
+    }
+  ]
+}

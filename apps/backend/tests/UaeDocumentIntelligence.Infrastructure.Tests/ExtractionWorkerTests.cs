@@ -10,6 +10,54 @@ namespace UaeDocumentIntelligence.Infrastructure.Tests;
 
 public sealed class ExtractionWorkerTests
 {
+    [Theory]
+    [InlineData("clean", null)]
+    [InlineData("infected", "malware_detected")]
+    [InlineData("unavailable", "malware_scan_unavailable")]
+    [InlineData("tampered", "storage_integrity_failed")]
+    public async Task Enterprise_file_screening_precedes_provider_dispatch(string scenario, string? failure)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "p6-worker-file-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var claim = CreateClaim(); var bytes = "synthetic-content"u8.ToArray();
+            var key = $"organizations/{claim.OrganizationId:N}/documents/{claim.DocumentId:N}/source.pdf";
+            var path = Path.Combine(root, key.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!); await File.WriteAllBytesAsync(path, bytes);
+            claim = claim with { StorageKey = key, Bytes = bytes.Length, Sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant() };
+            if (scenario == "tampered") await File.WriteAllTextAsync(path, "changed-content");
+            var queue = new FakeQueue(); var client = new FakeClient(); var scanner = new FileScanner(scenario);
+            var services = new ServiceCollection();
+            // Queue operations use the existing fake; the worker itself uses the enforced file guard.
+            services.AddSingleton(Options.Create(new ExtractionWorkerOptions { SecurityMode = "Development" }));
+            services.AddDbContext<UaeDocumentIntelligence.Infrastructure.Persistence.AppDbContext>(o => Microsoft.EntityFrameworkCore.SqliteDbContextOptionsBuilderExtensions.UseSqlite(o, "Data Source=:memory:"));
+            services.AddSingleton<IExtractionJobQueue>(queue); services.AddSingleton<IExtractionClient>(client);
+            services.AddSingleton(Options.Create(new StorageOptions { SecurityMode = "Enforced", UploadDirectory = root }));
+            services.AddSingleton<IMalwareScanner>(scanner); services.AddScoped<ExtractionFileSafety>();
+            using var provider = services.BuildServiceProvider();
+            var worker = new ExtractionWorker(provider.GetRequiredService<IServiceScopeFactory>(),
+                Options.Create(new ExtractionWorkerOptions { Enabled = true, SecurityMode = "Enforced" }), NullLogger<ExtractionWorker>.Instance);
+            await ProcessAsync(worker, claim, default);
+            if (failure is null) { Assert.NotNull(client.Request); Assert.NotNull(queue.CompletedClaim); Assert.Null(queue.FailureCode); }
+            else { Assert.Null(client.Request); Assert.Null(queue.CompletedClaim); Assert.Equal(failure, queue.FailureCode); Assert.Equal(scenario == "unavailable", queue.FailureRetryable); }
+            Assert.Equal(scenario == "tampered" ? 0 : 1, scanner.Calls);
+            Assert.True(File.Exists(path)); // Existing source is never erased by a failed worker scan.
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    private sealed class FileScanner(string scenario) : IMalwareScanner
+    {
+        public int Calls { get; private set; }
+        public Task ScanAsync(Stream content, long length, CancellationToken ct)
+        {
+            Calls++;
+            if (scenario == "infected") throw new UaeDocumentIntelligence.Application.Documents.Upload.MalwareDetectedException();
+            if (scenario == "unavailable") throw new UaeDocumentIntelligence.Application.Documents.Upload.MalwareScanUnavailableException();
+            return Task.CompletedTask;
+        }
+    }
+
     [Fact]
     public async Task Worker_builds_exact_versioned_request_and_completes_current_claim()
     {
@@ -120,6 +168,9 @@ public sealed class ExtractionWorkerTests
     private static ServiceProvider CreateProvider(FakeQueue queue, FakeClient client)
     {
         var services = new ServiceCollection();
+        services.AddSingleton(Options.Create(new ExtractionWorkerOptions { SecurityMode = "Development" }));
+        services.AddDbContext<UaeDocumentIntelligence.Infrastructure.Persistence.AppDbContext>(options =>
+            Microsoft.EntityFrameworkCore.SqliteDbContextOptionsBuilderExtensions.UseSqlite(options, "Data Source=:memory:"));
         services.AddSingleton<IExtractionJobQueue>(queue);
         services.AddSingleton<IExtractionClient>(client);
         return services.BuildServiceProvider();

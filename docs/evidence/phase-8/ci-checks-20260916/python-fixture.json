@@ -1,0 +1,12 @@
+{
+  "group": "fixture",
+  "tests": [
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_committed_fixture_set_verifies_and_register_covers_every_required_case",
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_committed_images_have_fixed_dimensions_and_no_exif_or_gps_metadata",
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_committed_pdfs_contain_no_active_content_markers_and_encryption_is_explicit",
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_failure_fixtures_have_explicit_safe_local_provider_expectations",
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_font_notice_composite_license_and_synthetic_identity_are_explicit",
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_generate_twice_is_byte_for_byte_deterministic_and_verifiable",
+    "test_phase2_fixture_cli.Phase2FixtureCliTests.test_native_evidence_polygons_match_rendered_vera_value_bounds"
+  ]
+}

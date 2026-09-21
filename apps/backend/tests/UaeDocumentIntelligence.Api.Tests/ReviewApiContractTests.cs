@@ -18,7 +18,7 @@ public sealed class ReviewApiContractTests : IClassFixture<WebApplicationFactory
 
     public ReviewApiContractTests(WebApplicationFactory<Program> factory)
     {
-        _factory = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        _factory = factory.WithWebHostBuilder(builder => builder.UsePhase5DevelopmentIdentity());
     }
 
     [Fact]
@@ -50,6 +50,29 @@ public sealed class ReviewApiContractTests : IClassFixture<WebApplicationFactory
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal($"\"{session.ConcurrencyToken:D}\"", response.Headers.ETag?.Tag);
+    }
+
+    [Fact]
+    public async Task History_returns_append_only_actions_in_sequence()
+    {
+        var (document, run) = CreateReadyDocument();
+        var session = document.OpenReview(Guid.NewGuid(), TestActor, Now);
+        var field = Assert.Single(run.Fields);
+        session.AddAction(Guid.NewGuid(), TestActor, 1, ReviewActionType.Corrected,
+            field.FieldKey, field.OccurrenceIndex, field.Id, FieldValueType.Decimal,
+            "125.00", "Invoice evidence", Now.AddMinutes(1));
+        using var factory = WithDocument(document);
+        using var client = factory.CreateClient();
+
+        using var response = await client.GetAsync($"/api/documents/{document.Id}/review-history");
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var exportedSession = Assert.Single(json.GetProperty("sessions").EnumerateArray());
+        var action = Assert.Single(exportedSession.GetProperty("actions").EnumerateArray());
+        Assert.Equal("Corrected", action.GetProperty("action").GetString());
+        Assert.Equal("Invoice evidence", action.GetProperty("reason").GetString());
+        Assert.Equal(1, action.GetProperty("sequenceNumber").GetInt32());
     }
 
     [Fact]

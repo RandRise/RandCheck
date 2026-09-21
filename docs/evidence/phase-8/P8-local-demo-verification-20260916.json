@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "scope": "Phase 8 local demo increment; English native synthetic invoice",
+  "journeyProject": "uaedi-demo-4b297fab4fb0",
+  "finalStartupProject": "uaedi-demo-5a61b2aebc85",
+  "sourceFileCount": 295,
+  "onlyFinalSourceDifference": "tools/demo/compose.yml TCP PostgreSQL readiness",
+  "fixtureSha256": "002a63dede487a4390f0178b5c64581a31edbbbad4948798403796d17bb56bdf",
+  "journey": {
+    "documentId": "fa5a59f1-dd34-4d76-af45-299e260b4fac",
+    "extractionRunId": "1bebfc14-8497-434e-92e1-0f458370fb39",
+    "reviewId": "6408439c-56fa-4261-a6a6-a363113e27fd",
+    "uploadStatus": 202,
+    "machineTotal": "1,050.00",
+    "effectiveTotal": "1155.00",
+    "reviewCompleted": true,
+    "restartVerified": true,
+    "sourceBytesPreserved": true,
+    "uploadedUtc": "2026-09-16T15:47:28.6843388Z",
+    "restartUtc": "2026-09-16T15:59:02.163181Z"
+  },
+  "machineFieldCount": 8,
+  "reviewActionCount": 8,
+  "rawReviewResponseSha256": "377823bc9be207f101f45bc122de8febdd8f6e7e803639d8c9c98c10f8f150a7",
+  "guards": {
+    "checkedUtc": "2026-09-16T15:46:54.4121055Z",
+    "unexpectedVolumeRefused": true,
+    "configurationTamperRefused": true,
+    "demoStillRunning": true,
+    "foreignCopyPathRefused": true
+  },
+  "reset": {
+    "resetUtc": "2026-09-16T16:02:39.7913787Z",
+    "resetDeletedOwnedVolumes": true,
+    "emptyAfterFreshMigrations": true,
+    "finalContainersAndVolumesRemoved": true
+  },
+  "retainedPublicTableFingerprintsUnchanged": true,
+  "securityChecks": {
+    "scope": "Production anonymous document denial and nonlocal Development identity rejection",
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0
+  },
+  "runtime": {
+    "containers": [
+      {
+        "networks": [
+          "uaedi-demo-4b297fab4fb0_default"
+        ],
+        "id": "a8811068cfd97167a23a3ccc6cfc11b4b63deb3bd7cb4c04083b2687b57295fe",
+        "imageId": "sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b",
+        "ports": {
+          "5432/tcp": null
+        },
+        "oomKilled": false,
+        "status": "running",
+        "service": "db"
+      },
+      {
+        "networks": [
+          "uaedi-demo-4b297fab4fb0_default"
+        ],
+        "id": "4713a1588827302480f7d54706c68903b5a3d2cd6f1665c00647343f333feb4a",
+        "imageId": "sha256:31250ea97cdc1f8ddbf69b5a0ef167bdb6a7973aa108d8d8e2a89c7053a957c2",
+        "ports": {},
+        "oomKilled": false,
+        "status": "exited",
+        "service": "migrate"
+      },
+      {
+        "networks": [
+          "uaedi-demo-4b297fab4fb0_default"
+        ],
+        "id": "7c685cd947c27a8f0e7b89a0e30354d390352c4cc0e4380c0a182caab8bb5612",
+        "imageId": "sha256:b9d4855d76f059c36f5eb366c81f05d8603d6dc2fea01088a6f429f7b0b8e319",
+        "ports": {},
+        "oomKilled": false,
+        "status": "running",
+        "service": "ai"
+      },
+      {
+        "networks": [
+          "uaedi-demo-4b297fab4fb0_default",
+          "uaedi-demo-4b297fab4fb0_ingress"
+        ],
+        "id": "1e21bbf241860bc9a291675392f23bc611eaf615e146f29632f1c9e1ebff76e3",
+        "imageId": "sha256:1d9bcc560a19bccd6cbd681de9b368ab4a086a108b259614bcf2d2adf615799d",
+        "ports": {
+          "8080/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "8308"
+            }
+          ]
+        },
+        "oomKilled": false,
+        "status": "running",
+        "service": "backend"
+      },
+      {
+        "networks": [
+          "uaedi-demo-4b297fab4fb0_ingress"
+        ],
+        "id": "06e379f91e1b758f10ccd55e027defd864c8def12e584b0b9a25715bf1a31e95",
+        "imageId": "sha256:823f66a104e6d3ac61d8f18b47821b3fc7f8cac88eb8bff4aa6a41b7ef173365",
+        "ports": {
+          "3000/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "3308"
+            }
+          ]
+        },
+        "oomKilled": false,
+        "status": "running",
+        "service": "web"
+      }
+    ],
+    "composeVersion": "5.3.1",
+    "powershellVersion": "7.6.5",
+    "dockerVersion": "29.6.2",
+    "recordedUtc": "2026-09-16T15:57:14.1259624Z",
+    "node": "v24.21.0",
+    "dotnet": [
+      "Microsoft.AspNetCore.App 8.0.31 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]",
+      "Microsoft.NETCore.App 8.0.31 [/usr/share/dotnet/shared/Microsoft.NETCore.App]"
+    ],
+    "python": "Python 3.11.16",
+    "postgresql": "postgres (PostgreSQL) 16.14 (Debian 16.14-1.pgdg12+1)",
+    "migrationOutput": "Demo schema ready: 19 migrations."
+  },
+  "finalStartup": {
+    "migrationExitCode": "0",
+    "migrationOutput": "Demo schema ready: 19 migrations.",
+    "databaseHealthy": true,
+    "project": "uaedi-demo-5a61b2aebc85",
+    "hostListeners": [
+      {
+        "LocalAddress": "127.0.0.1",
+        "LocalPort": 8308
+      },
+      {
+        "LocalAddress": "127.0.0.1",
+        "LocalPort": 3308
+      }
+    ],
+    "tcpHealthCheck": [
+      "CMD-SHELL",
+      "pg_isready -h 127.0.0.1 -U demo -d document_intelligence_demo"
+    ],
+    "checkedUtc": "2026-09-16T16:14:33.1013698Z",
+    "privateNetworkInternal": true,
+    "emptyDocumentStoreVerified": true,
+    "webReady": true,
+    "unexpectedDatabaseProcessRecoveryObserved": false,
+    "containersAndVolumesRemoved": true,
+    "shutdownUtc": "2026-09-16T16:17:53.4942674Z"
+  },
+  "documentationBuild": {
+    "advisory": "Some minified chunks exceed 500 kB",
+    "durationSeconds": 64.97,
+    "command": "npm --prefix docs run build",
+    "passed": true,
+    "vitepressVersion": "1.6.4",
+    "runtimeHelper": "tools/use-project-runtimes.ps1"
+  },
+  "screenshots": [
+    {
+      "sha256": "5b8dd1594626fd4ed8a4a7839877f8feb119142df4f0d1bdacf59d104d42aaa5",
+      "file": "01-empty-workspace.png"
+    },
+    {
+      "sha256": "a7a1018b757524423c2805cb5c914e4a5bac54284ed14c1295849519635eb51d",
+      "file": "02-extracted-invoice.png"
+    },
+    {
+      "sha256": "9676a56e72670c879eb1b02c6abf0b10fe22ea571e1ab938181e96eab564d86d",
+      "file": "03-review-after-restart.png"
+    },
+    {
+      "sha256": "299f102e55c9813f34355eff21a331256716818e2edea2897cf0b3b88f34ccd1",
+      "file": "04-persisted-total-detail.png"
+    }
+  ],
+  "finalState": {
+    "retainedPublicTableFingerprintsUnchanged": true,
+    "checkedUtc": "2026-09-16T16:19:30.1277137Z",
+    "demoPortsListening": 0,
+    "demoContainersRemaining": 0
+  },
+  "sourceInventories": [
+    {
+      "sha256": "ee35beeb1d09ff701e9795346260f8a9617b3265b352ca5cee81aee8b7d8f8be",
+      "file": "P8-source-inventory-20260916.json"
+    },
+    {
+      "sha256": "3ef35fb28550cc1f4b12310a71c96cb7081035a1bfb698669dbc001be6f2a149",
+      "file": "P8-startup-source-inventory-20260916.json"
+    }
+  ],
+  "scriptParsing": {
+    "failed": 0,
+    "passed": 4
+  },
+  "scopedWhitespaceCheckPassed": true
+}

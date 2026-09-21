@@ -54,6 +54,69 @@ public sealed class ReviewHandlerTests
     }
 
     [Fact]
+    public void Workspace_exposes_missing_and_low_confidence_cues_without_hiding_machine_values()
+    {
+        var (document, run) = CreateReadyDocument(confidence: 0.42m);
+
+        var workspace = ReviewWorkspaceView.From(document);
+
+        var machine = workspace.Fields.Single(x => x.Machine?.Id == Assert.Single(run.Fields).Id);
+        Assert.Equal("100.00", machine.Machine?.Value);
+        Assert.Contains("LowConfidence", machine.Cues);
+        var missing = workspace.Fields.Single(x => x.FieldKey == "invoice_number");
+        Assert.Equal("Missing", missing.DecisionStatus);
+        Assert.Contains("MissingMachineValue", missing.Cues);
+        Assert.Null(missing.Machine);
+        var due = workspace.Fields.Single(x => x.FieldKey == "due_date");
+        Assert.Equal("Missing", due.DecisionStatus);
+        Assert.False(due.Effective.IsPresent);
+        Assert.Contains("MissingMachineValue", due.Cues);
+    }
+
+    [Fact]
+    public async Task Reviewer_can_add_an_explicit_missing_due_date_as_a_date()
+    {
+        var (document, _) = CreateReadyDocument();
+        var actor = Guid.NewGuid();
+        var session = document.OpenReview(Guid.NewGuid(), actor, Now);
+        var handler = new RecordReviewActionHandler(new FakeRepository(document),
+            new FakeExecutionContext(document.OrganizationId, actor), new FakeClock(Now));
+        var workspace = await handler.HandleAsync(document.Id, session.Id, session.ConcurrencyToken,
+            new RecordReviewActionCommand("Added", null, "due_date", 0, "Date", "2026-09-15",
+                "Explicit date checked against source"), CancellationToken.None);
+        var due = workspace.Fields.Single(x => x.FieldKey == "due_date");
+        Assert.Equal("Reviewer", due.Effective.Source);
+        Assert.Equal("Date", due.Effective.ValueType);
+        Assert.Equal("2026-09-15", due.Effective.Value);
+        Assert.Null(due.Machine);
+    }
+
+    [Fact]
+    public async Task History_export_preserves_every_action_in_reconstructable_sequence()
+    {
+        var (document, run) = CreateReadyDocument();
+        var execution = new FakeExecutionContext(document.OrganizationId, Guid.NewGuid());
+        var repository = new FakeRepository(document);
+        var session = document.OpenReview(Guid.NewGuid(), execution.ActorId, Now);
+        var field = Assert.Single(run.Fields);
+        var actionHandler = new RecordReviewActionHandler(repository, execution, new FakeClock(Now));
+        await actionHandler.HandleAsync(document.Id, session.Id, session.ConcurrencyToken,
+            new RecordReviewActionCommand("Corrected", field.Id, null, null, "Decimal",
+                "125.00", "Invoice evidence"), CancellationToken.None);
+
+        var export = await new GetReviewHistoryHandler(repository, execution)
+            .HandleAsync(document.Id, CancellationToken.None);
+
+        var exportedSession = Assert.Single(export.Sessions);
+        var action = Assert.Single(exportedSession.Actions);
+        Assert.Equal(session.ExtractionRunId, exportedSession.ExtractionRunId);
+        Assert.Equal(1, action.SequenceNumber);
+        Assert.Equal("Corrected", action.Action);
+        Assert.Equal(field.Id, action.MachineFieldValueId);
+        Assert.Equal("Invoice evidence", action.Reason);
+    }
+
+    [Fact]
     public async Task Actions_project_latest_effective_values_for_all_action_types()
     {
         var (document, run) = CreateReadyDocument(fieldCount: 2);
@@ -81,6 +144,7 @@ public sealed class ReviewHandlerTests
         var clearedAdded = workspace.Fields.Single(x => x.Machine is null && x.FieldKey == "currency");
         Assert.False(clearedAdded.Effective.IsPresent);
         Assert.Equal("Cleared", clearedAdded.DecisionStatus);
+        Assert.Contains("MissingMachineValue", clearedAdded.Cues);
 
         async Task<ReviewWorkspaceView> Act(string action, Guid? machineId, string? fieldKey,
             int? occurrence, string? valueType, string? value, string? reason)
@@ -188,15 +252,22 @@ public sealed class ReviewHandlerTests
 
     private static (Document Document, ExtractionRun Run) CreateReadyDocument(int fieldCount = 1,
         Guid? documentId = null, Guid? runId = null, Guid? organizationId = null)
+        => CreateReadyDocument(fieldCount, documentId, runId, organizationId, 0.9m);
+
+    private static (Document Document, ExtractionRun Run) CreateReadyDocument(int fieldCount,
+        Guid? documentId, Guid? runId, Guid? organizationId, decimal confidence)
     {
         var document = new Document(documentId ?? Guid.NewGuid(), organizationId ?? Guid.NewGuid(), Guid.NewGuid(), "invoice.pdf",
             "storage.pdf", "application/pdf", 100, ValidSha, Now);
-        var run = AddSuccessfulRun(document, 1, Now, fieldCount, runId);
+        var run = AddSuccessfulRun(document, 1, Now, fieldCount, runId, confidence);
         return (document, run);
     }
 
+    private static (Document Document, ExtractionRun Run) CreateReadyDocument(decimal confidence)
+        => CreateReadyDocument(1, null, null, null, confidence);
+
     private static ExtractionRun AddSuccessfulRun(Document document, int number, DateTimeOffset now,
-        int fieldCount, Guid? runId = null)
+        int fieldCount, Guid? runId = null, decimal confidence = 0.9m)
     {
         var run = document.QueueExtraction(runId ?? Guid.NewGuid(), number, "mock", "1", "invoice-v1",
             $"request-{number}", now);
@@ -205,7 +276,7 @@ public sealed class ReviewHandlerTests
         for (var index = 0; index < fieldCount; index++)
         {
             var field = run.AddField(Guid.NewGuid(), $"field_{index}", 0, FieldValueType.Decimal,
-                $"{100 + index}.00", 0.9m, now);
+                $"{100 + index}.00", confidence, now);
             run.AddEvidence(field, Guid.NewGuid(), 1);
         }
         run.RecordProviderMetrics(1, 1, null, null, null);

@@ -1,0 +1,71 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16@sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b
+    environment:
+      POSTGRES_DB: document_intelligence_demo
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: disposable_demo_only
+    healthcheck:
+      # The initialization-only PostgreSQL server listens on a Unix socket.
+      # Require TCP readiness before allowing the migration job to connect.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U demo -d document_intelligence_demo"]
+      # Fresh-volume initdb exceeded 100 seconds on the verified 8 GB host.
+      # Early TCP success ends this grace period; the launcher checks crash history.
+      start_period: 180s
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes: ["database:/var/lib/postgresql/data"]
+  migrate:
+    build: {context: ., dockerfile: tools/demo/backend.Dockerfile, target: migrate}
+    depends_on:
+      db: {condition: service_healthy}
+  ai:
+    build: {context: ., dockerfile: apps/api/Dockerfile}
+    environment:
+      APP_ENV: development
+      EXTRACTION_PROVIDER: local
+      STORAGE_SHARED_ROOT: /data/uploads
+      WORKER_SHARED_SECRET: disposable_demo_worker_only
+      OCR_LANGUAGE: eng
+      OMP_THREAD_LIMIT: "1"
+      TZ: UTC
+    volumes: ["uploads:/data/uploads:ro"]
+  backend:
+    build: {context: ., dockerfile: tools/demo/backend.Dockerfile, target: api}
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Security__Mode: Development
+      DevelopmentData__Seed: "true"
+      ConnectionStrings__Database: Host=db;Port=5432;Database=document_intelligence_demo;Username=demo;Password=disposable_demo_only
+      Storage__UploadDirectory: /data/uploads
+      AiService__BaseUrl: http://ai:8001
+      AiService__WorkerToken: disposable_demo_worker_only
+      AiService__AdapterVersion: local-1.3.0
+      ExtractionWorker__Enabled: "true"
+      StorageMaintenance__Enabled: "true"
+      Cors__Origins__0: http://127.0.0.1:3308
+    ports: ["127.0.0.1:8308:8080"]
+    networks: [default, ingress]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      ai: {condition: service_started}
+    volumes: ["uploads:/data/uploads"]
+  web:
+    build: {context: ., dockerfile: tools/demo/web.Dockerfile}
+    environment:
+      AUTH_MODE: Development
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:8308
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports: ["127.0.0.1:3308:3000"]
+    networks: [ingress]
+    depends_on: [backend]
+networks:
+  default:
+    internal: true
+  ingress: {}
+volumes:
+  database:
+  uploads:
+

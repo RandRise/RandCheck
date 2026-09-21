@@ -1,0 +1,10 @@
+{
+  "group": "ocr",
+  "tests": [
+    "test_local_extraction.LocalProviderRuntimeFixtureTests.test_corrupt_and_encrypted_fixtures_match_safe_expectations",
+    "test_local_extraction.LocalProviderRuntimeFixtureTests.test_native_pdf_matches_exact_expectation",
+    "test_local_extraction.LocalProviderRuntimeFixtureTests.test_png_and_jpeg_match_semantic_expectations",
+    "test_local_extraction.LocalProviderRuntimeFixtureTests.test_rotated_degraded_pdf_matches_partial_semantic_expectation",
+    "test_local_extraction.LocalProviderRuntimeFixtureTests.test_scanned_pdf_matches_semantic_expectation"
+  ]
+}

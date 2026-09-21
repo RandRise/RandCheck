@@ -10,7 +10,7 @@ using UaeDocumentIntelligence.Infrastructure;
 
 namespace UaeDocumentIntelligence.Persistence.Tests;
 
-public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
+public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture database) :
     IClassFixture<PostgresDatabaseFixture>, IAsyncLifetime
 {
     private const string ValidSha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
@@ -24,7 +24,7 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
     {
         await using var context = _database.CreateContext();
         var before = (await context.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(6, before.Length);
+        Assert.Equal(19, before.Length);
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
 
         await context.Database.MigrateAsync();
@@ -80,9 +80,14 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
             "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name");
         Assert.Equal(new[]
         {
-            "__EFMigrationsHistory", "actors", "documents", "extraction_jobs", "extraction_pages", "extraction_runs",
-            "extraction_warnings", "field_evidence", "machine_field_values", "organizations",
-            "review_actions", "review_sessions"
+            "__EFMigrationsHistory", "actors", "answer_citations", "answer_claims", "chunk_evidence_spans",
+            "cited_answers", "cited_chunk_embeddings", "cited_document_indexes", "cited_generation_artifacts", "cited_pilot_budgets", "cited_recovery_audits", "cited_retrieval_runs",
+            "cited_spend_events", "cited_spend_reservations", "document_chunks",
+            "document_deletions", "documents", "enterprise_identities", "extraction_jobs", "extraction_pages", "extraction_runs",
+            "extraction_warnings", "field_evidence", "finding_resolutions", "machine_field_values", "organization_capacity_policies", "organization_memberships", "organization_retention_policies", "organizations",
+            "reconciliation_cases", "reconciliation_document_links", "reconciliation_document_snapshots",
+            "reconciliation_field_snapshots", "reconciliation_findings", "reconciliation_runs",
+            "retention_holds", "retrieval_hits", "retrieval_sources", "review_actions", "review_sessions", "security_audit_events"
         }, tables);
 
         var constraints = await QueryStringsAsync(
@@ -100,7 +105,16 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
             "ck_extraction_warnings_page", "ck_extraction_warnings_severity",
             "ck_field_evidence_offsets", "ck_field_evidence_page", "ck_field_evidence_polygon_shape",
             "ck_field_evidence_polygon_unit", "ck_field_evidence_quote_offsets", "ck_machine_fields_confidence",
-            "ck_review_actions_matrix", "ck_review_actions_value_type", "ck_review_sessions_revision"
+            "ck_review_actions_matrix", "ck_review_actions_value_type", "ck_review_sessions_revision",
+            "ck_reconciliation_cases_status", "ck_reconciliation_document_links_role",
+            "ck_reconciliation_document_links_sha256", "ck_reconciliation_document_snapshots_role",
+            "ck_reconciliation_document_snapshots_sha256", "ck_reconciliation_field_snapshots_evidence",
+            "ck_reconciliation_field_snapshots_occurrence", "ck_reconciliation_field_snapshots_source",
+            "ck_reconciliation_field_snapshots_value_type", "ck_reconciliation_findings_numeric",
+            "ck_reconciliation_findings_occurrence", "ck_reconciliation_findings_roles",
+            "ck_reconciliation_findings_severity", "ck_reconciliation_runs_number",
+            "ck_reconciliation_runs_status", "ck_reconciliation_runs_tolerances",
+            "ck_finding_resolutions_action", "ck_finding_resolutions_sequence"
         };
         foreach (var expected in expectedConstraints) Assert.Contains(expected, constraints);
 
@@ -118,6 +132,11 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
         Assert.Contains("ux_extraction_warnings_page_field", indexes);
         Assert.Contains("ux_review_sessions_one_active", indexes);
         Assert.Contains("ux_review_actions_org_session_sequence", indexes);
+        Assert.Contains("ux_reconciliation_links_org_case_role", indexes);
+        Assert.Contains("ux_reconciliation_runs_org_case_number", indexes);
+        Assert.Contains("ux_reconciliation_runs_one_running", indexes);
+        Assert.Contains("ux_reconciliation_fields_org_run_document_key_occurrence", indexes);
+        Assert.Contains("ux_finding_resolutions_org_finding_sequence", indexes);
 
         var hashIndex = await ScalarAsync<string>(
             "SELECT indexdef FROM pg_indexes WHERE schemaname='public' AND indexname='ix_documents_org_sha256'");
@@ -151,6 +170,65 @@ public sealed class PostgresPersistenceTests(PostgresDatabaseFixture database) :
             "UPDATE field_evidence SET page_number=0 WHERE id=@id", ("id", seed.EvidenceA));
         await AssertSqlStateAsync(PostgresErrorCodes.CheckViolation,
             "UPDATE review_actions SET corrected_value_type='String' WHERE id=@id", ("id", seed.ActionA));
+    }
+
+    [Fact]
+    public async Task Reconciliation_graph_round_trips_with_frozen_sources_findings_and_resolutions()
+    {
+        var seed = await SeedGraphAsync();
+        await ExecuteAsync(
+            "UPDATE review_sessions SET status='Completed', completed_at_utc=@now WHERE id=@id",
+            ("now", DateTimeOffset.UtcNow), ("id", seed.SessionA));
+        var now = DateTimeOffset.UtcNow;
+        var item = new ReconciliationCase(Guid.NewGuid(), seed.OrganizationA, seed.ActorA,
+            "August procurement case", now);
+        item.LinkReviewedDocument(Guid.NewGuid(), ReconciliationDocumentRole.Invoice,
+            seed.DocumentA, seed.SessionA, seed.RunA, ValidSha, now);
+        var run = item.BeginEvaluation(Guid.NewGuid(),
+            new Dictionary<ReconciliationDocumentRole, Guid>
+            {
+                [ReconciliationDocumentRole.Invoice] = Guid.NewGuid()
+            }, "1.0", ReconciliationTolerancePolicy.Default, now);
+        var document = Assert.Single(run.DocumentSnapshots);
+        var field = run.AddFieldSnapshot(Guid.NewGuid(), document.Id, "total", 0,
+            FieldValueType.Decimal, "100.00", seed.FieldA, seed.ActionA, 1,
+            "100.00", now);
+        var finding = run.AddFinding(Guid.NewGuid(), "DOC-001", "1.0",
+            ReconciliationFindingSeverity.Warning, ReconciliationDocumentRole.Invoice,
+            ReconciliationDocumentRole.PurchaseOrder, field.Id, null, "total", 0,
+            "100.00", null, null, null, "Purchase order is missing.", now);
+        item.CompleteEvaluation(run, now.AddSeconds(1));
+        run.AddResolution(finding.Id, Guid.NewGuid(), seed.ActorA,
+            FindingResolutionAction.Accepted, "Invoice-only exception approved for development.",
+            now.AddSeconds(2));
+
+        await using (var write = _database.CreateContext())
+        {
+            write.ReconciliationCases.Add(item);
+            await write.SaveChangesAsync();
+        }
+
+        await using var read = _database.CreateContext();
+        var saved = await read.ReconciliationCases.AsNoTracking()
+            .Include(candidate => candidate.DocumentLinks)
+            .Include(candidate => candidate.Runs)
+                .ThenInclude(candidate => candidate.DocumentSnapshots)
+                    .ThenInclude(candidate => candidate.Fields)
+            .Include(candidate => candidate.Runs)
+                .ThenInclude(candidate => candidate.Findings)
+                    .ThenInclude(candidate => candidate.Resolutions)
+            .SingleAsync(candidate => candidate.Id == item.Id);
+
+        Assert.Equal(ReconciliationCaseStatus.Evaluated, saved.Status);
+        Assert.Single(saved.DocumentLinks);
+        var savedRun = Assert.Single(saved.Runs);
+        Assert.Equal("1.0", savedRun.RuleSetVersion);
+        Assert.Equal(0.01m, savedRun.DocumentTotalTolerance);
+        Assert.Single(Assert.Single(savedRun.DocumentSnapshots).Fields);
+        var savedFinding = Assert.Single(savedRun.Findings);
+        Assert.Equal("DOC-001", savedFinding.RuleCode);
+        Assert.Equal(FindingResolutionAction.Accepted,
+            Assert.Single(savedFinding.Resolutions).Action);
     }
 
     [Fact]

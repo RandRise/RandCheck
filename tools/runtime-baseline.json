@@ -1,0 +1,14 @@
+{
+  "Reviewed": "2026-09-15",
+  "DotNet": {
+    "Sha512": "f0b6f15bf6f1a0507205c0cb102ab99e1dee875c4682c8ed94665be1d580186a06b21455e83b3a01a0ff7f4cd887b67420f2e2fe09ed985534a4cea488ae1af9",
+    "Url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.425/dotnet-sdk-8.0.425-win-x64.zip",
+    "Runtime": "8.0.31",
+    "Sdk": "8.0.425"
+  },
+  "Node": {
+    "Version": "24.21.0",
+    "Sha256": "158f7685b44de51f6c0df1d153526cbcd3e1bc739a8dfc607721cef75de9e541",
+    "Url": "https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip"
+  }
+}

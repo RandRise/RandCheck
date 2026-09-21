@@ -11,3 +11,12 @@
 /samples/phase-2/** text eol=lf
 /samples/phase-2/generated/** binary
 /samples/phase-2/licenses/** binary
+
+# CI shell entry points must execute after Windows checkouts.
+/tools/ci/*.sh text eol=lf
+/samples/phase-4/procurement-v0.1.0/*.json text eol=lf
+/samples/phase-4/procurement-v0.1.0/*.pdf binary
+/samples/phase-5/due-date-v0.1.0/*.pdf binary
+# Preserve byte-pinned Phase 5 JSON when core.autocrlf is enabled.
+/samples/phase-5/**/*.json -text
+/tools/phase4_procurement_source_v0.1.0.json text eol=lf

@@ -2,6 +2,12 @@
 
 Each phase has one primary outcome. Detailed tasks can change, but the exit criteria protect the product from becoming a collection of disconnected features.
 
+Phase 6 is [accepted for the local portfolio contract](../evidence/phase-6/P6-local-acceptance-20260916.md).
+The Phase 8 local demo and reconciliation walkthrough are verified. The next
+unfinished product work is Phase 7 Arabic/mixed-language support. The user has
+deferred commits, pushes and hosted verification until remaining local work is
+finished. Deployment remains optional.
+
 ## Sequence
 
 1. [Product definition](./phase-0-product-definition)
@@ -12,7 +18,7 @@ Each phase has one primary outcome. Detailed tasks can change, but the exit crit
 6. [Cited document questions](./phase-5-cited-questions)
 7. [Enterprise security](./phase-6-enterprise-security)
 8. [Arabic support](./phase-7-arabic-support)
-9. [Operations and deployment](./phase-8-operations-deployment)
+9. [Repository delivery and local operations](./phase-8-operations-deployment)
 
 ## Dependency flow
 
@@ -25,7 +31,7 @@ Invoice foundation → Real document processing → Review and evaluation
                                                 ↓
                          Enterprise security → Arabic support
                                                 ↓
-                                  Operations and deployment
+                             Repository delivery and local operations
 ```
 
 Security considerations begin in Phase 1 even though the complete enterprise-control milestone is Phase 6. Similarly, measurement hooks begin early, while formal evaluation is consolidated in Phase 3.

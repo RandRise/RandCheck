@@ -1,5 +1,12 @@
 # Local development setup
 
+For the current reproducible, disposable demonstration, use the
+[local demo guide](local-demo.md). It runs in an isolated source copy with automatic
+migrations, loopback ports and a guarded reset. The manual developer instructions
+below are historical; the default Compose file is not the Phase 8 demo profile.
+For host .NET/Node work use the [reviewed runtimes](design/phase-6-runtime-baseline.md)
+through `tools/use-project-runtimes.ps1` in every shell.
+
 The verified local stack uses PostgreSQL, ASP.NET, the private Python mock/local providers, and Next.js without paid credentials. P2-T06 completes the durable queue/worker path for covered synthetic native/scanned invoices.
 
 ## Prerequisites

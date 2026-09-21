@@ -1,0 +1,268 @@
+{
+  "questionAudit": {
+    "audit_schema_version": "1.0",
+    "auditor_version": "0.1.0",
+    "dataset_id": "uae-procurement-cited-questions-synthetic",
+    "dataset_version": "0.1.0",
+    "dataset_canonical_sha256": "c5d18418baf999c5fecbae217eaa6c8bde8124402a9864698fe961b92f4664aa",
+    "synthetic": true,
+    "claim_eligible": false,
+    "source_count": 4,
+    "unique_source_file_count": 3,
+    "question_count": 30,
+    "evidence_label_count": 46,
+    "category_counts": {
+      "adversarial_isolation": 3,
+      "cross_document": 6,
+      "paraphrase": 6,
+      "single_document": 12,
+      "unanswerable": 3
+    },
+    "status_counts": {
+      "Answered": 24,
+      "InsufficientEvidence": 6
+    },
+    "source_hashes_verified": true,
+    "canonical_pages_verified": true,
+    "evidence_quotes_verified": true,
+    "passed": true
+  },
+  "measurements": [
+    {
+      "operationId": "9c5a12ff-7f9e-523b-9ec4-6b1cef286abd",
+      "purpose": "chunk",
+      "inputTokens": 35
+    },
+    {
+      "operationId": "37440ba9-a806-5581-a223-bca3d8c09646",
+      "purpose": "chunk",
+      "inputTokens": 35
+    },
+    {
+      "operationId": "d3816f60-9805-50f2-b297-c9b798ce78cc",
+      "purpose": "chunk",
+      "inputTokens": 36
+    },
+    {
+      "operationId": "8976332f-2ea2-539d-bbdd-6134cc5584a3",
+      "purpose": "chunk",
+      "inputTokens": 36
+    },
+    {
+      "operationId": "90412aec-9e70-5aad-8ddc-9ab8415b8a1d",
+      "purpose": "chunk",
+      "inputTokens": 319
+    },
+    {
+      "operationId": "5135c1ae-76dd-55b2-9136-63804ca9b72b",
+      "purpose": "chunk",
+      "inputTokens": 40
+    },
+    {
+      "operationId": "32e7f97a-ecbe-550b-9b60-0ea3a65630f8",
+      "purpose": "chunk",
+      "inputTokens": 33
+    },
+    {
+      "operationId": "77fd7a7b-c3f2-5edf-9344-a173b19254d8",
+      "purpose": "chunk",
+      "inputTokens": 37
+    },
+    {
+      "operationId": "74be4fcc-6bcb-5381-a665-88872de7be77",
+      "purpose": "chunk",
+      "inputTokens": 322
+    },
+    {
+      "operationId": "2f51ed5b-ac12-5547-b46d-f068909a0701",
+      "purpose": "chunk",
+      "inputTokens": 29
+    },
+    {
+      "operationId": "6d862d43-704e-5e47-bd9e-14e712bf64fa",
+      "purpose": "chunk",
+      "inputTokens": 44
+    },
+    {
+      "operationId": "a4083096-18c2-540b-8e37-cd5c7ce080c0",
+      "purpose": "chunk",
+      "inputTokens": 36
+    },
+    {
+      "operationId": "10204e6a-c189-5f5d-a642-028a8dbdd474",
+      "purpose": "chunk",
+      "inputTokens": 373
+    },
+    {
+      "operationId": "d245f917-5123-51a2-ba6c-890d79b305de",
+      "purpose": "chunk",
+      "inputTokens": 272
+    },
+    {
+      "operationId": "574008fe-898f-5efb-a541-d32781de8c3f",
+      "purpose": "chunk",
+      "inputTokens": 37
+    },
+    {
+      "operationId": "ccaecf4e-d611-5042-aa64-84d054d42346",
+      "purpose": "chunk",
+      "inputTokens": 16
+    },
+    {
+      "operationId": "f658f080-9488-51d5-b925-61353ecaa39e",
+      "purpose": "query",
+      "inputTokens": 6
+    },
+    {
+      "operationId": "d4933d27-ff37-536e-95e8-79628128fb30",
+      "purpose": "query",
+      "inputTokens": 6
+    },
+    {
+      "operationId": "2632bb3a-9e96-560f-98c4-4090bb0f0808",
+      "purpose": "query",
+      "inputTokens": 9
+    },
+    {
+      "operationId": "d0a155c6-208f-57ce-950a-1326ea1f102a",
+      "purpose": "query",
+      "inputTokens": 7
+    },
+    {
+      "operationId": "842b9818-f81a-5735-9709-7608224e9987",
+      "purpose": "query",
+      "inputTokens": 7
+    },
+    {
+      "operationId": "6bde5604-c012-59b9-88ec-43bec99ea6c1",
+      "purpose": "query",
+      "inputTokens": 13
+    },
+    {
+      "operationId": "400e022c-69dd-5ad5-bb5e-38f06356d6ce",
+      "purpose": "query",
+      "inputTokens": 6
+    },
+    {
+      "operationId": "03fca760-cd15-5294-964b-48874126ed6f",
+      "purpose": "query",
+      "inputTokens": 6
+    },
+    {
+      "operationId": "c5932b90-a9a6-515d-9a49-eec23f0db92a",
+      "purpose": "query",
+      "inputTokens": 6
+    },
+    {
+      "operationId": "11bedf19-87ff-5f54-9da6-4a24cc57a361",
+      "purpose": "query",
+      "inputTokens": 9
+    },
+    {
+      "operationId": "db3bf534-3304-5c2b-8cf1-f64d13225229",
+      "purpose": "query",
+      "inputTokens": 6
+    },
+    {
+      "operationId": "d7eb0ac6-3e8b-5f45-8ea7-e32e8d230f61",
+      "purpose": "query",
+      "inputTokens": 9
+    },
+    {
+      "operationId": "9dcec29d-5d9b-5f68-b1ae-b6e98c180bc2",
+      "purpose": "query",
+      "inputTokens": 11
+    },
+    {
+      "operationId": "379e33f1-bc26-5c68-89fe-ae20fcea6a9a",
+      "purpose": "query",
+      "inputTokens": 14
+    },
+    {
+      "operationId": "cad8e548-1ccc-5054-a2e6-271380c39277",
+      "purpose": "query",
+      "inputTokens": 12
+    },
+    {
+      "operationId": "ab41cde8-dfcb-5947-9756-9c4ff1f18b72",
+      "purpose": "query",
+      "inputTokens": 12
+    },
+    {
+      "operationId": "c8d5e399-8239-5426-a742-26729f80d325",
+      "purpose": "query",
+      "inputTokens": 11
+    },
+    {
+      "operationId": "4e356196-a6e1-5ac9-a38e-ef663a31fda6",
+      "purpose": "query",
+      "inputTokens": 12
+    },
+    {
+      "operationId": "9c4c1ec2-9d63-5b91-b4ee-95693d27c1e1",
+      "purpose": "query",
+      "inputTokens": 12
+    },
+    {
+      "operationId": "66be0801-f055-556d-9e7f-4d68cb965042",
+      "purpose": "query",
+      "inputTokens": 11
+    },
+    {
+      "operationId": "436ee4d2-9e1f-5274-94e9-a0cf219cdffe",
+      "purpose": "query",
+      "inputTokens": 11
+    },
+    {
+      "operationId": "2ab773f3-c376-5d04-b2e7-f903e3f1b93b",
+      "purpose": "query",
+      "inputTokens": 9
+    },
+    {
+      "operationId": "67152758-5006-5e7f-8845-4cfc58cf9c06",
+      "purpose": "query",
+      "inputTokens": 7
+    },
+    {
+      "operationId": "81254be1-168a-583b-85fe-ab629b506a8d",
+      "purpose": "query",
+      "inputTokens": 10
+    },
+    {
+      "operationId": "555dc311-42b1-539e-a81c-578880e70322",
+      "purpose": "query",
+      "inputTokens": 8
+    },
+    {
+      "operationId": "fad0e62a-2d8a-597b-a76a-52a095672ae3",
+      "purpose": "query",
+      "inputTokens": 10
+    },
+    {
+      "operationId": "4b2c18b2-171f-5852-8f51-2defa901d28c",
+      "purpose": "query",
+      "inputTokens": 13
+    },
+    {
+      "operationId": "5fcb70e1-88fb-557d-a025-588092bb6f76",
+      "purpose": "query",
+      "inputTokens": 16
+    },
+    {
+      "operationId": "5eadff58-1dff-5d11-9287-a2b330e7ee33",
+      "purpose": "query",
+      "inputTokens": 16
+    },
+    {
+      "operationId": "33ab49a8-ecad-5797-bcbf-57fda6acf57c",
+      "purpose": "query",
+      "inputTokens": 14
+    }
+  ],
+  "totalInputTokens": 1999,
+  "plannedProviderCalls": 46,
+  "maximumReservationUsd": "0.007360",
+  "synthetic": true,
+  "claimEligible": false,
+  "foreignMirrorInRetainedDatabase": false
+}

@@ -2,5 +2,9 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
+    <RuntimeFrameworkVersion>8.0.31</RuntimeFrameworkVersion>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Preserve existing equivalent Assert.Single(Where(...)) assertions during the xUnit security update. -->
+    <NoWarn>$(NoWarn);xUnit2031</NoWarn>
   </PropertyGroup>
 </Project>

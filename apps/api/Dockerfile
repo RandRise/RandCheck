@@ -1,4 +1,4 @@
-FROM python:3.11.15-slim-bookworm@sha256:d29f48a31a8b408ed19272ca1e7b10ebae13b240a27e862d3d4217c528e2e0c3
+FROM python:3.11.16-slim-bookworm@sha256:528257d48c1da0dcecc2e725d1ae34498d60c965f1241e39cd6a85a8859bdf84
 WORKDIR /app
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -8,5 +8,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 COPY pyproject.toml ./
 COPY apps/api ./apps/api
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir pip==26.2.1 setuptools==84.0.0 \
+    && pip install --no-cache-dir .
 CMD ["uvicorn", "app.main:app", "--app-dir", "apps/api", "--host", "0.0.0.0", "--port", "8001"]

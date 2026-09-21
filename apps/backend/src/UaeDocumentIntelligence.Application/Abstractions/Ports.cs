@@ -16,7 +16,22 @@ public interface IDocumentRepository
 
 public enum ReviewSaveOutcome { Saved, ConcurrencyConflict, ConstraintConflict }
 
-public sealed record DocumentMetrics(int TotalDocuments, int ReadyDocuments, int FailedDocuments, double? AverageProcessingMs);
+public interface IReconciliationRepository
+{
+    Task AddAsync(ReconciliationCase reconciliationCase, CancellationToken cancellationToken);
+    Task<ReconciliationCase?> GetAsync(Guid organizationId, Guid reconciliationCaseId,
+        CancellationToken cancellationToken);
+    Task<ReconciliationSaveOutcome> SaveChangesAsync(CancellationToken cancellationToken);
+}
+
+public enum ReconciliationSaveOutcome { Saved, ConcurrencyConflict, ConstraintConflict }
+
+public sealed record ReviewActionMetrics(int SessionCount, int CompletedSessionCount,
+    int ActionCount, int ConfirmedCount, int CorrectedCount, int AddedCount,
+    int ClearedCount, double? MachineChangeRate);
+
+public sealed record DocumentMetrics(int TotalDocuments, int ReadyDocuments, int FailedDocuments,
+    double? AverageProcessingMs, ReviewActionMetrics? Review = null);
 
 public interface IDocumentStorage
 {
@@ -25,7 +40,8 @@ public interface IDocumentStorage
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken);
 }
 
-public sealed record StoredFile(string StorageKey, string AbsolutePath, long SizeBytes, string Sha256);
+public sealed record FileScanReceipt(string Sha256, long SizeBytes, string Policy);
+public sealed record StoredFile(string StorageKey, string AbsolutePath, long SizeBytes, string Sha256, FileScanReceipt? Scan = null);
 
 public interface IExtractionClient
 {
@@ -51,6 +67,9 @@ public sealed class ExtractionProviderException(
 
 public interface IUploadQueueStore
 {
+    Task CheckCapacityAsync(Guid organizationId, long bytes, CancellationToken cancellationToken) => Task.CompletedTask;
+    Task<ExtractionJob> AddScannedAsync(Document document, Guid extractionRunId, Guid jobId,
+        FileScanReceipt scan, CancellationToken cancellationToken) => throw new InvalidOperationException("Scanned upload admission is not configured.");
     Task<ExtractionJob> AddAsync(Document document, Guid extractionRunId, Guid jobId,
         CancellationToken cancellationToken);
 }

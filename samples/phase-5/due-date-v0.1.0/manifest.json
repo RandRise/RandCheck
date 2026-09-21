@@ -1,0 +1,10 @@
+{
+  "version": "due-date-v0.1.0",
+  "synthetic": true,
+  "sourcePath": "output/pdf/uae-invoice-development-v0.2.0/fta-standard-services-native.pdf",
+  "sourceSha256": "6d629a9701b4b8cdd38d43c8449bb6fb9158b1e4f653ae8257d35715be742ca5",
+  "extractionSha256": "466b106314eed1ec0da6664779e6d9d1ac5d8c31041191ed35e30c53ef792c6c",
+  "adapterVersion": "local-1.3.0",
+  "normalizedDuration": true,
+  "retainedCorpusChanged": false
+}

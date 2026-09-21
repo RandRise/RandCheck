@@ -1,0 +1,153 @@
+{
+  "status": "completed-essential-local-verification",
+  "localPriorityChecksPassed": true,
+  "scope": "Current uncommitted source in isolated copies; no hosted, clean-HEAD or production acceptance",
+  "closedDate": "2026-09-19",
+  "historicalDatabaseExitCause": "Unproven",
+  "reliability": {
+    "observationSeconds": 300,
+    "startedUtc": "2026-09-17T08:37:13.8769398Z",
+    "passed": true,
+    "completedUtc": "2026-09-17T09:13:59.9086355Z",
+    "cycles": [
+      {
+        "sourceCopy": "054e4a8ac7d1",
+        "cycle": 1,
+        "passed": true,
+        "apiProbes": 9,
+        "startedUtc": "2026-09-17T08:37:36.0872664Z",
+        "completedUtc": "2026-09-17T08:56:52.3257877Z",
+        "cleanupPassed": true,
+        "observedSeconds": 314.6
+      },
+      {
+        "sourceCopy": "64dc5c57b9ad",
+        "cycle": 2,
+        "passed": true,
+        "apiProbes": 10,
+        "startedUtc": "2026-09-17T08:57:08.6489976Z",
+        "completedUtc": "2026-09-17T09:13:59.8902033Z",
+        "cleanupPassed": true,
+        "observedSeconds": 331.2
+      }
+    ]
+  },
+  "currentRuntimeSourceComparison": [
+    {
+      "source": "outputs/ci-source/8e7fa1227ac2",
+      "filesChecked": 565,
+      "changedFiles": []
+    },
+    {
+      "source": "outputs/local-demo/054e4a8ac7d1",
+      "filesChecked": 297,
+      "changedFiles": []
+    },
+    {
+      "source": "outputs/local-demo/64dc5c57b9ad",
+      "filesChecked": 297,
+      "changedFiles": []
+    }
+  ],
+  "ci": {
+    "project": "uaedi-ci-8389844dc608",
+    "allStagesPassed": false,
+    "status": "Interrupted during dependency audits; runner summary absent",
+    "cleanup": {
+      "existingContainerIds": [
+        "07ed4941b3d5"
+      ],
+      "cleanupPassed": true,
+      "testRerun": false,
+      "ciPassed": false,
+      "ciStatus": "Interrupted during dependency audits; no runner completion receipt",
+      "project": "uaedi-ci-8389844dc608",
+      "checkedUtc": "2026-09-19T16:33:46.9760912Z"
+    }
+  },
+  "tests": {
+    "backend": {
+      "passed": 1365,
+      "projects": {
+        "Api": 260,
+        "Application": 337,
+        "Architecture": 4,
+        "Domain": 111,
+        "Infrastructure": 220,
+        "Persistence": 433
+      }
+    },
+    "vitest": 61,
+    "nodeRequest": 3,
+    "python": {
+      "application": 330,
+      "native": 1,
+      "ocr": 5,
+      "fixture": 7
+    },
+    "fixturePreservation": 4,
+    "credentialScanner": 4,
+    "databaseHealthClassification": 5
+  },
+  "declaredChecks": {
+    "workflow": {
+      "actionlint": "1.7.12",
+      "passed": true,
+      "sha256": "6e7241b51e6817ea6a047693d8e6fed13b31819c9a0dd6c5a726e1592d22f6e9"
+    },
+    "web": {
+      "lint": true,
+      "browserTests": true,
+      "productionLockedBuild": true,
+      "documentationBuild": true
+    }
+  },
+  "credentialReview": {
+    "complete": true,
+    "files": 1258,
+    "scopeCounts": {
+      "checkout": 819,
+      "history": 278,
+      "logs": 90,
+      "browser": 71
+    },
+    "reviewedFindings": 26,
+    "unresolvedFindings": 0,
+    "errors": 0,
+    "scopeNote": "Fresh CI Locked browser, source/history and selected demo logs; scan preceded final report edits. Not publication clearance."
+  },
+  "finalState": {
+    "retainedBeforeSha256": "06c07f7f05eb9d20a7ceb561d43821414427bd79d0453e170a65ae41132c7549",
+    "remainingContainers": [],
+    "checkedUtc": "2026-09-19T16:34:36.9250165Z",
+    "remainingNetworks": [],
+    "demoPortListenerCount": 0,
+    "sourceImagesAndCachesPreserved": true,
+    "ownedProjects": [
+      "uaedi-demo-b51db8b8670c",
+      "uaedi-demo-be1a95e3b775",
+      "uaedi-demo-3d350c30a9a4",
+      "uaedi-demo-46c5e22bfa20",
+      "uaedi-demo-054e4a8ac7d1",
+      "uaedi-demo-64dc5c57b9ad",
+      "uaedi-ci-8fd9c7bc4e10",
+      "uaedi-ci-8389844dc608",
+      "uaedi-probe-a22c36096222",
+      "uaedi-probe-37d381d63285"
+    ],
+    "remainingVolumes": [],
+    "passed": true,
+    "retainedAfterSha256": "06c07f7f05eb9d20a7ceb561d43821414427bd79d0453e170a65ae41132c7549"
+  },
+  "retainedData": {
+    "unchanged": true,
+    "publicTableFingerprintSha256": "06c07f7f05eb9d20a7ceb561d43821414427bd79d0453e170a65ae41132c7549",
+    "clusterInitiallyStopped": true,
+    "startedForReadOnlyComparison": true,
+    "cleanlyStoppedAfterComparison": true
+  },
+  "publicationApproved": false,
+  "projectLicense": "Undecided",
+  "phase7ArabicBilingual": "Pending",
+  "totalPassingTests": 1785
+}

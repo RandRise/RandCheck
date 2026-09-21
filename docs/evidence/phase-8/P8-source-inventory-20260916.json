@@ -1,0 +1,1182 @@
+[
+  {
+    "sha256": "c7c5a82be4b2a566bee531729d02b8360e673ef6e87005f36d15726564a9a5c2",
+    "path": ".dockerignore"
+  },
+  {
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "path": "apps/api/app/__init__.py"
+  },
+  {
+    "sha256": "1ddd21147259c22f17ac7bad4c5054bb23526f903d63f376a21983d991516750",
+    "path": "apps/api/app/cited_answer_routes.py"
+  },
+  {
+    "sha256": "b12ec0e02b8b08dee1106fb076c87872d383bc1d53cc7bf26f0394d0a7065715",
+    "path": "apps/api/app/cited_answers.py"
+  },
+  {
+    "sha256": "03411ad95ea26d399a12da8c4710c3425ec6eba388560a1cd272b7de6a8e74bd",
+    "path": "apps/api/app/cited_chunking.py"
+  },
+  {
+    "sha256": "0aa724f62d2450002869987117d97b7e49ae6abb182b09c278b3fd2d548432fa",
+    "path": "apps/api/app/cited_embedding_pilot.py"
+  },
+  {
+    "sha256": "274219fdddebb551d0d82c1431473b8e8aa49a784460413c29cd2c0d937df8f1",
+    "path": "apps/api/app/cited_embedding_protocol.py"
+  },
+  {
+    "sha256": "74b1ef779d2ad80ff10f95e75b58c85eaf8361d349037d9fe87e10f83508b470",
+    "path": "apps/api/app/cited_embedding_tokens.py"
+  },
+  {
+    "sha256": "7610bb6d3eae915af1d823f76f929992864beb336f347b2a39c29d7767e2aaaf",
+    "path": "apps/api/app/cited_embedding_transport.py"
+  },
+  {
+    "sha256": "9df06e7d5767284d980d8911fa88680e0face4852e6be2f0bd1f8804006d05cc",
+    "path": "apps/api/app/cited_embedding_workflow.py"
+  },
+  {
+    "sha256": "e28855685201573cf9e660c3eca4e04f82f827b282f824e5fe556caa249653f3",
+    "path": "apps/api/app/cited_embeddings.py"
+  },
+  {
+    "sha256": "8d380a63b862dc55dfab4a813f8835358e065ce8cb7ce1d6f61e83b643aa869b",
+    "path": "apps/api/app/cited_openai_protocol.py"
+  },
+  {
+    "sha256": "ca4fce0f2f2df734ccca63163fe7fc565886bc2fe0db84a1280b3e7e0845b582",
+    "path": "apps/api/app/cited_openai_transport.py"
+  },
+  {
+    "sha256": "0291ab7c470bd49b47538a2ae0300cf8ec7a7fb05eadba7e426cc30be14e857c",
+    "path": "apps/api/app/cited_openai_workflow.py"
+  },
+  {
+    "sha256": "6cc9283c54dd7310a7b9b46f1a68d98ff2cc55927e0a8f36afe9d3d0c35245d0",
+    "path": "apps/api/app/cited_prompt_measurement.py"
+  },
+  {
+    "sha256": "a437b85025e14c2e3ef5af0c200e3a5345dc049d667619043c8e321653960883",
+    "path": "apps/api/app/cited_prompt.py"
+  },
+  {
+    "sha256": "86995b843be85dd5692beb861f8cefee829adf798c4f457abe1effe6d94d8b2a",
+    "path": "apps/api/app/cited_question_evaluation.py"
+  },
+  {
+    "sha256": "b2723b04b1f340c20c5b859ff3fb0a2332445680d942e791d74b5bb817abc929",
+    "path": "apps/api/app/cited_retrieval.py"
+  },
+  {
+    "sha256": "408c4b3d64729edbf66d940ea8ccbccb27345a1c1226702902e544635828214f",
+    "path": "apps/api/app/cited_routes.py"
+  },
+  {
+    "sha256": "9c5f667c1731e9a9ef264328a5306920a8484859d36e67deb499e75abcb589f8",
+    "path": "apps/api/app/cited_source_context.py"
+  },
+  {
+    "sha256": "c901f6ab224f26384d1dcac2af951005a73e31840fde2cf4fd3185a0d86244bd",
+    "path": "apps/api/app/cited_synthetic_pilot.py"
+  },
+  {
+    "sha256": "2d10cac618ecb526883e108f174b6d9b13193829343db9340694c99b019f12e4",
+    "path": "apps/api/app/cited_vector_ranking.py"
+  },
+  {
+    "sha256": "c971ab962c0bf4d076af44d8810657222bc01b85210372da353edc8e069ec4b2",
+    "path": "apps/api/app/config.py"
+  },
+  {
+    "sha256": "b487521dd6d3a945741f11ae6894cfff29ec0bceeb8bc19a8ede2e546c33d295",
+    "path": "apps/api/app/dataset_readiness.py"
+  },
+  {
+    "sha256": "b72fe453dda47227956add4fd06e24f305e041f01b2205f9a7c6bc3e25aac2ff",
+    "path": "apps/api/app/evaluation_comparison.py"
+  },
+  {
+    "sha256": "96685f4c2dd9db1d2923f14ebe8443ab8daac4824b0cb3f60eb72851c57962de",
+    "path": "apps/api/app/evaluation.py"
+  },
+  {
+    "sha256": "7d0f657d83600d22e8f148d583a802df12e0bf96f08261419a1dbd5460b48b17",
+    "path": "apps/api/app/extraction.py"
+  },
+  {
+    "sha256": "39bd3f182c557f8e90c3b51986a2484ff4cf6bcfc17c51f9a7cbe37f453ad365",
+    "path": "apps/api/app/fixture_contract.py"
+  },
+  {
+    "sha256": "8ada88295ae404ef0fde7491ddf4d02adf6a5e7937710dc6d92a9649afa20efa",
+    "path": "apps/api/app/local_extraction.py"
+  },
+  {
+    "sha256": "c902eb4c14d021b2e055e62d56c8813b3129c5a01bc6b0bc8a11f6e0db109f0f",
+    "path": "apps/api/app/main.py"
+  },
+  {
+    "sha256": "76a9b2e9c17559e761f9275987fe35d9dc93d7b7604ab8fd548a732ad8ad6359",
+    "path": "apps/api/app/prediction_generation.py"
+  },
+  {
+    "sha256": "53b0a051f8cdbbdf2ee97b24af0788799397491f84a3f95dc49bda7e0873d702",
+    "path": "apps/api/app/service_security.py"
+  },
+  {
+    "sha256": "f2452aff974d209fe696462dcd0fa38255f1b40b87e148057ccc4080d27e7f81",
+    "path": "apps/api/Dockerfile"
+  },
+  {
+    "sha256": "4ec928da20ddaf1e378a044f6640f22cce60df58d15d4329b37c5cdd09234ba0",
+    "path": "apps/backend/Directory.Build.props"
+  },
+  {
+    "sha256": "09b8541bbe123ef43c4bcdcbcc8405fa04d573b8fe6544021484d235c4a9d7b8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/appsettings.Development.json"
+  },
+  {
+    "sha256": "619d49a98ead076de3b5ac4b08220303baf8f20a4de22eeaf6d19b2c8e3169f6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/appsettings.json"
+  },
+  {
+    "sha256": "fdc52c7ea34974e31a65608d805cc87f7e911dfc88a5e2f080afbf290207cfd8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/CapacityResponse.cs"
+  },
+  {
+    "sha256": "f9b0155393db64b8c51bc7ff0767e4215c862c06ff985d64b316eee2390fd5d6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/CitedRequestBoundary.cs"
+  },
+  {
+    "sha256": "2f46d777e1488ba280d2e07a464dd7a772fc80c82551c9aba6c5db34476a84a9",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/CitedRetrievalEndpoints.cs"
+  },
+  {
+    "sha256": "177816875b923e6ff508c5b212d51f44586e71605ca3fd14081e55799be3eb97",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/data/uploads/33d39903-0878-4a32-8253-9fc95e7f08e7.txt"
+  },
+  {
+    "sha256": "177816875b923e6ff508c5b212d51f44586e71605ca3fd14081e55799be3eb97",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/data/uploads/542ef6a5-964b-4c4c-9087-307271594966.txt"
+  },
+  {
+    "sha256": "177816875b923e6ff508c5b212d51f44586e71605ca3fd14081e55799be3eb97",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/data/uploads/5b37c031-7229-4e33-bc85-38cfe14ffbab.txt"
+  },
+  {
+    "sha256": "177816875b923e6ff508c5b212d51f44586e71605ca3fd14081e55799be3eb97",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/data/uploads/8cb1aad9-3236-4c25-8f15-3ded9aeaae01.txt"
+  },
+  {
+    "sha256": "177816875b923e6ff508c5b212d51f44586e71605ca3fd14081e55799be3eb97",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/data/uploads/d8c11821-0410-4e8d-ad63-d4ff5091a2ec.txt"
+  },
+  {
+    "sha256": "64c4d368310d69485f638b226f1751877c62bd4d8482d987faeefef2678bbc99",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Deployment/EnterpriseReadiness.cs"
+  },
+  {
+    "sha256": "de1cf592d828713cc96afcbb05c94af0e5283deeae98359bc3fc2caece6e914a",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Deployment/ReadinessResources.cs"
+  },
+  {
+    "sha256": "062b50440164d452d0ca43bb694b45f9210787ab6d77aedc4a6afcc536983e65",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Dockerfile"
+  },
+  {
+    "sha256": "72552095bcdfb5414a2a7ca1ab634edf5e68e363c8aabe214659229a5938acad",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/DocumentSourceEndpoints.cs"
+  },
+  {
+    "sha256": "98bca3cef18631f0bdc698b5c0c5ed71a3a92a1c75b92d44154809e33c1a2348",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/ProcessingEndpoints.cs"
+  },
+  {
+    "sha256": "fd9aa64e3ff88b35d4164e3b395d3a7ee74aa2321574ba2c96a00055f3baf801",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Program.cs"
+  },
+  {
+    "sha256": "4e8669a6aa09a669014dd141edd2e33f5e51da950902f93e894237f729469213",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/ReconciliationEndpoints.cs"
+  },
+  {
+    "sha256": "84c0ec3540a3005a06a957c04619002f3b5f7720895f1f70cacf4d4a0ac91820",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/ReviewEndpoints.cs"
+  },
+  {
+    "sha256": "55a0f2e074cd4a4ad99f28b95fc2730255e9116b2665af8fa4814f4f8e0e3333",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/DocumentRecoveryBoundary.cs"
+  },
+  {
+    "sha256": "e8fd408d322e60cc423a0a7afd5809e826cc4abd7d075ba137de7cdff861fbc9",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/EnterprisePermissions.cs"
+  },
+  {
+    "sha256": "6fc54ebc22b7a9304636d37003c0318d299dcfb65dccee220280a1d6e185e869",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/EnterpriseSecurity.cs"
+  },
+  {
+    "sha256": "e9becfa6de614de42c78bf014e351bee928ebaa69093ce2c5c5092a7ed2d74c3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/MembershipEndpoints.cs"
+  },
+  {
+    "sha256": "81b48d5cd1a5f5d6ae5162d2f9ab9cfb11b3da9d9b1c11ddded72e154d11f4a9",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/RequestBodyLimit.cs"
+  },
+  {
+    "sha256": "93981f8f2f03e61c7e5dd50a182c4024795e34d113cb0c5c71a5711ba354c129",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/RequestBudgets.cs"
+  },
+  {
+    "sha256": "6db1603bbad5640478e4e7f2b2f07f20192d9675f3c3a7422712fa890710c6e7",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/RequestLimitMiddleware.cs"
+  },
+  {
+    "sha256": "f4db4f3e7fed1284e5a9a63fc9732f95a4b63dafc33e4838eed659534a29fb3d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/RetentionEndpoints.cs"
+  },
+  {
+    "sha256": "536414749fa16091e99d91041a31c0c56caf4df888fbe0598afe39df45831aa7",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/SecurityAuditBoundary.cs"
+  },
+  {
+    "sha256": "916848ea2ee427994516a3830692d13f136effb8d39b1e4ec35bd9aad7691bf6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/SessionEndpoints.cs"
+  },
+  {
+    "sha256": "1bd5cc5ba45e023efa9811cd07d24036a47aac6066a691864a2f7854b77d90eb",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/SourceAccessTokens.cs"
+  },
+  {
+    "sha256": "64213b080269043379b79f21845992c85842990a5ca01cd42761dda3b74cc1ac",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/Security/SourceKeyProtection.cs"
+  },
+  {
+    "sha256": "5d695adb5fcd187c5be03511a09e324bf4ec21eaa342c5bcf62ac4f16a8b3568",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Api/UaeDocumentIntelligence.Api.csproj"
+  },
+  {
+    "sha256": "9737447140002f399dd59c34c4c492b8bafef02de187fed8c185cf3a2849998e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Abstractions/DocumentSource.cs"
+  },
+  {
+    "sha256": "1bc6d28bbdfd8f9243a7adf2157757514dbf963599436d961d940953674c5e7e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Abstractions/ICitedQuestionRepository.cs"
+  },
+  {
+    "sha256": "31ebd8bc9d789724b1acb2cdffdb34dc4caf3edbc0fbb48fad6be8b4e5b4df6f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Abstractions/OrganizationCapacity.cs"
+  },
+  {
+    "sha256": "258e7981c93614336d49b0188be11d0485a6c16555e3ab03e65adff6295b2b91",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Abstractions/Ports.cs"
+  },
+  {
+    "sha256": "e35e6e8710b507e1330878c5c1b70600496c5bf0cfa5571c9e37f6da8dc8a6a2",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Abstractions/SecurityAuditContext.cs"
+  },
+  {
+    "sha256": "fd3915de04db1c10ea28b1ff25275579b1e3f8acefdc2c7772b7bfa3e216f03e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedAnswerValidator.cs"
+  },
+  {
+    "sha256": "7ceeaae90c88bd3d129c117b50d31e93467f610c659112b2064abc0c9ae2b7c1",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedCaseSources.cs"
+  },
+  {
+    "sha256": "3b41022e8755821fc464ff817c7a5a7db1706ca5fd9eb625fd5d4431142e3bc7",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedEmbeddingIngestion.cs"
+  },
+  {
+    "sha256": "67722be971b9d190dc265f5e429c30ba921aedda5d44ad0026120de33b476897",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedEmbeddingStorage.cs"
+  },
+  {
+    "sha256": "26edb1839295fbd74822610d149ab8bf5cf7e91d779cd7e7023a001b75a48d53",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedFactAnswerEngine.cs"
+  },
+  {
+    "sha256": "b8bdf8539be6cc9821419522c6d4ee11fba020fbef68f26443e984daf8c5ec27",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedFactQuestionPlan.cs"
+  },
+  {
+    "sha256": "8c4d8be7aabfce2d2dc802d1b59e54c3a79913ce4863281ac50fc5521c11a858",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedFactWorkspace.cs"
+  },
+  {
+    "sha256": "5aab51804f0932203fbbddf9c386e927bfb72063218fecbd0eb2ad195123c7c8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedGenerationBudgetPolicy.cs"
+  },
+  {
+    "sha256": "60a2ed9794c8896fb0346f350bb9c4b028d3f412854f06765fc2c7e81dfc5a84",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedGenerationCoordinator.cs"
+  },
+  {
+    "sha256": "1374d5682d5fc470e7236f4a2e423ec3b80d88296bb4a3405486b745608ade5b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedIndexAssembly.cs"
+  },
+  {
+    "sha256": "82285ac522d1e71166cd21eb42d46421ee8064e9389bcc3d05b98c73cb727aff",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedOpenAiPilot.cs"
+  },
+  {
+    "sha256": "75ddcb5a65602b96176a05c5a4662133d5a9f98e7623c83bc9a9068376ae4c53",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedPaymentClaimPolicy.cs"
+  },
+  {
+    "sha256": "c941ddef8f3537a6e6942a90397f2d6f0bf0ce0e1d9e68e7583b8ad182331268",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedQuestionWorkflow.cs"
+  },
+  {
+    "sha256": "10e92ff5f73cb287a6791e6c5d8b71fc2f30162eae2213381233e0fa9794b377",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedRecoveryAssessment.cs"
+  },
+  {
+    "sha256": "e00135e9d39c64caff57f932a72917573a8701864aba0a3bb62bd75f73808921",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedRetrievalWorkflow.cs"
+  },
+  {
+    "sha256": "d40712c79d617ca24b2c3b18d7a61406813168177523a00a202641d536c59725",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedReviewedQuestion.cs"
+  },
+  {
+    "sha256": "9bef024eb1b1ff4a152024120e19b90ca35ec8d7ffcfc329c2a5cec1f05cd5b8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedScopeClaimPolicy.cs"
+  },
+  {
+    "sha256": "7d8e36a26faf174831baa5520f75fdf6d61d42b0d74bf242aca53c5e664ca712",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedSemanticRetrieval.cs"
+  },
+  {
+    "sha256": "3d724f09a5acd93592a3e85b10043b14188ebe037e87b584873b97c1cd9237dd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedSourceSafety.cs"
+  },
+  {
+    "sha256": "d87a98442b3c2e9bcbc5303fc95d7d5bcc77c83187938d92e574802cf73e49a7",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedTypedFacts.cs"
+  },
+  {
+    "sha256": "916c6134e30cab8cfe94da8a66548f67e4d61adab551b72746214fb40e2aaff4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedWorkspace.cs"
+  },
+  {
+    "sha256": "deb131b6f1acee776d7e4f7d3fbcd0c1a9629a9cc79a724c1aded24a57d5b9be",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/ICitedGenerationJournal.cs"
+  },
+  {
+    "sha256": "14b3a2e9456868e268f970b6732fb5acf6735b2e15aefc5d25c12c99c5b7dad2",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/ICitedGenerationLedger.cs"
+  },
+  {
+    "sha256": "1eb44259416f3b10dd87ee423f0113e6430a07d86432bb083658b494f1e2c1b3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/ICitedPilotUnknownHold.cs"
+  },
+  {
+    "sha256": "ac14258bbae6566bbab11e2c8f8d67e1cb637560fe1aae15e34d81f7b07e0f48",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/ICitedRecoveryExecutor.cs"
+  },
+  {
+    "sha256": "7d1e40a22c88534f4382fd46a8fdc16e7a7390fec575e6db9db353039f2a2df7",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/DocumentView.cs"
+  },
+  {
+    "sha256": "f8f22ec008cce6fed8a5b11616425dd5f23fcc69b644ca0af3cb181b303418ad",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Processing/ProcessingHandlers.cs"
+  },
+  {
+    "sha256": "09488df5e57bb34ffefaffb257158827a047fdd4fe73b95ef2b3b399a73959f3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Queries/DocumentQueries.cs"
+  },
+  {
+    "sha256": "47950914d60aabc35bc5fd9a9d1c720af7cb695113c622743ca16018789aaca4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Queries/MetricsQuery.cs"
+  },
+  {
+    "sha256": "c213c615c871695e9e48be40a32bfb5c9772a4655f5de7d9f366cdd0a8d9c993",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Review/ReviewHandlers.cs"
+  },
+  {
+    "sha256": "1e0eb1cb016935ad5bd326de88ade28426df6e322e173dcf847a20846e25efab",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Review/ReviewHistory.cs"
+  },
+  {
+    "sha256": "840c1a5cac9247dfb409e1a84493d5843b0706bbe7fbfcf1985376c8ec18f804",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Review/ReviewWorkspace.cs"
+  },
+  {
+    "sha256": "f98033288175b747a0e2c4cf7e900c278d2987630a20a5d9b3d1bdc3d374ef71",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Documents/Upload/UploadDocument.cs"
+  },
+  {
+    "sha256": "bc7244a73386ea1835e1ac55d20743555101463a6288cebeb1d19fd2601ab893",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/Reconciliation/ReconciliationHandlers.cs"
+  },
+  {
+    "sha256": "ce566eea2afc6871b00475a648a7eb66ed5b250bbea39be03eb958bde52ac9f6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Application/UaeDocumentIntelligence.Application.csproj"
+  },
+  {
+    "sha256": "d3cd3844ac7e495f14c6ddcdac6d563444fd4f941e8b95bc8707f079ed6379cd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Common/Guard.cs"
+  },
+  {
+    "sha256": "8527c6f5a31e9ac03e591885d418c32804e73667653bdca4923a9d039ae3a5dc",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/Actor.cs"
+  },
+  {
+    "sha256": "eafb0f09f8dcebbd244fec6f6a570ebfae606ae1eed00bd3727541628e843cbf",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/CitedChunkIdentity.cs"
+  },
+  {
+    "sha256": "6d4808595e2cfe13933d0f948c0ef56db21b093800a715daff45dfa85695cbd4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/CitedDocumentIndex.cs"
+  },
+  {
+    "sha256": "ded58c5a0d7f5e3a1d747404332d7cb04e98891080cbc82e20186e65cb21c4e3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/CitedGenerationArtifact.cs"
+  },
+  {
+    "sha256": "fa6ebe9b8d69abb12ef980d24e6084fdfa18ff3091026b547abdf17db17a546f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/CitedPilotBudget.cs"
+  },
+  {
+    "sha256": "235e9eaf5011e61ee73d49680e9660c254cfc3e62b19a5397e70f2eab56ff9c1",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/CitedRecoveryAudit.cs"
+  },
+  {
+    "sha256": "225abd51567bdb2aa295826de15501b4024b7252b3ae9ea894b2c7122bee8f84",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/CitedRetrievalRun.cs"
+  },
+  {
+    "sha256": "83a86dd7bcc07c64230ed5dac4a76b0a52b1e1d13070b5263e7a16fd915a5740",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/Document.cs"
+  },
+  {
+    "sha256": "c3149bd0ea2105a5d13688f551b4cc0789d4a62c20b0e899a94ef39cf13eeb9e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/DocumentDeletion.cs"
+  },
+  {
+    "sha256": "03866199957f3eabcff864063525f88826e19efc4ecd3961a5b456de7180be79",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/EnterpriseMembership.cs"
+  },
+  {
+    "sha256": "0f28013194cacd194500eef14f26c97bbd0ea250e7a72123cdb9053f15ce40fd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/Enums.cs"
+  },
+  {
+    "sha256": "521a4b647bc1b8b4a31d96cc3dc2d1a7d43d792643949cae6684de0b82550c9f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ExtractionJob.cs"
+  },
+  {
+    "sha256": "505b8edb29f373389b32af7b6df6c5e901e0c097967d22457c5b5adf36779e91",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ExtractionPage.cs"
+  },
+  {
+    "sha256": "e5e0004ddb6926ecae16373979d55da49dcf49430534bd9ff035a19313298009",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ExtractionRun.cs"
+  },
+  {
+    "sha256": "b2dc693ac1ac3d0fb9ccb82c2215e4da6bd187518f965c5e8924fd5edae96f7a",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ExtractionWarning.cs"
+  },
+  {
+    "sha256": "6651783ab1002fb914dcb09ba299e9484f084664712417e23db300e4b59c5301",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/FieldEvidence.cs"
+  },
+  {
+    "sha256": "5ffa1e099ca715ea4f3475862719a7eece845d4bb01dbd5d746553bdbca26b36",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/MachineFieldValue.cs"
+  },
+  {
+    "sha256": "c0e224a2606a063d631862bd390cf224aabe3ffcc129a6fed9764024ed309b92",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/Organization.cs"
+  },
+  {
+    "sha256": "c8545c4ed7893a32c901b620d2ee23c2c7aa85f1f2f9e9946b9e6b376e1d654f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/OrganizationCapacityPolicy.cs"
+  },
+  {
+    "sha256": "6dcdf5266a2856a9f51448d4dc9c9b541021ca3535d73d4e444745b3b2e77a67",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ReconciliationCase.cs"
+  },
+  {
+    "sha256": "e12cd6b2c471f3d01f9bd2c4f02601e4464c7c72cf094a915e1851ccec842d0d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ReconciliationFinding.cs"
+  },
+  {
+    "sha256": "7f685bb17699cd2d61740c0203e9a1461634dc0ce373e76f1e67f4b3aaa7f1df",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ReconciliationRuleEngine.cs"
+  },
+  {
+    "sha256": "2a8770195c3da6cdac64aa71ba28309f28994ebd78de89790b5564d09cf0da66",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ReconciliationRun.cs"
+  },
+  {
+    "sha256": "0c8a81a9b0f79d3e9599aa16fa07f61d5bf9dfccd7d12facaa2cda79ab9dc07d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/Retention.cs"
+  },
+  {
+    "sha256": "5b94522719dbf9c5b8ed794be88da90f41da20d15b00a55fdae083f124247ce6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ReviewAction.cs"
+  },
+  {
+    "sha256": "03b8b6338bdd616b4ea430676b683ef8b4850886db1426f266df72f7c987fdc4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/ReviewSession.cs"
+  },
+  {
+    "sha256": "07f9d9c794dacd902a852595646de0b7383fe97fb5a7afbcffd98c78cd67c14f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/Model/SecurityAuditEvent.cs"
+  },
+  {
+    "sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Domain/UaeDocumentIntelligence.Domain.csproj"
+  },
+  {
+    "sha256": "c82184e996a68a9be0f3cc426bebd936faa18e970cd7be6a01b4b92112237563",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/DependencyInjection.cs"
+  },
+  {
+    "sha256": "6ab48d92005e95875ab4f279bda6c177823d29f6c9128e8750f74fbea50c0249",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/ApiDatabaseGuard.cs"
+  },
+  {
+    "sha256": "12ab0ceafce38f2158578fd603d3085d799748255f15e06ff678cfcb71479273",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/ApiDatabasePolicy.cs"
+  },
+  {
+    "sha256": "8d3b9ceedda40030d4961aea3acf1fa5ffbbafbd765ab49b5f5de1fb34595c2f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/AppDbContext.cs"
+  },
+  {
+    "sha256": "851bc00c4b5ca88cfc34e72f95f8993327b1351e519a47be5f90eda1604192bd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/AuditArchive.cs"
+  },
+  {
+    "sha256": "4e61acfe16b0d4c6f317d81d109fade1ecb0d601c0b82504808ba9e8d9332803",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/AuditExportSnapshot.cs"
+  },
+  {
+    "sha256": "2aa4f64570664d4ed97268d916a4f760b973c9e3793877770bb43ce22510037c",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedCaseSourceStore.cs"
+  },
+  {
+    "sha256": "04c7084353b70b1208e788db1c81bcca92108c3d66672105b6c46aeec6be73f4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedEmbeddingSources.cs"
+  },
+  {
+    "sha256": "3dbafed5a1a96b1c47168f5d167fb81c2a71f888515c21687d06145967ec7eec",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedEmbeddingStore.cs"
+  },
+  {
+    "sha256": "f786336effb962b03dc04eaff3cb1ba8afb16ccc18bdbcc2d531415e8bab7d7f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedFactSourceStore.cs"
+  },
+  {
+    "sha256": "c65d274eb5b817478a21ed1f5541d2f7b0f813f84959e10076e3c718a8f7f0ce",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedGenerationJournal.cs"
+  },
+  {
+    "sha256": "67a2ffaccea52d8acfce66ac52bcc7a028e80f7ef79196c3e4ecf11f5f2c132a",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedGenerationLedger.cs"
+  },
+  {
+    "sha256": "eec2b39024b46c7f2f8f80db042bd60bfdd17b6d10f481e9473f3d66dd4a15bf",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedPilotUnknownHold.cs"
+  },
+  {
+    "sha256": "c40bcab9386e9ff270c70b28821787c10d5d7d877dfdd4926ff6df64047e09bd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedQuestionRepository.cs"
+  },
+  {
+    "sha256": "a3fddc1503bedbc0d320ada9c361671f0b38f2c7bee0757c080546034dc11cc4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedRecoveryExecutor.cs"
+  },
+  {
+    "sha256": "b5b45f64bbcc8c210e6b30a207c4b9626e1dd66fac8dfaf601bc08bdbf6c0409",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedRecoveryReader.cs"
+  },
+  {
+    "sha256": "b67ea96ade3493eb93a946bd635ad228f007dccd919fb84a1c10bdcb8f7abfa8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedRetrievalStore.cs"
+  },
+  {
+    "sha256": "b0a597443dbc45c522b55ed981ac899a1251938f361e3906a355cddb4ab8fc84",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedReviewedQuestionStore.cs"
+  },
+  {
+    "sha256": "f321fa154f0ef7177220d1661568dcbb212d0c1fae365572b31cb107eef2fc64",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedSemanticQueryLookup.cs"
+  },
+  {
+    "sha256": "e9072daaedd682e827d920bca8be1ef0d8aae4b69877417f176b8b5f8d2c146d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedSemanticRetrievalStore.cs"
+  },
+  {
+    "sha256": "986d6b3e600fd3c36871cf593c2333c417e06445c7ce05cb45606ed38a8aedae",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedWorkspaceStore.cs"
+  },
+  {
+    "sha256": "d78d82f124fb6b8274e6fc33b5d8b52f0296f171511faa20baf22d6421cd04a6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/ActorConfiguration.cs"
+  },
+  {
+    "sha256": "b88836702f04d3970b7eaf2a367eabb4a677adfe3e135e324a6ba39176c54c28",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/CapacityConfiguration.cs"
+  },
+  {
+    "sha256": "2570df025670e82b2b58cb73784baa7234e951f7c9501cb89517b83f84e52bc5",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/CitedGenerationArtifactConfiguration.cs"
+  },
+  {
+    "sha256": "39e13189f40aaf5faaa0eab1f4430e8b3f8ab46681800552283335bc32295926",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/CitedQuestionConfiguration.cs"
+  },
+  {
+    "sha256": "68537f1dab3121def62780fdc28d9676047a45f91b82ffe6b21ded1a67922602",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/CitedRecoveryAuditConfiguration.cs"
+  },
+  {
+    "sha256": "9da54295afc370808eafe4659402733e4bcc7dec339ef214594df7e9a990adfd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/CitedSpendConfiguration.cs"
+  },
+  {
+    "sha256": "3f293969f048c9cd3b98b22805764ff31be9e21f5050a4b33dac1e17f082c462",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/DocumentConfiguration.cs"
+  },
+  {
+    "sha256": "e82f8ca96360ebe822093310cb5d7aefc30c92506fe6c244c00641e1994fd0bd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/DocumentDeletionConfiguration.cs"
+  },
+  {
+    "sha256": "6895a84fcd8815b99908a9f248c307b7bbfe50ac409e7109aefb346958bfc0dc",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/EnterpriseSecurityConfiguration.cs"
+  },
+  {
+    "sha256": "78225db625e356f14e6edef6867b4a61906cd6c6b68df97775c695532e6d8503",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/ExtractionConfiguration.cs"
+  },
+  {
+    "sha256": "c6cef90dc0074782e4c860bc51dc569986bcdae65c982f821142b4c84985a61d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/ExtractionJobConfiguration.cs"
+  },
+  {
+    "sha256": "68cef323ed2e87acbe1dbdd6eaefdcdd2a72a4a13e44ecc6cab468c3e13bc46f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/OrganizationConfiguration.cs"
+  },
+  {
+    "sha256": "ebb22e40bf5ff9c9e72df91beca9341def99967d3cdc4c67b01d1a933c03b342",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/ReconciliationConfiguration.cs"
+  },
+  {
+    "sha256": "41b38279a5f11da8d430d48be3dc4d18c6c9d249e7cc1d3a50509ddfb46b7226",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/RetentionConfiguration.cs"
+  },
+  {
+    "sha256": "5bdff54464356a6e13cee32a7647bd05edfbd0a28c1396d3e5227d017d2c11b8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Configurations/ReviewConfiguration.cs"
+  },
+  {
+    "sha256": "2da7fd89a2c8a9c647bfc1b5f720a04d18814f056ef7c4c75f9053760c3927a1",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/DatabasePrivacyLoggerFactory.cs"
+  },
+  {
+    "sha256": "67420b05d01593190f673e38853e6c222e723bf623f13957773e656c10c4e98b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/DesignTimeDbContextFactory.cs"
+  },
+  {
+    "sha256": "c7cf3d464db430472f1ff530e07690352dc96c0ee9e5bab273194029f1428fc9",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/DocumentRecoveryGuard.cs"
+  },
+  {
+    "sha256": "7fbad872d387e8ff6ed446261cc7abc8b39a55c20bcce33a1ce973a2797788e5",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/DocumentRepository.cs"
+  },
+  {
+    "sha256": "8683d35bfff9fbb8324fcbbb439fb6628baed847aa905bcf706ed202c9edcb00",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/EnterpriseDocumentDeletion.cs"
+  },
+  {
+    "sha256": "cf2b9ca7b675c7532cbdce58c93bdf83dce6ae518719bbcf2e7215b2ad5189c5",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/EnterpriseMembershipService.cs"
+  },
+  {
+    "sha256": "a07472391027ab484a87a9de3fafbb6bcfae567b157908738f86b28e27898af0",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/EnterpriseRetentionService.cs"
+  },
+  {
+    "sha256": "46f815873353bd7941401f440e630bc29eaea212ba09a56a5b0a9c0cf58a4e08",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/ExtractionJobQueue.cs"
+  },
+  {
+    "sha256": "08b994f2a37c9e221077c46cf04c54a344438e170661c34d849f636bb0e19cb8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260807130238_InitialSchema.cs"
+  },
+  {
+    "sha256": "c868f2ca2e0b32e31ab9f8cdd1a78ec5df4ec5f2fbc526ae1c0132345174b3dd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260807130238_InitialSchema.Designer.cs"
+  },
+  {
+    "sha256": "405a81076db8107f304215fbe1bea9eb34b1b3985a0b155a963709e3a2bf4291",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811073607_AddReviewActionValueTypeConstraint.cs"
+  },
+  {
+    "sha256": "406de58f3f0028aafdbfed1780f0ee5af4f502fa4a48cc5c408e639fe8a70a97",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811073607_AddReviewActionValueTypeConstraint.Designer.cs"
+  },
+  {
+    "sha256": "8e93d66a8d007213e0ce247c1df2d960c865eedebcd2009e343194d7b84d284f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811094741_Phase2NormalizedExtractionContract.cs"
+  },
+  {
+    "sha256": "eb43903a42d821c2957bd61c9716c092393fc92ed405c616e900bdc944f2d14d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811094741_Phase2NormalizedExtractionContract.Designer.cs"
+  },
+  {
+    "sha256": "77b9b4aa42f2f70ee51e7d296d66a6f12e499f8a23ec55b9332eaa4e0b24e74b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811100426_HardenExtractionEvidenceScope.cs"
+  },
+  {
+    "sha256": "37c52c73a69f3c7f1caff8e229522f7d3b8396856a51496c0bf6d6fa6cdbca7c",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811100426_HardenExtractionEvidenceScope.Designer.cs"
+  },
+  {
+    "sha256": "cc1c0ba7e5b0b2a25e9d817ba67e3a3ca3efdd0c56ca1959f98f6b48724b1b22",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811101909_PreserveLegacyPageNumbers.cs"
+  },
+  {
+    "sha256": "37c128d33e568e58736abb4d2390add40195e1701a6a95d4e311e39d8849d344",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811101909_PreserveLegacyPageNumbers.Designer.cs"
+  },
+  {
+    "sha256": "bbe78501385fe90201edc8c85805bb8703e56d409c578007be38afeb34456762",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811131151_AddDurableExtractionQueue.cs"
+  },
+  {
+    "sha256": "d54e08928f952649615ae846e8368e933178cdb5d180b088008842bbd6bb214a",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260811131151_AddDurableExtractionQueue.Designer.cs"
+  },
+  {
+    "sha256": "9fd107b57a249b3a10a00aecf3be0534233e5e627dd6da91e1789986e7139171",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260819094812_AddReconciliationFoundation.cs"
+  },
+  {
+    "sha256": "5d0047b29fc6778f398c094628a9a2d850d5e0ebca0cd6c143781d8a51717387",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260819094812_AddReconciliationFoundation.Designer.cs"
+  },
+  {
+    "sha256": "5c080b359c5ee2772a7b2d78b1da8cc19ffd93a5aaab45db6c5558ce7dcdf012",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260907001143_AddCitedQuestionFoundation.cs"
+  },
+  {
+    "sha256": "30c48668edb134502d891fec85b1f00e7ed46954658625f87bb77255f9248527",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260907001143_AddCitedQuestionFoundation.Designer.cs"
+  },
+  {
+    "sha256": "3db98c9b794822494c12f4a51a10d3ce710cf08f19f524526dc3e325478ac71d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260907013111_AddLexicalRetrieval.cs"
+  },
+  {
+    "sha256": "c17f5d77e8fb87838e3af0b2df611220fe1cd7efecb19cac9b167119b83c2368",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260907013111_AddLexicalRetrieval.Designer.cs"
+  },
+  {
+    "sha256": "8cdf006e28dba7e94b3169b603dfb44e1be7763ab06e3481aae904f75638a93b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260908210639_AddCitedPilotSpendingLedger.cs"
+  },
+  {
+    "sha256": "765bfdd240404b3ad3ffa553429414062e5995e497a7ae9c8011ad7fb0d763cc",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260908210639_AddCitedPilotSpendingLedger.Designer.cs"
+  },
+  {
+    "sha256": "a9c23c5fb2d22d9b744866fd10f616ced3e847c833443beba7d96fff46426f8f",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260909002217_AddCitedRecoveryAudit.cs"
+  },
+  {
+    "sha256": "8ac063e424ff41e2735fe302a4711b7ec7214ce69f2d3c2e107e290faa4cd79b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260909002217_AddCitedRecoveryAudit.Designer.cs"
+  },
+  {
+    "sha256": "76f7d44ac932c8807ee1ec1ca3567227f459050cd989d7292c41a35e6594e5f7",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260909123847_AddCitedGenerationArtifacts.cs"
+  },
+  {
+    "sha256": "7b9a0c9d93bc56f05bc132436fe9a6667bcdf99c5f0d6ee114bc0b440f288b3d",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260909123847_AddCitedGenerationArtifacts.Designer.cs"
+  },
+  {
+    "sha256": "2e72a93936abf9a20c84911bef4afaeb0f065f29aa4f0ec75c29e2758e1f2a28",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260909213640_AddEmbeddingSpendWorkload.cs"
+  },
+  {
+    "sha256": "baf3998643d4dda821ae01156ddabafb9edf494989f3e9a93362afc781f300f1",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260909213640_AddEmbeddingSpendWorkload.Designer.cs"
+  },
+  {
+    "sha256": "1f8f57ed660f830127c5aae7d104d07e8eac254a8ee1b5d94f99d8eac77e914c",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260910005624_AddCitedChunkEmbeddings.cs"
+  },
+  {
+    "sha256": "99b36cd64fdd9f500ac572c1b315372bbc22c234a748c180fb58ba8e0a7890d4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260910005624_AddCitedChunkEmbeddings.Designer.cs"
+  },
+  {
+    "sha256": "c1afe27bb18b84005608b75bb6c8bc665d56a6a3d77e6eea66aeb882565498a4",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260910141409_RetainSmallUnknownEmbeddingHolds.cs"
+  },
+  {
+    "sha256": "77abb402a82e9a3201c94036a1764832175c6fffddb0fa1683398dc29d4090c3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260910141409_RetainSmallUnknownEmbeddingHolds.Designer.cs"
+  },
+  {
+    "sha256": "7e0da4794481b12139850313562af76eb329178b58c571561f16eeb37023fc3e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260911162600_AddEnterpriseMembershipAndAudit.cs"
+  },
+  {
+    "sha256": "967d2e9a1c17d5a7c915c435f44e22f6e236121a1d21fef72998a7433d59f479",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260911162600_AddEnterpriseMembershipAndAudit.Designer.cs"
+  },
+  {
+    "sha256": "3c65cfd60fc62d4881089693aa932e6af707721452272cccb2c6538c4fd8bca2",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260912173517_AddRetentionControls.cs"
+  },
+  {
+    "sha256": "300f0985be1d3f367a3b3660c46567272e2ea0af0d2e12e2a3f89dc5b03b94c8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260912173517_AddRetentionControls.Designer.cs"
+  },
+  {
+    "sha256": "4585c66bb373381928434e63cedae478a9a77273b1fa1218eeeba0eddd79df65",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260912200431_AddDocumentDeletion.cs"
+  },
+  {
+    "sha256": "003b39ff5e2f39dce8350d2d4c30c5048ddd18fcbbc999abf19daad52e5a51e6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260912200431_AddDocumentDeletion.Designer.cs"
+  },
+  {
+    "sha256": "3c01e3f38194541c2465460c22295e55814c8f68aefbb9f5704db7a692bb45fc",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260914125645_AddOrganizationCapacity.cs"
+  },
+  {
+    "sha256": "0960ea826f9324316b19b55b1534ea663bdf1916d275f95368f2e542a57d3b91",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/20260914125645_AddOrganizationCapacity.Designer.cs"
+  },
+  {
+    "sha256": "785a00fc5f6dcde289720a4f56c55b478555fe9d2b22be9eaa3a29829bbd1bf6",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/Migrations/AppDbContextModelSnapshot.cs"
+  },
+  {
+    "sha256": "57c5d9d2c1b45dd8c629801b13fc5b208bc41ed6a4b534e1a16dbcbf4cbaf49e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/OrganizationCapacity.cs"
+  },
+  {
+    "sha256": "f0ecccac1bce5de040d03da4dd778e6fade8f6b66850da77e5dbc7c23ad990f3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/OrphanSourceRecovery.cs"
+  },
+  {
+    "sha256": "76d5266959f713511ff6d0d758ccfff9cee39a20a551cee4afdaeef16977c327",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/ReconciliationRepository.cs"
+  },
+  {
+    "sha256": "5e8a7852ee2c9a827dc0b06efcf58771cd5df1e0d27d2c4ad1d030ed14153093",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/RegisteredSourceRecovery.cs"
+  },
+  {
+    "sha256": "6a7f3c8296f93709dea9ba5ccbf611083be24e46169941972782ac8bb455b408",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/SecurityAuditPersistence.cs"
+  },
+  {
+    "sha256": "234a3ac0c5155fd4d98b3d146411007552b8b1cfed7b70db4496d227007c2c28",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/UploadQueueStore.cs"
+  },
+  {
+    "sha256": "8203e7cb88307ea97473aa40911ce366f6b0e5cfd1642286832499416be0a2f2",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/WorkerActorProvisioning.cs"
+  },
+  {
+    "sha256": "17ffbc89df440541d06ed37dfb60296c685d01ccb650b2544c5246032dea3ee0",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/WorkerDatabasePolicy.cs"
+  },
+  {
+    "sha256": "bacd28595fb063a94e2890734fe3e9cb86eb2fde5908da1a5b9c0947f92a3acd",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Properties/AssemblyInfo.cs"
+  },
+  {
+    "sha256": "cedb78b72c69aeddfdfd189cf288ba6362920d0b99c31b9eb3f7b813e9ba99d2",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/DevelopmentServices.cs"
+  },
+  {
+    "sha256": "7a605992e5e24d1f1debed637caa2f457415defad9dec58a22bc03527b801941",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/DocumentDeletionJournal.cs"
+  },
+  {
+    "sha256": "1b9918c09415fe0b128863280450d643df369abf37344069ef5914fcc5754dc3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/ExtractionFileSafety.cs"
+  },
+  {
+    "sha256": "521671153cda7414ba5937a29e35982e54cb7ce6f7ea9353765286981e3e3e51",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/ExtractionResultContract.cs"
+  },
+  {
+    "sha256": "43150ccdb2d69d1044c3a7265999304fdda301d473fc3be2ecb7c1a2bb81a6f8",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/ExtractionWorker.cs"
+  },
+  {
+    "sha256": "b5cdabcf278970fc083ec791ba167eea80240b903ceab5c7e2fda718976f6274",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/LocalDocumentSourceReader.cs"
+  },
+  {
+    "sha256": "063e5f66339dc8ddf93b965a03dacb4ccd5b1c58ab51771e1b6f82c7bd22b87b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/LocalDocumentStorage.cs"
+  },
+  {
+    "sha256": "6446f4955d44d5b25500767d72d99b31922bc20470b4f3b158f55f937fe68166",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/MalwareScanner.cs"
+  },
+  {
+    "sha256": "4a52586492f5807fa8c36a64a657a5031af52e351fec10ffc90acfd4aca155ba",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/PrivateServiceCredentials.cs"
+  },
+  {
+    "sha256": "2c28fc9f705d1c3d749f9d9a524004cffda3a0cd1e5d0d78820fb068e7b544ac",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/PythonCitedAiClient.cs"
+  },
+  {
+    "sha256": "5f5b74bc46e390f0bae7fed84f08a0727c11385a11de6fffd498337397834de3",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/PythonCitedEmbeddingClient.cs"
+  },
+  {
+    "sha256": "907a5a6e6882979cde45e8ede2b94b5ab97836196decb2226dd3c001b5d7ef0b",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/PythonExtractionClient.cs"
+  },
+  {
+    "sha256": "472c3151797a3ccbbaaf1afb1629b74ff00ddb8856023a318526365566b4d465",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/QuarantineFiles.cs"
+  },
+  {
+    "sha256": "096c7e29ed94a3b7be7e95f964295028971f13d8d36b8db5c686bacc9bb7cd4e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/StorageMaintenanceService.cs"
+  },
+  {
+    "sha256": "fb23f9b1ba8bc0dacadb719f4ed9f9450674d81f98a0597374d146fe39b8e35e",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/WorkerQueueSession.cs"
+  },
+  {
+    "sha256": "cc73e721a909b4eb5d8a156a977334968c96e066c217846d4d95a4a206b2b7ba",
+    "path": "apps/backend/src/UaeDocumentIntelligence.Infrastructure/UaeDocumentIntelligence.Infrastructure.csproj"
+  },
+  {
+    "sha256": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
+    "path": "apps/web/AGENTS.md"
+  },
+  {
+    "sha256": "0923e1bf24e3cfee3a0c14bce793fcea6eabaf0b13e127959ce23b6981fa35ce",
+    "path": "apps/web/app/auth/callback/page.tsx"
+  },
+  {
+    "sha256": "7726bbea7622bb859d7543c7702e2d57f3c9ea328128689970b94b6f400f1ae8",
+    "path": "apps/web/app/layout.tsx"
+  },
+  {
+    "sha256": "111bd2368286f394a3e65039dcae3dc42ab1bbd05bce5341878a72d05eb1a593",
+    "path": "apps/web/app/organization/audit/page.tsx"
+  },
+  {
+    "sha256": "0f389a560e00d180c4c36513cd1a38a0b0ab79fb7bf305c84b07cb1e8d1dc684",
+    "path": "apps/web/app/organization/page.tsx"
+  },
+  {
+    "sha256": "e1ef5b1bf098a02e0aea7c60548d3e3be336ea5036a0651fac076de001b676b1",
+    "path": "apps/web/app/organization/retention/document-deletion.test.tsx"
+  },
+  {
+    "sha256": "cbbc6a4940385ee93ca3fd98455053dfe9d3038d95d83c3bc0a55b275ed664d7",
+    "path": "apps/web/app/organization/retention/document-deletion.tsx"
+  },
+  {
+    "sha256": "50e45e7022fd951c4713b7968386ca5c414aa949d26b0dc18ec745322e23a5e5",
+    "path": "apps/web/app/organization/retention/page.test.tsx"
+  },
+  {
+    "sha256": "2dec8a41ab2be2ca92398b1762b1169fcc96dd8432078fc7e9cd36b5e68f5a07",
+    "path": "apps/web/app/organization/retention/page.tsx"
+  },
+  {
+    "sha256": "b475a752b4cbb1e53afeeb64c641e1aa494342d818ebcc051611a933d266e0d9",
+    "path": "apps/web/app/organization/retention/retention.css"
+  },
+  {
+    "sha256": "dc18a01c1e11d7ee145ec96f251a54e011e1e3669e036a67dc74027fe4fe9703",
+    "path": "apps/web/app/page.test.tsx"
+  },
+  {
+    "sha256": "2edda9881660d78466045f45c4a5d097c7b73df450ad7e37cbb8884d0b4a45da",
+    "path": "apps/web/app/page.tsx"
+  },
+  {
+    "sha256": "fe68aa3e0f36f5abe5db6a411800fe3481197f928a07f881062afa72e8b809e9",
+    "path": "apps/web/app/questions/page.test.tsx"
+  },
+  {
+    "sha256": "0cca32bc2e9b57051db225c069ecc8d47b7680e0bf51872edc7e73ed08ba03f0",
+    "path": "apps/web/app/questions/page.tsx"
+  },
+  {
+    "sha256": "bf8288cefca26b1624dcf47d3458550fca0c44c900a695a5769fc2aa8ec05791",
+    "path": "apps/web/app/questions/questions.css"
+  },
+  {
+    "sha256": "7bd0121e428e4425273a5a7090f4dd093145fd98bc24514e21ec665bd7c1a26a",
+    "path": "apps/web/app/reconciliation/page.test.tsx"
+  },
+  {
+    "sha256": "8f3c2388b5c9c6a705a9ee730d6b867af27aac590d44d7f853137738d1cb87fd",
+    "path": "apps/web/app/reconciliation/page.tsx"
+  },
+  {
+    "sha256": "8dbeb649b7b072f5aa056c8e98ef515bed40b2e85787b916bbceb0df297081bc",
+    "path": "apps/web/app/review-request.d.mts"
+  },
+  {
+    "sha256": "f8c865bd1ca5d09f3bc3485cb8b87d3a00d1aa0cb6b81f3bd172049514d363d3",
+    "path": "apps/web/app/review-request.mjs"
+  },
+  {
+    "sha256": "9b4b23b99be427d4af2720f9571aa4201ad68564ceabf08e6b326d5576cc2406",
+    "path": "apps/web/app/review-request.test.mjs"
+  },
+  {
+    "sha256": "6bb3c6cdd1f3715f4e3fc051dc6077a406c37b28cf108e5e15c868ff71896670",
+    "path": "apps/web/app/security/api-fetch.ts"
+  },
+  {
+    "sha256": "934ec63e406a331032cedfe009c1f8f477bd60fbefc1bd5260b33cbcdb0926d2",
+    "path": "apps/web/app/security/enterprise-provider.tsx"
+  },
+  {
+    "sha256": "354ebd278f77f41b4590707005d02d94cc0ab11cd3d73fd235c6268096a15a3b",
+    "path": "apps/web/app/security/identity-client.ts"
+  },
+  {
+    "sha256": "8d1041c7b4becbd6df118f95d8d5e1c7e081bd2463035babb945811ed531ab72",
+    "path": "apps/web/app/security/security.css"
+  },
+  {
+    "sha256": "8b853cfbd12ad94985807af9ec2705c72bd1ad37488843629e2fb0b48a916543",
+    "path": "apps/web/app/security/security.test.tsx"
+  },
+  {
+    "sha256": "886e92c56aa8f682318aca7f4d61af7c56f1982d0337eaca7c3cd3b8c3141d05",
+    "path": "apps/web/app/security/sign-in-screen.tsx"
+  },
+  {
+    "sha256": "b84f5f3a7869dc35bdfdd334ba6c84d31a2ae24297a7a4ce104f8e92ee6b3cc1",
+    "path": "apps/web/app/signin/page.tsx"
+  },
+  {
+    "sha256": "53bb96d42bea0bace4001e41d38a6e62bbb75919f83bb77a07dc6721c86fd9a9",
+    "path": "apps/web/app/source-download.test.tsx"
+  },
+  {
+    "sha256": "bac6d9b29620a2a8649a36caa552bd4dd1122112288afc407d6e6a0549bf6915",
+    "path": "apps/web/app/source-download.tsx"
+  },
+  {
+    "sha256": "33a0e1964904cbc8465f2084b93332f870d20e13e5f44d41dbb5c6c9cfab6670",
+    "path": "apps/web/app/styles.css"
+  },
+  {
+    "sha256": "0672b22d92f79a49c7a95b66a46ba5934f7fe89959b8578c18ef9e92ef90c605",
+    "path": "apps/web/next-env.d.ts"
+  },
+  {
+    "sha256": "7931710c525cad1b810b8d7cc1d4d412489aa74f2e19cdf9b70d4668a591bdb2",
+    "path": "apps/web/next.config.mjs"
+  },
+  {
+    "sha256": "26f6e304f28e4c1313cb52753616a0f836ad1eada874f9cf213418902637f259",
+    "path": "apps/web/package-lock.json"
+  },
+  {
+    "sha256": "a697a484144537bc9a0c4bf94127d53f874058d53d968175ef655565e7c0f016",
+    "path": "apps/web/package.json"
+  },
+  {
+    "sha256": "70fb529dac8c74b912b210df23bb696ba72806808298a4c819ee6dffc21da667",
+    "path": "apps/web/tsconfig.json"
+  },
+  {
+    "sha256": "1a946b31ac45896b759a644f50112dcd120000874fd37e309989a0f5ecda268e",
+    "path": "global.json"
+  },
+  {
+    "sha256": "b135f10ec3b85f5400c2466a5942010062fa795f4cd73fef421cf426971e0d91",
+    "path": "pyproject.toml"
+  },
+  {
+    "sha256": "002a63dede487a4390f0178b5c64581a31edbbbad4948798403796d17bb56bdf",
+    "path": "samples/phase-2/generated/native-two-page-invoice.pdf"
+  },
+  {
+    "sha256": "3361d054759a2fc686a2c058be82deaf9c2e6fe549be9004d7935a6c1736315d",
+    "path": "samples/phase-2/licenses/bitstream-vera-license.txt"
+  },
+  {
+    "sha256": "bcdc87d5dae2f9662107b63c14de3b751f8fa3c8fc734c9e97c9286e538dc432",
+    "path": "samples/phase-2/README.md"
+  },
+  {
+    "sha256": "a8e990ab5539b70da9c500c657b7306f70af85f4ec45e50ecaac3317475edd09",
+    "path": "samples/phase-2/source-license-register.json"
+  },
+  {
+    "sha256": "f45febff9896786d4515446a4bbbdbb3c58418487964a64cb4b9602310af2d51",
+    "path": "tools/demo/backend.Dockerfile"
+  },
+  {
+    "sha256": "06397d4da212ac04fa383ff13b7faaad991b70059edf308b1fd933a3ef924060",
+    "path": "tools/demo/compose.yml"
+  },
+  {
+    "sha256": "4f84f5e225b8b9d6911e4e9317cc4a45de3e80b5021b5c8d711ecc3a247981cc",
+    "path": "tools/demo/migrate/DemoMigrate.csproj"
+  },
+  {
+    "sha256": "407eef5bac571113f0b0e687a2ba79d16c3179cc82c3c1ffc7d6e4d4ab181932",
+    "path": "tools/demo/migrate/Program.cs"
+  },
+  {
+    "sha256": "a76050e4752c7ab2d06bc283ffe28e72bae3c3a5e01c721c20212cb013d2415b",
+    "path": "tools/demo/next.config.mjs"
+  },
+  {
+    "sha256": "89c4a678b933322155db95494ad7dda34f6e017f2563a32de89598f600490054",
+    "path": "tools/demo/web.Dockerfile"
+  },
+  {
+    "sha256": "c39f83f3c8ee0939b786284a4fed5a4d28ff54ec7ab93b277e42dd9a0bc1d359",
+    "path": "tools/install-project-runtimes.ps1"
+  },
+  {
+    "sha256": "5f02bbea43c132e835f7f93ccf63ec8e0448484199c5b593ee65023afcf9f6a7",
+    "path": "tools/local-demo.ps1"
+  },
+  {
+    "sha256": "13f97c239e59ac709b7e2eb0f37cd3f6996ab5315328a0b7ad9466d99cabf4c1",
+    "path": "tools/runtime-baseline.json"
+  },
+  {
+    "sha256": "502792338b4e9e26aecd64e0bbcda2b33ab7b37768ff0d43dbc7eab67849ef33",
+    "path": "tools/test-local-demo-guards.ps1"
+  },
+  {
+    "sha256": "7d07479bf16525305de4ed806bca70bff81628c32cfab91563e88bc6a48d6d32",
+    "path": "tools/use-project-runtimes.ps1"
+  },
+  {
+    "sha256": "e0cd11821584487ac0cd2b598f370f23b7def313cc82ef4cc0bd1df2dc3b0861",
+    "path": "tools/verify-local-demo.ps1"
+  }
+]

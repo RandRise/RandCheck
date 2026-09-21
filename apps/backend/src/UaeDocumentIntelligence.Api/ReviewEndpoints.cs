@@ -7,10 +7,24 @@ public static class ReviewEndpoints
     public static IEndpointRouteBuilder MapReviewEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/api/documents/{documentId:guid}/review", GetWorkspaceAsync);
+        endpoints.MapGet("/api/documents/{documentId:guid}/review-history", GetHistoryAsync);
         endpoints.MapPost("/api/documents/{documentId:guid}/reviews", StartReviewAsync);
         endpoints.MapPost("/api/documents/{documentId:guid}/reviews/{reviewId:guid}/actions", RecordActionAsync);
         endpoints.MapPost("/api/documents/{documentId:guid}/reviews/{reviewId:guid}/complete", CompleteReviewAsync);
         return endpoints;
+    }
+
+    private static async Task<IResult> GetHistoryAsync(Guid documentId,
+        GetReviewHistoryHandler handler, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Results.Ok(await handler.HandleAsync(documentId, cancellationToken));
+        }
+        catch (ReviewWorkflowException exception)
+        {
+            return ToProblem(exception);
+        }
     }
 
     private static async Task<IResult> GetWorkspaceAsync(Guid documentId, HttpContext context,

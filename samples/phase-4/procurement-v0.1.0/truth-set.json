@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "uae-procurement-reconciliation-synthetic",
+  "dataset_version": "0.1.0",
+  "rule_set_version": "1.0",
+  "synthetic": true,
+  "claim_eligible": false,
+  "tolerances": {
+    "quantity": "0",
+    "unit_price": "0.01",
+    "tax": "0.01",
+    "line_total": "0.01",
+    "document_total": "0.01"
+  },
+  "documents": [
+    {
+      "role": "Quotation",
+      "filename": "synthetic-quotation-Q-260801.pdf",
+      "sha256": "d8b502341da89dacffd763e4ec562a2bdf9fc2e2c5836ea1230a64121b10e636",
+      "expected_fields": [
+        "Quotation Number: Q-260801",
+        "Supplier TRN: 000000000000701",
+        "Currency: AED",
+        "Subtotal: 8400.00",
+        "VAT: 420.00",
+        "Total: 8820.00",
+        "Line 1 Item Code: DOC-WORKFLOW",
+        "Line 1 Description: Document workflow configuration",
+        "Line 1 Quantity: 1",
+        "Line 1 Unit Price: 6000.00",
+        "Line 1 Tax: 300.00",
+        "Line 1 Total: 6300.00",
+        "Line 2 Item Code: TRAINING",
+        "Line 2 Description: Reviewer onboarding workshop",
+        "Line 2 Quantity: 2",
+        "Line 2 Unit Price: 1200.00",
+        "Line 2 Tax: 120.00",
+        "Line 2 Total: 2520.00"
+      ]
+    },
+    {
+      "role": "PurchaseOrder",
+      "filename": "synthetic-purchase-order-PO-260801.pdf",
+      "sha256": "fb83571835445e42a7f74402193996acbacb931460cb495ea0beeb4fedcbbb0f",
+      "expected_fields": [
+        "Purchase Order Number: PO-260801",
+        "Supplier TRN: 000000000000701",
+        "Currency: AED",
+        "Subtotal: 8500.00",
+        "VAT: 425.00",
+        "Total: 8925.00",
+        "Line 1 Item Code: DOC-WORKFLOW",
+        "Line 1 Description: Document workflow configuration",
+        "Line 1 Quantity: 1",
+        "Line 1 Unit Price: 6000.00",
+        "Line 1 Tax: 300.00",
+        "Line 1 Total: 6300.00",
+        "Line 2 Item Code: TRAINING",
+        "Line 2 Description: Reviewer onboarding workshop",
+        "Line 2 Quantity: 2",
+        "Line 2 Unit Price: 1250.00",
+        "Line 2 Tax: 125.00",
+        "Line 2 Total: 2625.00"
+      ]
+    },
+    {
+      "role": "Invoice",
+      "filename": "synthetic-tax-invoice-SYN-STD-260801.pdf",
+      "sha256": "9826c848ebf08933bc93bcc98626745c7eff02c71e1202e507f8f3aa074f42a2",
+      "expected_fields": [
+        "Invoice Number: SYN-STD-260801",
+        "Supplier TRN: 000000000000701",
+        "Currency: AED",
+        "Subtotal: 8400.00",
+        "VAT: 420.00",
+        "Total: 8820.00",
+        "Line 1 Item Code: DOC-WORKFLOW",
+        "Line 1 Description: Document workflow configuration",
+        "Line 1 Quantity: 1",
+        "Line 1 Unit Price: 6000.00",
+        "Line 1 Tax: 300.00",
+        "Line 1 Total: 6300.00",
+        "Line 2 Item Code: TRAINING",
+        "Line 2 Description: Reviewer onboarding workshop",
+        "Line 2 Quantity: 2",
+        "Line 2 Unit Price: 1200.00",
+        "Line 2 Tax: 120.00",
+        "Line 2 Total: 2520.00"
+      ]
+    }
+  ],
+  "expected_findings": [
+    {
+      "rule_code": "AMT-001",
+      "left_role": "Quotation",
+      "right_role": "PurchaseOrder",
+      "field_key": "total",
+      "occurrence": 0
+    },
+    {
+      "rule_code": "AMT-002",
+      "left_role": "PurchaseOrder",
+      "right_role": "Invoice",
+      "field_key": "total",
+      "occurrence": 0
+    },
+    {
+      "rule_code": "TAX-001",
+      "left_role": "PurchaseOrder",
+      "right_role": "Invoice",
+      "field_key": "vat",
+      "occurrence": 0
+    },
+    {
+      "rule_code": "LINE-003",
+      "left_role": "Quotation",
+      "right_role": "PurchaseOrder",
+      "field_key": "line_unit_price",
+      "occurrence": 2
+    },
+    {
+      "rule_code": "LINE-004",
+      "left_role": "Quotation",
+      "right_role": "PurchaseOrder",
+      "field_key": "line_tax",
+      "occurrence": 2
+    },
+    {
+      "rule_code": "LINE-005",
+      "left_role": "Quotation",
+      "right_role": "PurchaseOrder",
+      "field_key": "line_total",
+      "occurrence": 2
+    },
+    {
+      "rule_code": "LINE-003",
+      "left_role": "PurchaseOrder",
+      "right_role": "Invoice",
+      "field_key": "line_unit_price",
+      "occurrence": 2
+    },
+    {
+      "rule_code": "LINE-004",
+      "left_role": "PurchaseOrder",
+      "right_role": "Invoice",
+      "field_key": "line_tax",
+      "occurrence": 2
+    },
+    {
+      "rule_code": "LINE-005",
+      "left_role": "PurchaseOrder",
+      "right_role": "Invoice",
+      "field_key": "line_total",
+      "occurrence": 2
+    }
+  ]
+}

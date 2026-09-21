@@ -1,0 +1,158 @@
+{
+  "source_schema_version": "1.0",
+  "dataset_id": "phase3-uae-synthetic-development",
+  "dataset_version": "0.1.0",
+  "license": "CC0-1.0",
+  "notice": "All entities, identifiers, addresses, contacts, transactions, and values are fictional.",
+  "specification_sources": [
+    {
+      "name": "UAE Federal Tax Authority - VAT tax invoice requirements",
+      "url": "https://tax.gov.ae/Datafolder/Files/Pdf/2023/Knowledge%20Center%20Page/VAT11%20-%20Tax%20invoices%20En.pdf",
+      "use": "Field and AED presentation requirements only; no FTA artwork is copied."
+    },
+    {
+      "name": "UAE Ministry of Finance - eInvoicing portal",
+      "url": "https://mof.gov.ae/en/about-us/initiatives/einvoicing/",
+      "use": "Structured eInvoice context only; generated PDFs remain document-AI development fixtures."
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "uae-services-native",
+      "filename": "uae-services-native.pdf",
+      "layout": "one_page_tabular",
+      "scan_type": "native_pdf",
+      "style": "corporate",
+      "supplier": "Sand Dune Systems L.L.C.",
+      "supplier_address": "Business District, Dubai, United Arab Emirates",
+      "supplier_trn": "000000000000101",
+      "customer": "Falcon Ridge Trading L.L.C.",
+      "customer_address": "Commercial District, Sharjah, United Arab Emirates",
+      "invoice_number": "DXB-2026-0042",
+      "invoice_date_display": "2026-08-01",
+      "invoice_date_normalized": "2026-08-01",
+      "supply_date": "2026-07-31",
+      "payment_terms": "Net 30",
+      "items": [
+        {"description": "Document workflow configuration", "quantity": "1", "unit_price": "6000.00"},
+        {"description": "Reviewer onboarding workshop", "quantity": "2", "unit_price": "1200.00"}
+      ]
+    },
+    {
+      "sample_id": "uae-goods-native",
+      "filename": "uae-goods-native.pdf",
+      "layout": "one_page_tabular",
+      "scan_type": "native_pdf",
+      "style": "desert",
+      "supplier": "Harbour Office Equipment L.L.C.",
+      "supplier_address": "Industrial District, Abu Dhabi, United Arab Emirates",
+      "supplier_trn": "000000000000202",
+      "customer": "Crescent Facilities Management L.L.C.",
+      "customer_address": "Central District, Abu Dhabi, United Arab Emirates",
+      "invoice_number": "AUH/INV/260817",
+      "invoice_date_display": "17/08/2026",
+      "invoice_date_normalized": "2026-08-17",
+      "supply_date": "16/08/2026",
+      "payment_terms": "Net 45",
+      "items": [
+        {"description": "Ergonomic task chair", "quantity": "12", "unit_price": "650.00"},
+        {"description": "Height-adjustable desk", "quantity": "4", "unit_price": "1400.00"},
+        {"description": "Delivery and installation", "quantity": "1", "unit_price": "1700.00"}
+      ]
+    },
+    {
+      "sample_id": "uae-simplified-native",
+      "filename": "uae-simplified-native.pdf",
+      "layout": "compact_non_tabular",
+      "scan_type": "native_pdf",
+      "style": "retail",
+      "supplier": "Palm & Pearl Stationery L.L.C.",
+      "supplier_address": "Retail District, Ajman, United Arab Emirates",
+      "supplier_trn": "000000000000303",
+      "customer": "Cash Customer",
+      "customer_address": "United Arab Emirates",
+      "invoice_number": "POS-008731",
+      "invoice_date_display": "05 Aug 2026",
+      "invoice_date_normalized": "2026-08-05",
+      "supply_date": "05 Aug 2026",
+      "payment_terms": "Due on receipt",
+      "items": [
+        {"description": "Archive boxes", "quantity": "10", "unit_price": "18.00"},
+        {"description": "A4 paper cartons", "quantity": "2", "unit_price": "100.475"}
+      ]
+    },
+    {
+      "sample_id": "uae-multipage-native",
+      "filename": "uae-multipage-native.pdf",
+      "layout": "two_page_tabular",
+      "scan_type": "native_pdf",
+      "style": "corporate",
+      "supplier": "Emirates Coast Technical Services L.L.C.",
+      "supplier_address": "Free Zone District, Ras Al Khaimah, United Arab Emirates",
+      "supplier_trn": "000000000000404",
+      "customer": "Summit Hospitality Operations L.L.C.",
+      "customer_address": "Hospitality District, Dubai, United Arab Emirates",
+      "invoice_number": "ECTS-2026-1184",
+      "invoice_date_display": "2026/08/21",
+      "invoice_date_normalized": "2026-08-21",
+      "supply_date": "2026/08/20",
+      "payment_terms": "50% now, balance Net 30",
+      "items": [
+        {"description": "Preventive maintenance visit - Zone A", "quantity": "1", "unit_price": "950.00"},
+        {"description": "Preventive maintenance visit - Zone B", "quantity": "1", "unit_price": "950.00"},
+        {"description": "Air filter replacement set", "quantity": "8", "unit_price": "175.00"},
+        {"description": "Control panel inspection", "quantity": "3", "unit_price": "475.00"},
+        {"description": "Emergency call-out coverage", "quantity": "1", "unit_price": "1200.00"},
+        {"description": "Duct cleaning service", "quantity": "4", "unit_price": "560.00"},
+        {"description": "Compressor vibration test", "quantity": "2", "unit_price": "385.00"},
+        {"description": "Thermostat calibration", "quantity": "6", "unit_price": "120.00"},
+        {"description": "Engineering report", "quantity": "1", "unit_price": "650.00"},
+        {"description": "Consumables and disposal", "quantity": "1", "unit_price": "695.00"}
+      ]
+    },
+    {
+      "sample_id": "uae-services-scanned",
+      "filename": "uae-services-scanned.pdf",
+      "layout": "one_page_tabular",
+      "scan_type": "scanned_pdf_200dpi",
+      "style": "desert",
+      "supplier": "Northern Star Cleaning Services L.L.C.",
+      "supplier_address": "Service District, Umm Al Quwain, United Arab Emirates",
+      "supplier_trn": "000000000000505",
+      "customer": "Marina View Property Services L.L.C.",
+      "customer_address": "Coastal District, Dubai, United Arab Emirates",
+      "invoice_number": "NSC-2608-091",
+      "invoice_date_display": "09-08-2026",
+      "invoice_date_normalized": "2026-08-09",
+      "supply_date": "08-08-2026",
+      "payment_terms": "Net 15",
+      "items": [
+        {"description": "Monthly common-area cleaning", "quantity": "1", "unit_price": "3200.00"},
+        {"description": "Deep-cleaning team", "quantity": "2", "unit_price": "850.00"},
+        {"description": "Consumable supplies", "quantity": "1", "unit_price": "420.00"}
+      ]
+    },
+    {
+      "sample_id": "uae-rotated-degraded-scan",
+      "filename": "uae-rotated-degraded-scan.pdf",
+      "layout": "one_page_tabular",
+      "scan_type": "scanned_pdf_rotated_degraded",
+      "style": "corporate",
+      "supplier": "Oasis Field Support L.L.C.",
+      "supplier_address": "Logistics District, Fujairah, United Arab Emirates",
+      "supplier_trn": "000000000000606",
+      "customer": "East Gate Marine Supplies L.L.C.",
+      "customer_address": "Port District, Fujairah, United Arab Emirates",
+      "invoice_number": "OFS/FJR/00618",
+      "invoice_date_display": "25.08.2026",
+      "invoice_date_normalized": "2026-08-25",
+      "supply_date": "24.08.2026",
+      "payment_terms": "Net 30",
+      "items": [
+        {"description": "On-site equipment inspection", "quantity": "3", "unit_price": "725.00"},
+        {"description": "Replacement safety sensor", "quantity": "4", "unit_price": "315.00"},
+        {"description": "Travel and mobilization", "quantity": "1", "unit_price": "480.00"}
+      ]
+    }
+  ]
+}

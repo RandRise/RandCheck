@@ -18,7 +18,7 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
 
     public ApiContractTests(WebApplicationFactory<Program> factory)
     {
-        _factory = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        _factory = factory.WithWebHostBuilder(builder => builder.UsePhase5DevelopmentIdentity());
     }
 
     [Fact]
@@ -87,10 +87,13 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
     [Fact]
     public async Task Upload_route_returns_413_when_storage_rejects_declared_size()
     {
+        var queue = new CapturingUploadQueueStore();
         using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
         {
             services.RemoveAll<IDocumentStorage>();
             services.AddScoped<IDocumentStorage, RejectingStorage>();
+            services.RemoveAll<IUploadQueueStore>();
+            services.AddSingleton<IUploadQueueStore>(queue);
         }));
         using var client = factory.CreateClient();
         using var content = CreateUpload("application/pdf");
@@ -101,6 +104,7 @@ public sealed class ApiContractTests : IClassFixture<WebApplicationFactory<Progr
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
         Assert.Equal(413, problem.GetProperty("status").GetInt32());
         Assert.Equal("File is empty or exceeds the upload limit", problem.GetProperty("detail").GetString());
+        Assert.Null(queue.Document);
     }
 
     [Fact]

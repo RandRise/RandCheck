@@ -9,6 +9,7 @@ import unicodedata
 import hashlib
 from dataclasses import asdict
 from dataclasses import dataclass
+from datetime import date
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, Iterable
@@ -26,7 +27,7 @@ from .extraction import (
 from .fixture_contract import ContractValidationError, validate_normalized_result
 
 
-ADAPTER_VERSION = "local-1.0.0"
+ADAPTER_VERSION = "local-1.3.0"
 PDFPLUMBER_VERSION = "0.11.10"
 PDFMINER_VERSION = "20260107"
 PYPDFIUM_VERSION = "5.12.1"
@@ -47,13 +48,25 @@ class _Label:
 
 LABELS = (
     _Label("invoice_number", ("Invoice Number",), "String"),
+    _Label("quotation_number", ("Quotation Number",), "String"),
+    _Label("purchase_order_number", ("Purchase Order Number", "PO Number"), "String"),
     _Label("invoice_date", ("Invoice Date",), "Date"),
+    _Label("due_date", ("Payment Due Date", "Due Date"), "Date"),
     _Label("supplier_trn", ("Supplier TRN", "TRN"), "Identifier"),
     _Label("currency", ("Currency",), "Currency"),
     _Label("subtotal", ("Subtotal",), "Decimal"),
-    _Label("vat", ("VAT 5%", "VAT"), "Decimal"),
-    _Label("total", ("Total",), "Decimal"),
-    _Label("payment_terms", ("Payment Terms",), "String"),
+    _Label("vat", ("VAT charged", "VAT 5%", "VAT"), "Decimal"),
+    _Label("total", ("Gross payable", "Total"), "Decimal"),
+    _Label("payment_terms", ("Payment Terms", "Terms"), "String"),
+)
+
+LINE_LABELS = (
+    _Label("line_item_code", ("Item Code",), "String"),
+    _Label("line_description", ("Description",), "String"),
+    _Label("line_quantity", ("Quantity",), "Decimal"),
+    _Label("line_unit_price", ("Unit Price",), "Decimal"),
+    _Label("line_tax", ("Tax",), "Decimal"),
+    _Label("line_total", ("Total",), "Decimal"),
 )
 
 
@@ -77,9 +90,9 @@ class _ExtractedPage:
 
 
 class LocalInvoiceExtractor:
-    """Credential-free English invoice adapter for native PDFs and local OCR."""
+    """Credential-free English procurement-document adapter for native PDFs and OCR."""
 
-    name = "local-invoice-v1"
+    name = "local-procurement-v1"
 
     def __init__(
         self,
@@ -134,6 +147,7 @@ class LocalInvoiceExtractor:
             used_ocr = True
 
         self._remaining(deadline_monotonic)
+        document_type = self._document_type(pages)
         fields = self._fields(pages)
         if not any(page.canonical_text.strip() for page in pages):
             raise ExtractionError(
@@ -143,9 +157,9 @@ class LocalInvoiceExtractor:
         if not fields:
             raise ExtractionError(
                 "unsupported_document",
-                "The readable document is not a supported English invoice.",
+                "The readable document is not a supported English procurement document.",
             )
-        warnings = self._warnings(pages, fields)
+        warnings = self._warnings(pages, fields, document_type)
         outcome = "Partial" if warnings else "Ready"
         duration_ms = max(0, round((time.perf_counter() - started) * 1000))
         used_native = any(page.source == "native" for page in pages)
@@ -176,7 +190,7 @@ class LocalInvoiceExtractor:
         result = ExtractionResult(
             schema_version="2.0",
             outcome=outcome,
-            document_type="invoice",
+            document_type=document_type,
             language="en",
             provider=provider,
             metrics=MetricsResult(duration_ms, len(pages)),
@@ -656,30 +670,37 @@ class LocalInvoiceExtractor:
     @classmethod
     def _fields(cls, pages: list[_ExtractedPage]) -> list[FieldResult]:
         results: list[FieldResult] = []
-        seen: set[str] = set()
-        for page in pages:
-            character_offset = 0
-            for line in page.lines:
-                for label in LABELS:
-                    if label.key in seen:
-                        continue
-                    found = cls._match_line(line.text, label.prefixes)
-                    if found is None:
-                        continue
-                    value, start, end = found
-                    quote_start = character_offset + start
-                    page_prefix = page.canonical_text[:quote_start].encode("utf-8")
-                    start_utf8 = len(page_prefix)
-                    end_utf8 = start_utf8 + len(value.encode("utf-8"))
-                    boxes = [box for box in line.character_boxes[start:end] if box is not None]
-                    confidences = [
-                        confidence
-                        for confidence in line.confidences[start:end]
-                        if confidence is not None
-                    ]
-                    confidence = statistics.fmean(confidences) if confidences else None
-                    results.append(
-                        FieldResult(
+        for label in LABELS:
+            if label.key == "due_date":
+                due_date, _ = cls._due_date(pages)
+                if due_date is not None:
+                    results.append(due_date)
+                continue
+            result: FieldResult | None = None
+            # Prefix order is semantic priority. UAE invoices may contain both
+            # invoice-currency VAT and the AED "VAT charged" amount, so the
+            # more specific label must win even when it occurs later.
+            for prefix in label.prefixes:
+                for page in pages:
+                    character_offset = 0
+                    for line in page.lines:
+                        found = cls._match_line(line.text, (prefix,))
+                        if found is None:
+                            character_offset += len(line.text) + 1
+                            continue
+                        value, start, end = found
+                        quote_start = character_offset + start
+                        page_prefix = page.canonical_text[:quote_start].encode("utf-8")
+                        start_utf8 = len(page_prefix)
+                        end_utf8 = start_utf8 + len(value.encode("utf-8"))
+                        boxes = [box for box in line.character_boxes[start:end] if box is not None]
+                        confidences = [
+                            confidence
+                            for confidence in line.confidences[start:end]
+                            if confidence is not None
+                        ]
+                        confidence = statistics.fmean(confidences) if confidences else None
+                        result = FieldResult(
                             key=label.key,
                             occurrence=0,
                             value_type=label.value_type,
@@ -697,22 +718,164 @@ class LocalInvoiceExtractor:
                                 )
                             ],
                         )
-                    )
-                    seen.add(label.key)
-                character_offset += len(line.text) + 1
+                        break
+                    if result is not None:
+                        break
+                if result is not None:
+                    break
+            if result is not None:
+                results.append(result)
         order = {label.key: index for index, label in enumerate(LABELS)}
-        return sorted(results, key=lambda field: order[field.key])
+        line_order = {label.key: index for index, label in enumerate(LINE_LABELS)}
+        results.extend(cls._line_fields(pages))
+        return sorted(
+            results,
+            key=lambda field: (
+                0 if field.occurrence == 0 else 1,
+                order.get(field.key, line_order.get(field.key, len(LINE_LABELS))),
+                field.occurrence,
+            ),
+        )
+
+    @classmethod
+    def _due_date(cls, pages: list[_ExtractedPage]) -> tuple[FieldResult | None, str | None]:
+        """Only explicit, valid ISO dates; inspect every label before choosing a value."""
+        candidates: list[tuple[str, EvidenceResult, list[float]]] = []
+        invalid = False
+        pattern = re.compile(r"(?<!\w)(?:Payment Due Date|Due Date)\s*:", re.I)
+        for page in pages:
+            offset = 0
+            for line in page.lines:
+                for match in pattern.finditer(line.text):
+                    found = cls._match_line(line.text[match.start():], ("Payment Due Date", "Due Date"))
+                    if found is None:
+                        invalid = True
+                        continue
+                    value, start, end = found
+                    start += match.start()
+                    end += match.start()
+                    try:
+                        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                            raise ValueError()
+                        normalized = date.fromisoformat(value).isoformat()
+                    except ValueError:
+                        invalid = True
+                        continue
+                    start_utf8 = len(page.canonical_text[:offset + start].encode("utf-8"))
+                    boxes = [b for b in line.character_boxes[start:end] if b is not None]
+                    confidence = [c for c in line.confidences[start:end] if c is not None]
+                    candidates.append((normalized, EvidenceResult(
+                        page.page_number, value, start_utf8, start_utf8 + len(value.encode("utf-8")),
+                        cls._polygon(boxes), "normalized" if boxes else None), confidence))
+                offset += len(line.text) + 1
+        if len({value for value, _, _ in candidates}) > 1:
+            return None, "due_date_conflicting"
+        if invalid:
+            return None, "due_date_requires_review"
+        if not candidates:
+            return None, None
+        confidences = [c for _, _, values in candidates for c in values]
+        return FieldResult("due_date", 0, "Date", candidates[0][0], candidates[0][0],
+            statistics.fmean(confidences) if confidences else None,
+            [evidence for _, evidence, _ in candidates[:10]]), None
+
+    @classmethod
+    def _line_fields(cls, pages: list[_ExtractedPage]) -> list[FieldResult]:
+        results: list[FieldResult] = []
+        labels = {prefix.lower(): label for label in LINE_LABELS for prefix in label.prefixes}
+        names = "|".join(re.escape(prefix) for prefix in labels)
+        pattern = re.compile(
+            rf"^\s*Line\s+(\d+)\s+({names})\s*:\s*(.+?)\s*$",
+            re.I,
+        )
+        for page in pages:
+            character_offset = 0
+            for line in page.lines:
+                match = pattern.match(line.text)
+                if match is None:
+                    character_offset += len(line.text) + 1
+                    continue
+                occurrence = int(match.group(1))
+                if occurrence <= 0:
+                    character_offset += len(line.text) + 1
+                    continue
+                label = labels[match.group(2).lower()]
+                value = match.group(3).strip()
+                start = match.start(3)
+                end = start + len(value)
+                quote_start = character_offset + start
+                start_utf8 = len(page.canonical_text[:quote_start].encode("utf-8"))
+                end_utf8 = start_utf8 + len(value.encode("utf-8"))
+                boxes = [box for box in line.character_boxes[start:end] if box is not None]
+                confidences = [
+                    confidence for confidence in line.confidences[start:end]
+                    if confidence is not None
+                ]
+                results.append(FieldResult(
+                    key=label.key,
+                    occurrence=occurrence,
+                    value_type=label.value_type,
+                    value=value,
+                    normalized_value=cls._normalize(value, label.value_type),
+                    confidence=statistics.fmean(confidences) if confidences else None,
+                    evidence=[EvidenceResult(
+                        page.page_number,
+                        value,
+                        start_utf8,
+                        end_utf8,
+                        cls._polygon(boxes),
+                        "normalized" if boxes else None,
+                    )],
+                ))
+                character_offset += len(line.text) + 1
+        return results
+
+    @staticmethod
+    def _document_type(pages: list[_ExtractedPage]) -> str:
+        text = "\n".join(page.canonical_text for page in pages)
+        if re.search(r"\bPURCHASE\s+ORDER\b", text, re.I):
+            return "purchase_order"
+        if re.search(r"\bQUOTATION\b", text, re.I):
+            return "quotation"
+        return "invoice"
 
     @staticmethod
     def _match_line(text: str, prefixes: Iterable[str]) -> tuple[str, int, int] | None:
         for prefix in prefixes:
-            match = re.match(rf"^\s*{re.escape(prefix)}\s*:\s*(.+?)\s*$", text, re.I)
-            if match:
-                value = match.group(1).strip()
-                start = match.start(1)
-                while text[start].isspace():
-                    start += 1
-                return value, start, start + len(value)
+            start_boundary = r"(?<![A-Za-z])" if prefix == "Total" else ""
+            match = re.search(
+                rf"{start_boundary}{re.escape(prefix)}\s*(?:\([^:\n]*\))?\s*:\s*",
+                text,
+                re.I,
+            )
+            if match is None:
+                continue
+            start = match.end()
+            remainder = text[start:]
+            boundary_labels = [
+                *(prefix for label in LABELS for prefix in label.prefixes),
+                "Discount",
+                "Due date",
+                "Taxable amount",
+                "Method",
+                "Invoice VAT",
+                "Amount due",
+                "TIN",
+            ]
+            boundary_names = "|".join(
+                re.escape(name) for name in sorted(boundary_labels, key=len, reverse=True)
+            )
+            boundary = re.search(
+                rf"\s*\||\s*(?=(?:{boundary_names})"
+                r"\s*(?:\([^:\n]*\))?\s*(?::|\s))",
+                remainder,
+                re.I,
+            )
+            end = start + (boundary.start() if boundary else len(remainder))
+            while end > start and text[end - 1].isspace():
+                end -= 1
+            if end > start:
+                return text[start:end], start, end
         return None
 
     @staticmethod
@@ -738,9 +901,9 @@ class LocalInvoiceExtractor:
             [round(left, 6), round(bottom, 6)],
         ]
 
-    @staticmethod
+    @classmethod
     def _warnings(
-        pages: list[_ExtractedPage], fields: list[FieldResult]
+        cls, pages: list[_ExtractedPage], fields: list[FieldResult], document_type: str = "invoice"
     ) -> list[WarningResult]:
         warnings = [
             WarningResult(
@@ -775,7 +938,12 @@ class LocalInvoiceExtractor:
                     )
                 )
             ]
-        required = {"invoice_number", "total"}
+        number_key = {
+            "quotation": "quotation_number",
+            "purchase_order": "purchase_order_number",
+            "invoice": "invoice_number",
+        }.get(document_type, "invoice_number")
+        required = {number_key, "total"}
         missing = sorted(required - {field.key for field in fields})
         if missing:
             warnings.append(
@@ -785,6 +953,13 @@ class LocalInvoiceExtractor:
                     "A review field could not be extracted from this document.",
                 )
             )
+        _, due_issue = cls._due_date(pages)
+        if due_issue:
+            warnings.append(WarningResult(due_issue, "degraded",
+                "Explicit due dates conflict; review the source before adding a due date."
+                if due_issue == "due_date_conflicting" else
+                "The explicit due date is empty, invalid or not in supported YYYY-MM-DD format; review the source.",
+                field_key="due_date", occurrence=0))
         return sorted(
             warnings,
             key=lambda warning: (

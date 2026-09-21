@@ -10,12 +10,19 @@ public sealed record ReviewDecisionView(Guid Id, string Action, string? ValueTyp
 public sealed record ReviewEffectiveValueView(bool IsPresent, string? Value, string? ValueType, string Source);
 public sealed record ReviewFieldView(string FieldKey, int OccurrenceIndex,
     ReviewMachineValueView? Machine, ReviewDecisionView? LatestAction,
-    ReviewEffectiveValueView Effective, string DecisionStatus);
+    ReviewEffectiveValueView Effective, string DecisionStatus, IReadOnlyList<string> Cues);
 public sealed record ReviewSessionView(Guid Id, int RevisionNumber, string Status, Guid ConcurrencyToken,
     DateTimeOffset CreatedAt, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt);
 public sealed record ReviewWorkspaceView(Guid DocumentId, Guid SelectedExtractionRunId,
     Guid ExtractionRunId, ReviewSessionView? Session, IReadOnlyList<ReviewFieldView> Fields)
 {
+    private static readonly string[] ExpectedInvoiceFields =
+    [
+        "invoice_number", "invoice_date", "due_date", "supplier_trn", "currency",
+        "subtotal", "vat", "total", "payment_terms"
+    ];
+    private const decimal LowConfidenceThreshold = 0.80m;
+
     public static ReviewWorkspaceView From(Document document)
     {
         var selected = document.SelectedExtractionRun()
@@ -44,6 +51,11 @@ public sealed record ReviewWorkspaceView(Guid DocumentId, Guid SelectedExtractio
             fields.AddRange(added);
         }
 
+        var identities = fields.Select(x => (x.FieldKey, x.OccurrenceIndex)).ToHashSet();
+        fields.AddRange(ExpectedInvoiceFields
+            .Where(fieldKey => !identities.Contains((fieldKey, 0)))
+            .Select(ProjectMissingField));
+
         var sessionView = session is null ? null : new ReviewSessionView(session.Id,
             session.RevisionNumber, session.Status.ToString(), session.ConcurrencyToken,
             session.CreatedAtUtc, session.StartedAtUtc, session.CompletedAtUtc);
@@ -59,11 +71,24 @@ public sealed record ReviewWorkspaceView(Guid DocumentId, Guid SelectedExtractio
             field.Confidence, field.Evidence.OrderBy(x => x.PageNumber)
                 .Select(x => new ReviewEvidenceView(x.PageNumber, x.QuotedText)).ToList());
         return new ReviewFieldView(field.FieldKey, field.OccurrenceIndex, machine, ToView(action),
-            Effective(machine, action), action?.Action.ToString() ?? "Unreviewed");
+            Effective(machine, action), action?.Action.ToString() ?? "Unreviewed",
+            AttentionCues(field.Confidence));
     }
 
     private static ReviewFieldView ProjectAddedField(ReviewAction action) => new(action.FieldKey,
-        action.OccurrenceIndex, null, ToView(action), Effective(null, action), action.Action.ToString());
+        action.OccurrenceIndex, null, ToView(action), Effective(null, action), action.Action.ToString(),
+        action.Action == ReviewActionType.Cleared ? ["MissingMachineValue"] : []);
+
+    private static ReviewFieldView ProjectMissingField(string fieldKey) => new(fieldKey, 0,
+        null, null, new ReviewEffectiveValueView(false, null, null, "MissingMachineValue"),
+        "Missing", ["MissingMachineValue"]);
+
+    private static IReadOnlyList<string> AttentionCues(decimal? confidence) => confidence switch
+    {
+        null => ["ConfidenceUnavailable"],
+        < LowConfidenceThreshold => ["LowConfidence"],
+        _ => []
+    };
 
     private static ReviewDecisionView? ToView(ReviewAction? action) => action is null ? null :
         new ReviewDecisionView(action.Id, action.Action.ToString(), action.CorrectedValueType?.ToString(),

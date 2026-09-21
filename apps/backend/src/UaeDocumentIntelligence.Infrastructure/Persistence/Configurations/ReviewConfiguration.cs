@@ -14,6 +14,7 @@ internal sealed class ReviewSessionConfiguration : IEntityTypeConfiguration<Revi
             t.HasCheckConstraint("ck_review_sessions_status", "status IN ('Pending','InProgress','Completed','Cancelled')");
         });
         b.HasKey(x => x.Id);
+        b.HasAlternateKey(x => new { x.OrganizationId, x.Id });
         b.HasAlternateKey(x => new { x.OrganizationId, x.Id, x.ExtractionRunId });
         b.HasAlternateKey(x => new { x.OrganizationId, x.DocumentId, x.Id });
         b.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
@@ -62,6 +63,7 @@ internal sealed class ReviewActionConfiguration : IEntityTypeConfiguration<Revie
             t.HasCheckConstraint("ck_review_actions_matrix", "(action = 'Confirmed' AND machine_field_value_id IS NOT NULL AND corrected_value_text IS NULL AND corrected_value_type IS NULL) OR (action = 'Corrected' AND machine_field_value_id IS NOT NULL AND corrected_value_text IS NOT NULL AND corrected_value_type IS NOT NULL AND reason IS NOT NULL) OR (action = 'Added' AND machine_field_value_id IS NULL AND corrected_value_text IS NOT NULL AND corrected_value_type IS NOT NULL AND reason IS NOT NULL) OR (action = 'Cleared' AND corrected_value_text IS NULL AND corrected_value_type IS NULL AND reason IS NOT NULL)");
         });
         b.HasKey(x => x.Id);
+        b.HasAlternateKey(x => new { x.OrganizationId, x.Id });
         b.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
         b.Property(x => x.OrganizationId).HasColumnName("organization_id");
         b.Property(x => x.ReviewSessionId).HasColumnName("review_session_id");

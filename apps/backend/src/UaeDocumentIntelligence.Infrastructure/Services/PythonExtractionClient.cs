@@ -12,9 +12,22 @@ public sealed class AiServiceOptions
 {
     public string BaseUrl { get; set; } = "http://localhost:8001";
     public string ProviderAlias { get; set; } = "local";
-    public string AdapterVersion { get; set; } = "local-1.0.0";
+    public string AdapterVersion { get; set; } = "local-1.3.0";
     public string SchemaVersion { get; set; } = "2.0";
     public string WorkerToken { get; set; } = string.Empty;
+    // Standalone Phase 5 tools retain explicit local configuration. The API host
+    // resolves this mode against its environment and locks enterprise defaults.
+    public string AuthenticationMode { get; set; } = "Development";
+    public PrivateServiceCredential ExtractionCredential { get; set; } = new();
+    public PrivateServiceCredential CitedCredential { get; set; } = new();
+    public PrivateServiceCredential AnswerCredential { get; set; } = new();
+
+    public static string ResolveAuthenticationMode(string? configured, string environment)
+    {
+        var development = environment is "Development" or "Testing";
+        var mode = string.IsNullOrEmpty(configured) ? (development ? "Development" : "Locked") : configured;
+        return mode == "ServiceKeys" || mode == "Development" && development ? mode : "Locked";
+    }
 }
 
 internal sealed partial class PythonExtractionClient(
@@ -55,7 +68,9 @@ internal sealed partial class PythonExtractionClient(
                 workerRequest.DeadlineUtc, workerRequest.CorrelationId), options: JsonOptions)
         };
         request.Headers.TryAddWithoutValidation("X-Request-ID", workerRequest.CorrelationId);
-        request.Headers.TryAddWithoutValidation("X-Worker-Token", _options.WorkerToken);
+        if (!PrivateServiceCredentials.TryApply(request, client, _options))
+            throw new ExtractionProviderException("provider_configuration_error",
+                "The private extraction service credential or transport is not configured.", false);
         HttpResponseMessage response;
         try
         {

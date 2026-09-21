@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UaeDocumentIntelligence.Infrastructure;
 using UaeDocumentIntelligence.Infrastructure.Persistence;
@@ -11,6 +12,41 @@ namespace UaeDocumentIntelligence.Infrastructure.Tests;
 
 public sealed class StorageMaintenanceServiceTests
 {
+    [Fact]
+    public async Task Background_failure_never_forwards_exception_state_or_private_diagnostics()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "UaeDocumentIntelligence.MaintenanceTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var logs = new MaintenanceLogs();
+            using var service = new StorageMaintenanceService(new FailingScopes(),
+                Options.Create(new StorageOptions { SecurityMode = "Development", UploadDirectory = root }),
+                Options.Create(new StorageMaintenanceOptions { Enabled = true }), logs);
+            await service.StartAsync(default);
+            var entry = await logs.Entry.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await service.StopAsync(default);
+            Assert.Null(entry.Error);
+            Assert.DoesNotContain("private-cleanup-secret", entry.Message);
+            Assert.Contains("diagnostics withheld", entry.Message);
+            Assert.DoesNotContain("private-cleanup-secret", entry.State);
+        }
+        finally { DeleteTestDirectory(root); }
+    }
+
+    private sealed class FailingScopes : IServiceScopeFactory
+    {
+        public IServiceScope CreateScope() => throw new InvalidOperationException("private-cleanup-secret");
+    }
+    private sealed class MaintenanceLogs : ILogger<StorageMaintenanceService>
+    {
+        public TaskCompletionSource<(string Message, string State, Exception? Error)> Entry { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel level) => true;
+        public void Log<TState>(LogLevel level, EventId id, TState state, Exception? error, Func<TState, Exception?, string> formatter) =>
+            Entry.TrySetResult((formatter(state, error), state?.ToString() ?? "", error));
+    }
+
     [Fact]
     public async Task Cleanup_deletes_only_old_unreferenced_managed_files()
     {

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "embedding-pilot-plan-v1",
+  "organizationId": "11111111-1111-1111-1111-111111111111",
+  "actorId": "22222222-2222-2222-2222-222222222222",
+  "indexId": "704af047-040c-4274-b1f2-052a97c61e7f",
+  "documentSha256": "6d629a9701b4b8cdd38d43c8449bb6fb9158b1e4f653ae8257d35715be742ca5",
+  "model": "text-embedding-3-small",
+  "dimension": 1536,
+  "operations": [
+    {
+      "operationId": "5980dbf0-d68b-56fd-ac23-aab3042da183",
+      "purpose": "chunk",
+      "chunkIds": [
+        "06b9044a-d806-1fb1-d049-4261e601cc2f",
+        "3fcd15bc-18c2-0e9b-7023-a648781c8cfe",
+        "652030ca-5c13-2bd7-bffd-3fc38ec6664a",
+        "69fada48-5707-ec33-5ee7-030841793267"
+      ],
+      "inputHashes": {
+        "06b9044a-d806-1fb1-d049-4261e601cc2f": "a15291f669bcbab8ebb0a8a03bebcd1d7021da9b9141ee1d75067c096ee423fa",
+        "3fcd15bc-18c2-0e9b-7023-a648781c8cfe": "27b6485781e25cfd83b2431fc659fcd8653fa518340c9182479a2e1c6830c136",
+        "652030ca-5c13-2bd7-bffd-3fc38ec6664a": "b5858deac6ed33dfa201972f87ccd144341b5bac208613abe1e179615ec11464",
+        "69fada48-5707-ec33-5ee7-030841793267": "0076c928f5c20402efe8abb22801a1a1c35d26b16ca7a2021c26fbccb620caad"
+      },
+      "question": null
+    },
+    {
+      "operationId": "58b86a8c-9ac8-5e5b-b023-32cda155ed4f",
+      "purpose": "chunk",
+      "chunkIds": [
+        "81f14aa8-0bde-2cd1-d4be-3873d2a7188a",
+        "cde90dd0-f26c-9cac-d9d7-25f8815ae814",
+        "cf031a53-da28-d5be-ae50-f9aade8a406f",
+        "d1786abc-a16a-89af-71e8-4b5bce0a523a"
+      ],
+      "inputHashes": {
+        "81f14aa8-0bde-2cd1-d4be-3873d2a7188a": "576f110a16627d0e7cb96fa08f4446fa430283425cc597b1e6a7932dee30a408",
+        "cde90dd0-f26c-9cac-d9d7-25f8815ae814": "cdb80458ea88c4368a04ca28e349653f315ce51efce795c818fb4f0cb8434f7b",
+        "cf031a53-da28-d5be-ae50-f9aade8a406f": "8e63a0a0f530458bee3a35e88e4c67d9757ff34f7e3d376c06c6d3bcc5f128bd",
+        "d1786abc-a16a-89af-71e8-4b5bce0a523a": "71a87afec298dbf78856f7a25ed7258f0828fc4137a1769cae0fbbc2960556cf"
+      },
+      "question": null
+    },
+    {
+      "operationId": "356dd9a6-fa90-574c-80e8-9f3dd106dcd7",
+      "purpose": "chunk",
+      "chunkIds": [
+        "f80010ca-1ea8-cfd6-ab1b-150c8804f605"
+      ],
+      "inputHashes": {
+        "f80010ca-1ea8-cfd6-ab1b-150c8804f605": "d7849ed44e8a7b3f0a23cef6cc6936a5a3074470694f72297a074230c8e328c5"
+      },
+      "question": null
+    },
+    {
+      "operationId": "fb3a07bc-c6d8-5bb6-a26d-080225727600",
+      "purpose": "query",
+      "chunkIds": [],
+      "inputHashes": {},
+      "question": "What amount is due on the invoice?"
+    }
+  ]
+}

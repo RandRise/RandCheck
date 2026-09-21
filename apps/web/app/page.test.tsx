@@ -82,7 +82,7 @@ describe("review workspace forms", () => {
     render(<Home />);
 
     await screen.findByText("Waiting for a durable worker claim.");
-    expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Cancel" })).toBeTruthy();
     expect(fetchMock.mock.calls[1][0]).toContain("/api/documents/document-1/processing");
   });
 
@@ -121,5 +121,35 @@ describe("review workspace forms", () => {
     const mutation = fetchMock.mock.calls[2];
     expect(mutation[1]?.headers).toMatchObject({ "If-Match": '"version-1"' });
     await waitFor(() => expect(screen.getByText("Net 30")).toBeTruthy());
+  });
+
+  it("shows missing and low-confidence cues while preserving machine output", async () => {
+    const cueWorkspace = {
+      ...workspace,
+      fields: [
+        {
+          fieldKey: "invoice_number", occurrenceIndex: 0,
+          machine: { id: "field-1", value: "INV-42", valueType: "String", confidence: 0.42, evidence: [{ page: 1 }] },
+          effective: { isPresent: true, value: "INV-42", valueType: "String", source: "MachinePending" },
+          decisionStatus: "Unreviewed", cues: ["LowConfidence"],
+        },
+        {
+          fieldKey: "supplier_trn", occurrenceIndex: 0,
+          effective: { isPresent: false, source: "MissingMachineValue" },
+          decisionStatus: "Missing", cues: ["MissingMachineValue"],
+        },
+      ],
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse([document]))
+      .mockResolvedValueOnce(jsonResponse(cueWorkspace));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<Home />);
+
+    expect(await screen.findByText("Low confidence")).toBeTruthy();
+    expect(screen.getAllByText("INV-42")).toHaveLength(2);
+    expect(screen.getByText("Missing extraction")).toBeTruthy();
+    expect(screen.getByText("Expected field was not extracted")).toBeTruthy();
   });
 });

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uae-document-intelligence:phase3:source-register:1.0",
+  "title": "Phase 3 source rights and privacy register",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_register_schema_version",
+    "register_id",
+    "dataset_id",
+    "dataset_version",
+    "sources"
+  ],
+  "properties": {
+    "source_register_schema_version": {"const": "1.0"},
+    "register_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_version": {"type": "string", "minLength": 1},
+    "sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source"}
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "asset_id",
+        "sha256",
+        "bytes",
+        "media_type",
+        "acquired_at_utc",
+        "provenance_type",
+        "rights",
+        "privacy",
+        "storage"
+      ],
+      "properties": {
+        "sample_id": {"type": "string", "minLength": 1},
+        "asset_id": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "media_type": {"type": "string", "minLength": 1},
+        "acquired_at_utc": {"type": "string", "format": "date-time"},
+        "provenance_type": {
+          "enum": [
+            "organization_owned",
+            "public_licensed",
+            "synthetic",
+            "written_permission"
+          ]
+        },
+        "rights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reference",
+            "store",
+            "label",
+            "process",
+            "publish_aggregate_results"
+          ],
+          "properties": {
+            "reference": {"type": "string", "minLength": 1},
+            "store": {"type": "boolean"},
+            "label": {"type": "boolean"},
+            "process": {"type": "boolean"},
+            "publish_aggregate_results": {"type": "boolean"}
+          }
+        },
+        "privacy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "contains_personal_data",
+            "contains_confidential_data",
+            "redaction_status",
+            "review_reference"
+          ],
+          "properties": {
+            "contains_personal_data": {"type": "boolean"},
+            "contains_confidential_data": {"type": "boolean"},
+            "redaction_status": {
+              "enum": ["completed", "not_required", "pending", "prohibited"]
+            },
+            "review_reference": {"type": "string", "minLength": 1}
+          }
+        },
+        "storage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["classification", "committed_to_git", "location_reference"],
+          "properties": {
+            "classification": {"enum": ["internal", "public", "restricted"]},
+            "committed_to_git": {"type": "boolean"},
+            "location_reference": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}

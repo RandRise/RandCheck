@@ -1,0 +1,318 @@
+{
+  "document_type": "invoice",
+  "fields": [
+    {
+      "confidence": 0.7099999999999999,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 125,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.20439,
+              0.118501
+            ],
+            [
+              0.332953,
+              0.118501
+            ],
+            [
+              0.332953,
+              0.126965
+            ],
+            [
+              0.20439,
+              0.126965
+            ]
+          ],
+          "quote": "INV-AE-2026-002",
+          "start_utf8": 110
+        }
+      ],
+      "key": "invoice_number",
+      "normalized_value": "INV-AE-2026-002",
+      "occurrence": 0,
+      "value": "INV-AE-2026-002",
+      "value_type": "String"
+    },
+    {
+      "confidence": 0.8699999999999999,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 150,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.179019,
+              0.137042
+            ],
+            [
+              0.265678,
+              0.137042
+            ],
+            [
+              0.265678,
+              0.145506
+            ],
+            [
+              0.179019,
+              0.145506
+            ]
+          ],
+          "quote": "2026-08-11",
+          "start_utf8": 140
+        }
+      ],
+      "key": "invoice_date",
+      "normalized_value": "2026-08-11",
+      "occurrence": 0,
+      "value": "2026-08-11",
+      "value_type": "Date"
+    },
+    {
+      "confidence": 0.0,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 185,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.182725,
+              0.155582
+            ],
+            [
+              0.326397,
+              0.155582
+            ],
+            [
+              0.326397,
+              0.164047
+            ],
+            [
+              0.182725,
+              0.164047
+            ]
+          ],
+          "quote": "QOQOQOQOOCO0O0000000",
+          "start_utf8": 165
+        }
+      ],
+      "key": "supplier_trn",
+      "normalized_value": "QOQOQOQOOCO0O0000000",
+      "occurrence": 0,
+      "value": "QOQOQOQOOCO0O0000000",
+      "value_type": "Identifier"
+    },
+    {
+      "confidence": 0.93,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 286,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.152509,
+              0.211205
+            ],
+            [
+              0.183865,
+              0.211205
+            ],
+            [
+              0.183865,
+              0.219669
+            ],
+            [
+              0.152509,
+              0.219669
+            ]
+          ],
+          "quote": "AED",
+          "start_utf8": 283
+        }
+      ],
+      "key": "currency",
+      "normalized_value": "AED",
+      "occurrence": 0,
+      "value": "AED",
+      "value_type": "Currency"
+    },
+    {
+      "confidence": 0.86,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 408,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.148233,
+              0.30391
+            ],
+            [
+              0.213797,
+              0.30391
+            ],
+            [
+              0.213797,
+              0.31318
+            ],
+            [
+              0.148233,
+              0.31318
+            ]
+          ],
+          "quote": "1.000.00",
+          "start_utf8": 400
+        }
+      ],
+      "key": "subtotal",
+      "normalized_value": "1.000.00",
+      "occurrence": 0,
+      "value": "1.000.00",
+      "value_type": "Decimal"
+    },
+    {
+      "confidence": 0.95,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 422,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.142816,
+              0.322451
+            ],
+            [
+              0.184721,
+              0.322451
+            ],
+            [
+              0.184721,
+              0.330915
+            ],
+            [
+              0.142816,
+              0.330915
+            ]
+          ],
+          "quote": "50.00",
+          "start_utf8": 417
+        }
+      ],
+      "key": "vat",
+      "normalized_value": "50.00",
+      "occurrence": 0,
+      "value": "50.00",
+      "value_type": "Decimal"
+    },
+    {
+      "confidence": 0.9,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 438,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.122577,
+              0.340588
+            ],
+            [
+              0.188141,
+              0.340588
+            ],
+            [
+              0.188141,
+              0.350262
+            ],
+            [
+              0.122577,
+              0.350262
+            ]
+          ],
+          "quote": "1,050.00",
+          "start_utf8": 430
+        }
+      ],
+      "key": "total",
+      "normalized_value": "1050.00",
+      "occurrence": 0,
+      "value": "1,050.00",
+      "value_type": "Decimal"
+    },
+    {
+      "confidence": 0.946,
+      "evidence": [
+        {
+          "coordinate_unit": "normalized",
+          "end_utf8": 460,
+          "page_number": 1,
+          "polygon": [
+            [
+              0.204105,
+              0.359129
+            ],
+            [
+              0.252851,
+              0.359129
+            ],
+            [
+              0.252851,
+              0.367997
+            ],
+            [
+              0.204105,
+              0.367997
+            ]
+          ],
+          "quote": "Net 30",
+          "start_utf8": 454
+        }
+      ],
+      "key": "payment_terms",
+      "normalized_value": "Net 30",
+      "occurrence": 0,
+      "value": "Net 30",
+      "value_type": "String"
+    }
+  ],
+  "language": "en",
+  "metrics": {
+    "cost_currency": null,
+    "estimated_cost": null,
+    "page_count": 1,
+    "price_basis": null,
+    "provider_duration_ms": 0
+  },
+  "outcome": "Partial",
+  "pages": [
+    {
+      "canonical_text": "SYNTHETIC TEST DOCUMENT - NOT A REAL TAX INVOICE\nDESERT HORIZON TECHNOLOGY L.L.C.\nTAX INVOICE\nInvoice Number: INV-AE-2026-002\nInvoice Date: 2026-08-11\nSupplier TRN: QOQOQOQOOCO0O0000000\nCustomer: Gulf Office Supplies L.L.C.\nCustomer Email: accounts@dgqaulf-office-.invalid\nCurrency: AED\nDescription | Quantity |] Unit Price | Line Total\nDocument Intelligence Setup | 1] 1-000.00 | 1,000.00\nSubtotal: 1.000.00\nVAT 5%: 50.00\nTotal: 1,050.00\nPayment Terms: Net 30\n",
+      "page_number": 1,
+      "rotation_degrees": 90
+    }
+  ],
+  "provider": {
+    "adapter_version": "local-1.3.0",
+    "alias": "local",
+    "model": "tesseract-eng-osd",
+    "model_version": "5.3.0/eng-osd-4.1.0"
+  },
+  "schema_version": "2.0",
+  "warnings": [
+    {
+      "code": "page_ocr_degraded",
+      "field_key": null,
+      "occurrence": null,
+      "page_number": 1,
+      "safe_summary": "OCR quality or orientation required review for this page.",
+      "severity": "degraded"
+    }
+  ]
+}

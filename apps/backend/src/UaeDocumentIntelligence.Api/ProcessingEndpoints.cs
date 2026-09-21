@@ -24,13 +24,17 @@ public static class ProcessingEndpoints
     private static async Task<IResult> ReprocessAsync(Guid documentId, HttpContext context,
         ReprocessDocumentHandler handler, CancellationToken cancellationToken)
     {
-        var queued = await handler.HandleAsync(documentId, context.TraceIdentifier, cancellationToken);
-        return queued is null
-            ? Results.Conflict(new { code = "reprocess_not_available", detail = "The document was not found or already has active processing." })
-            : Results.Accepted($"/api/documents/{documentId}/processing", new
-            {
-                queued.JobId, queued.ExtractionRunId, queued.RunNumber, status = "Queued"
-            });
+        try
+        {
+            var queued = await handler.HandleAsync(documentId, context.TraceIdentifier, cancellationToken);
+            return queued is null
+                ? Results.Conflict(new { code = "reprocess_not_available", detail = "The document was not found or already has active processing." })
+                : Results.Accepted($"/api/documents/{documentId}/processing", new
+                {
+                    queued.JobId, queued.ExtractionRunId, queued.RunNumber, status = "Queued"
+                });
+        }
+        catch (OrganizationCapacityException error) { return CapacityResponse.Problem(error); }
     }
 
     private static async Task<IResult> CancelAsync(Guid jobId, CancelExtractionHandler handler,

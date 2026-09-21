@@ -1,0 +1,1 @@
+{"schemaVersion":"1.0","policyVersion":"lexical-or-english-v1","questionSha256":"18c8bc2bc9db42b20c74dbe5f583dd7105857647ef2765cdd4722396c9bb55b6","configuration":"english","searchText":"\"what\" OR \"amount\" OR \"is\" OR \"due\" OR \"on\" OR \"the\" OR \"invoice\"","topK":20}

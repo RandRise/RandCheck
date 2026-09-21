@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uae-document-intelligence:phase5:question-set:1.0",
+  "title": "Phase 5 cited-question evaluation set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "question_set_schema_version",
+    "dataset_id",
+    "dataset_version",
+    "purpose",
+    "synthetic",
+    "claim_eligible",
+    "claim_exclusion_reason",
+    "source_pack",
+    "coverage_requirements",
+    "sources",
+    "questions"
+  ],
+  "properties": {
+    "question_set_schema_version": {"const": "1.0"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_version": {"type": "string", "minLength": 1},
+    "purpose": {"type": "string", "minLength": 1},
+    "synthetic": {"const": true},
+    "claim_eligible": {"const": false},
+    "claim_exclusion_reason": {"type": "string", "minLength": 1},
+    "source_pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "dataset_version", "truth_set_path", "truth_set_sha256"],
+      "properties": {
+        "dataset_id": {"type": "string", "minLength": 1},
+        "dataset_version": {"type": "string", "minLength": 1},
+        "truth_set_path": {"type": "string", "minLength": 1},
+        "truth_set_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "coverage_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "single_document",
+        "cross_document",
+        "paraphrase",
+        "unanswerable",
+        "adversarial_isolation"
+      ],
+      "properties": {
+        "single_document": {"type": "integer", "minimum": 1},
+        "cross_document": {"type": "integer", "minimum": 1},
+        "paraphrase": {"type": "integer", "minimum": 1},
+        "unanswerable": {"type": "integer", "minimum": 1},
+        "adversarial_isolation": {"type": "integer", "minimum": 1}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/source"}
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/question"}
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_number", "canonical_text_sha256"],
+      "properties": {
+        "page_number": {"type": "integer", "minimum": 1},
+        "canonical_text_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "organization_fixture",
+        "review_fixture_id",
+        "role",
+        "path",
+        "sha256",
+        "license",
+        "synthetic",
+        "canonicalization",
+        "pages"
+      ],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "organization_fixture": {"type": "string", "minLength": 1},
+        "review_fixture_id": {"type": "string", "minLength": 1},
+        "role": {"enum": ["Quotation", "PurchaseOrder", "Invoice"]},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "license": {"type": "string", "minLength": 1},
+        "synthetic": {"const": true},
+        "canonicalization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["adapter", "version"],
+          "properties": {
+            "adapter": {"const": "local-procurement-v1"},
+            "version": {"const": "local-1.2.0"}
+          }
+        },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/page"}
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organization_fixture", "allowed_source_ids", "forbidden_source_ids"],
+      "properties": {
+        "organization_fixture": {"type": "string", "minLength": 1},
+        "allowed_source_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "forbidden_source_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "page_number",
+        "quote",
+        "provenance_type",
+        "field_key",
+        "occurrence"
+      ],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "page_number": {"type": "integer", "minimum": 1},
+        "quote": {"type": "string", "minLength": 1},
+        "provenance_type": {"const": "PageText"},
+        "field_key": {"type": "string", "minLength": 1},
+        "occurrence": {"type": "integer", "minimum": 0}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "text", "evidence"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1},
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/evidence"}
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason_code", "claims"],
+      "properties": {
+        "status": {
+          "enum": ["Answered", "PartiallyAnswered", "InsufficientEvidence"]
+        },
+        "reason_code": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "no_relevant_evidence",
+            "incomplete_evidence",
+            "conflicting_evidence",
+            "unsupported_scope",
+            "unsafe_source"
+          ]
+        },
+        "claims": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/claim"}
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "category",
+        "question",
+        "scope",
+        "expected",
+        "security_tags"
+      ],
+      "properties": {
+        "question_id": {"type": "string", "minLength": 1},
+        "category": {
+          "enum": [
+            "single_document",
+            "cross_document",
+            "paraphrase",
+            "unanswerable",
+            "adversarial_isolation"
+          ]
+        },
+        "question": {"type": "string", "minLength": 1},
+        "scope": {"$ref": "#/$defs/scope"},
+        "expected": {"$ref": "#/$defs/expected"},
+        "security_tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

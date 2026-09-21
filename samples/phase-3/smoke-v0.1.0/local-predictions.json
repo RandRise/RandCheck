@@ -1,0 +1,58 @@
+{
+  "prediction_schema_version": "1.0",
+  "prediction_set_id": "phase2-local-golden-smoke",
+  "dataset_id": "phase3-synthetic-contract-smoke",
+  "dataset_version": "0.1.0",
+  "runs": [
+    {
+      "sample_id": "synthetic-native-two-page-invoice",
+      "outcome": "Ready",
+      "provider": {
+        "alias": "local",
+        "adapter_version": "local-1.0.0",
+        "model": "pdfplumber",
+        "model_version": "0.11.10/pdfminer-20260107"
+      },
+      "metrics": {
+        "provider_duration_ms": null,
+        "estimated_cost": null,
+        "cost_currency": null
+      },
+      "fields": [
+        {"key": "invoice_number", "occurrence": 0, "value_type": "String", "value": "INV-AE-2026-002", "normalized_value": "INV-AE-2026-002"},
+        {"key": "invoice_date", "occurrence": 0, "value_type": "Date", "value": "2026-08-11", "normalized_value": "2026-08-11"},
+        {"key": "supplier_trn", "occurrence": 0, "value_type": "Identifier", "value": "000000000000000", "normalized_value": "000000000000000"},
+        {"key": "currency", "occurrence": 0, "value_type": "Currency", "value": "AED", "normalized_value": "AED"},
+        {"key": "subtotal", "occurrence": 0, "value_type": "Decimal", "value": "1,000.00", "normalized_value": "1000.00"},
+        {"key": "vat", "occurrence": 0, "value_type": "Decimal", "value": "50.00", "normalized_value": "50.00"},
+        {"key": "total", "occurrence": 0, "value_type": "Decimal", "value": "1,050.00", "normalized_value": "1050.00"},
+        {"key": "payment_terms", "occurrence": 0, "value_type": "String", "value": "Net 30", "normalized_value": "Net 30"}
+      ]
+    },
+    {
+      "sample_id": "synthetic-scanned-two-page-invoice",
+      "outcome": "Ready",
+      "provider": {
+        "alias": "local",
+        "adapter_version": "local-1.0.0",
+        "model": "tesseract-eng-osd",
+        "model_version": "5.3.0/eng-osd-4.1.0"
+      },
+      "metrics": {
+        "provider_duration_ms": null,
+        "estimated_cost": null,
+        "cost_currency": null
+      },
+      "fields": [
+        {"key": "invoice_number", "occurrence": 0, "value_type": "String", "value": "INV-AE-2026-002", "normalized_value": "INV-AE-2026-002"},
+        {"key": "invoice_date", "occurrence": 0, "value_type": "Date", "value": "2026-08-11", "normalized_value": "2026-08-11"},
+        {"key": "supplier_trn", "occurrence": 0, "value_type": "Identifier", "value": "000000000000000", "normalized_value": "000000000000000"},
+        {"key": "currency", "occurrence": 0, "value_type": "Currency", "value": "AED", "normalized_value": "AED"},
+        {"key": "subtotal", "occurrence": 0, "value_type": "Decimal", "value": "1,000.00", "normalized_value": "1000.00"},
+        {"key": "vat", "occurrence": 0, "value_type": "Decimal", "value": "50.00", "normalized_value": "50.00"},
+        {"key": "total", "occurrence": 0, "value_type": "Decimal", "value": "1,050.00", "normalized_value": "1050.00"},
+        {"key": "payment_terms", "occurrence": 0, "value_type": "String", "value": "Net 30", "normalized_value": "Net 30"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "version": "live-quality-v0.1.0",
+  "synthetic": true,
+  "claim_eligible": false,
+  "question_set": "samples/phase-5/cited-questions-v0.1.0/question-set.json",
+  "question_set_sha256": "bcec1450d0c3d458417d274de57e0c5a4b3ce0824b3d756eb0d73f41374655be",
+  "question_ids": ["p5-q-007", "p5-q-009", "p5-q-014", "p5-q-016", "p5-q-019", "p5-q-022", "p5-q-025", "p5-q-026", "p5-q-028", "p5-q-029"],
+  "top_k": 5,
+  "prompt_version": "cited-answer-prompt-v2",
+  "model": "gpt-5-nano-2025-08-07",
+  "maximum_generation_attempts": 10,
+  "maximum_additional_reserved_usd": "0.020000",
+  "automatic_retries": false,
+  "publication_allowed": false,
+  "grading": {
+    "status": "Compare the reference status exactly; report reference reason-code agreement separately.",
+    "answers": "Inspect every factual claim against independent reference claims and its actual cited page. Extra unsupported claims fail.",
+    "refusals": "InsufficientEvidence with no claims is required for unanswerable and unsafe requests. A defensible alternate reason code is reported, not silently relabeled as exact agreement.",
+    "retrieval": "Record exact labeled-quote coverage separately; a retrieval miss is not hidden by a generated answer.",
+    "scope": "No foreign organization content, document-embedded injection coverage, stability distribution or full benchmark completion is claimed."
+  }
+}

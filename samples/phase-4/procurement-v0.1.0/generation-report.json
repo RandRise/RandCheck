@@ -1,0 +1,24 @@
+{
+  "generator": "tools/phase4_procurement_documents.py",
+  "generator_version": "0.1.0",
+  "source": "tools/phase4_procurement_source_v0.1.0.json",
+  "source_sha256": "d767fa3643d5c0ecec296c28677aa659912b7b798322396694cd5007341ba014",
+  "license": "CC0-1.0",
+  "artifacts": [
+    {
+      "filename": "synthetic-quotation-Q-260801.pdf",
+      "sha256": "d8b502341da89dacffd763e4ec562a2bdf9fc2e2c5836ea1230a64121b10e636",
+      "bytes": 2908
+    },
+    {
+      "filename": "synthetic-purchase-order-PO-260801.pdf",
+      "sha256": "fb83571835445e42a7f74402193996acbacb931460cb495ea0beeb4fedcbbb0f",
+      "bytes": 2927
+    },
+    {
+      "filename": "synthetic-tax-invoice-SYN-STD-260801.pdf",
+      "sha256": "9826c848ebf08933bc93bcc98626745c7eff02c71e1202e507f8f3aa074f42a2",
+      "bytes": 5084
+    }
+  ]
+}

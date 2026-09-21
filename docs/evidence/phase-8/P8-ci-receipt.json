@@ -1,0 +1,130 @@
+{
+  "localDeclaredChecksPassed": true,
+  "hostedGitHubRunVerified": false,
+  "verificationDatesDubai": "2026-09-16 to 2026-09-17",
+  "backendTests": {
+    "passed": 1365,
+    "projects": {
+      "Api": 260,
+      "Application": 337,
+      "Architecture": 4,
+      "Domain": 111,
+      "Infrastructure": 220,
+      "Persistence": 433
+    }
+  },
+  "browserTests": {
+    "vitest": 61,
+    "nodeRequestTests": 3,
+    "total": 64
+  },
+  "pythonTests": {
+    "application": 330,
+    "native": 1,
+    "ocr": 5,
+    "fixture": 7,
+    "uniqueApplicationFixtureNativeOcr": 343,
+    "fixturePreservation": 4,
+    "credentialScanner": 4,
+    "totalWithToolChecks": 351
+  },
+  "totalPassingTests": 1780,
+  "dependencyAudits": {
+    "knownVulnerabilities": 0,
+    "nugetAllTransitivePassed": true,
+    "packageCounts": {
+      "web": 531,
+      "docs": 180,
+      "pythonDefaultService": 32
+    },
+    "pythonSkippedDependencies": 0
+  },
+  "snapshots": {
+    "backendBrowserAndAudit": {
+      "id": "c18d1e04b907",
+      "files": 812,
+      "inventorySha256": "23a0abc172985a2702c3033757f2053cb1fbab849a14662d83a198c9c36e4365"
+    },
+    "pythonAndFixture": {
+      "id": "81f785689247",
+      "files": 823,
+      "inventorySha256": "4b3fe082318730bca1f24f0852f0896c7e3ac93d0c83b0edb37f81eb409df947"
+    },
+    "backendBrowserCodeAndPackageInputsUnchangedAcrossReruns": true,
+    "finalImplementationComparison": {
+      "scope": "apps, tools, samples, workflow and runtime manifests",
+      "changedFiles": 0,
+      "filesChecked": 634,
+      "sourceSnapshot": "81f785689247"
+    }
+  },
+  "runs": {
+    "initialAllAttempt": {
+      "cleanupPassed": true,
+      "project": "uaedi-ci-df8de265d76e",
+      "group": "all",
+      "startedUtc": "2026-09-16T18:42:21.7318297Z",
+      "passed": false,
+      "completedUtc": "2026-09-16T20:06:32.3813484Z"
+    },
+    "python": {
+      "project": "uaedi-ci-91c9e4e22b8c",
+      "cleanupPassed": true,
+      "completedUtc": "2026-09-16T20:26:53.4327726Z",
+      "startedUtc": "2026-09-16T20:24:18.6432295Z",
+      "group": "python",
+      "passed": true
+    },
+    "fixture": {
+      "passed": true,
+      "group": "fixture",
+      "cleanupPassed": true,
+      "completedUtc": "2026-09-16T20:26:11.7782936Z",
+      "startedUtc": "2026-09-16T20:24:33.2086696Z",
+      "project": "uaedi-ci-9fb29c224892"
+    },
+    "audits": {
+      "startedUtc": "2026-09-16T20:14:56.8534107Z",
+      "group": "audits",
+      "cleanupPassed": true,
+      "project": "uaedi-ci-fc149a5ce344",
+      "passed": true,
+      "completedUtc": "2026-09-16T20:20:52.217882Z"
+    },
+    "finalDocumentationBuild": {
+      "mode": "Isolated Windows source copy",
+      "runtime": "Project-selected Node 24.21.0",
+      "completedUtc": "2026-09-16T20:43:07.6928859Z",
+      "sourceSnapshot": "d0f05f65453d",
+      "passed": true
+    },
+    "finalWorkflow": {
+      "cleanupPassed": true,
+      "group": "workflow",
+      "completedUtc": "2026-09-16T20:37:53.1056233Z",
+      "passed": true,
+      "startedUtc": "2026-09-16T20:37:49.795138Z",
+      "project": "uaedi-ci-b20cceeea0e3"
+    }
+  },
+  "guards": {
+    "checkedUtc": "2026-09-16T18:58:08.1983643Z",
+    "changedSourceRefused": true,
+    "unexpectedDatabaseConnectionRefused": true,
+    "originalWorkspaceRefused": true,
+    "backendScriptSha256": "8b94a7136f5b3f876dd0d2a374f085e647d21f4a7289dfdcdef880ef4c7c7b8a"
+  },
+  "retainedDatabase": {
+    "checkedUtc": "2026-09-16T20:29:07.2961509Z",
+    "scope": "Read-only public-table fingerprints of retained phase5_e2e_20260908",
+    "unchanged": true,
+    "sha256": "06c07f7f05eb9d20a7ceb561d43821414427bd79d0453e170a65ae41132c7549"
+  },
+  "cleanup": {
+    "checkedUtc": "2026-09-16T20:48:19.1040073Z",
+    "namedVolumesRemaining": 0,
+    "containersRemaining": 0,
+    "networksRemaining": 0
+  },
+  "scope": "Synthetic local checks; no project commit, push, publication, paid provider or external identity account."
+}

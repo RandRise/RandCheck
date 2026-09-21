@@ -1,0 +1,113 @@
+{
+  "status": "passed-focused-reconciliation-demo",
+  "date": "2026-09-21",
+  "scope": "Existing Phase 4 feature in a disposable local demo; not renewed Phase 4/full CI/production acceptance",
+  "source": {
+    "copyId": "1e45fce6127e",
+    "inventorySha256": "9ffd75d8c69f3b77ba73e308fbff35b2251e41e0ec9466f54fecde6c4e2052c1",
+    "filesChecked": 304,
+    "changedFiles": [],
+    "includesCurrentUncommittedImplementation": true
+  },
+  "applicationCodeChanged": false,
+  "samplePdfsChanged": false,
+  "synthetic": true,
+  "caseId": "c8b8c093-9e63-4614-b494-1c70cfdfc88c",
+  "runId": "d079ef8f-58b5-4cef-91c9-c366b0e5b9db",
+  "documents": [
+    {
+      "sha256": "d8b502341da89dacffd763e4ec562a2bdf9fc2e2c5836ea1230a64121b10e636",
+      "role": "Quotation",
+      "documentId": "ffa372bc-a085-4a39-b33c-abefce3b9a3a",
+      "fieldCount": 22,
+      "filename": "synthetic-quotation-Q-260801.pdf",
+      "reviewSessionId": "5310408f-63f7-4829-873a-b8b920db7ced"
+    },
+    {
+      "sha256": "fb83571835445e42a7f74402193996acbacb931460cb495ea0beeb4fedcbbb0f",
+      "role": "PurchaseOrder",
+      "documentId": "d2b9e101-20f7-4d46-99d5-ce1f1277f133",
+      "fieldCount": 22,
+      "filename": "synthetic-purchase-order-PO-260801.pdf",
+      "reviewSessionId": "a9ef8189-9e5f-4b6f-bc8d-459dbd9bd550"
+    },
+    {
+      "sha256": "9826c848ebf08933bc93bcc98626745c7eff02c71e1202e507f8f3aa074f42a2",
+      "role": "Invoice",
+      "documentId": "08f207cc-181f-4e61-8bf6-141f88858ea2",
+      "fieldCount": 21,
+      "filename": "synthetic-tax-invoice-SYN-STD-260801.pdf",
+      "reviewSessionId": "b941716a-e002-4168-937f-3cc5e62edaee"
+    }
+  ],
+  "checks": {
+    "threeReviewsPinned": true,
+    "expectedFindings": 9,
+    "actualFindings": 9,
+    "findingIdentities": [
+      "AMT-001|Quotation|PurchaseOrder|total|0",
+      "AMT-002|PurchaseOrder|Invoice|total|0",
+      "LINE-003|PurchaseOrder|Invoice|line_unit_price|2",
+      "LINE-003|Quotation|PurchaseOrder|line_unit_price|2",
+      "LINE-004|PurchaseOrder|Invoice|line_tax|2",
+      "LINE-004|Quotation|PurchaseOrder|line_tax|2",
+      "LINE-005|PurchaseOrder|Invoice|line_total|2",
+      "LINE-005|Quotation|PurchaseOrder|line_total|2",
+      "TAX-001|PurchaseOrder|Invoice|vat|0"
+    ],
+    "matchingFields": [
+      "supplier_trn",
+      "currency",
+      "line_total occurrence 1"
+    ],
+    "bothSourcePagesAndQuotesPresent": true,
+    "acceptedResolutionRetained": true,
+    "freshApiReadIdentical": true,
+    "startupAndFinalDatabaseHealthPassed": true,
+    "originalWorkspaceGuardPassed": true,
+    "browserCreatePinEvaluateResolvePassed": true
+  },
+  "verifiedUtc": "2026-09-21T12:41:52.0681189Z",
+  "screenshots": [
+    {
+      "file": "06-reconciliation-overview-20260921.jpg",
+      "sha256": "8376a6f7d82a52bc3c00deff4c24da3c09d07e62124a76c0e4aa1b956d9f3d89",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "07-reconciliation-decision-20260921.jpg",
+      "sha256": "fc16cb6c0380d17cff75a2c8e8533717c2c9c7d384f34ca38cde7e015f3d9348",
+      "visuallyReviewed": true
+    }
+  ],
+  "cleanup": {
+    "sourceAndEvidencePreserved": true,
+    "checkedUtc": "2026-09-21T12:43:34.7901865Z",
+    "remainingResources": [],
+    "projects": [
+      "uaedi-demo-145e430debdb",
+      "uaedi-demo-b82bd06f6bb0",
+      "uaedi-demo-1e45fce6127e"
+    ],
+    "retainedNativeDatabaseAccessed": false,
+    "demoPortListenerCount": 0,
+    "passed": true
+  },
+  "servicesAfter": {
+    "checkedUtc": "2026-09-21T12:45:27.2995948Z",
+    "dockerStopped": true,
+    "runningWslDistros": [],
+    "retainedNativeDatabaseAccessed": false
+  },
+  "earlierAttempt": {
+    "cleanupPassed": true,
+    "preparePassed": false,
+    "project": "uaedi-demo-145e430debdb",
+    "reason": "PowerShell pipeline wrapped empty REST array; failed before any upload"
+  },
+  "retainedNativeDatabaseAccessed": false,
+  "fullSuiteRerun": false,
+  "paidProvidersUsed": false,
+  "publicationPerformed": false,
+  "limitation": "Page selection is held in browser memory; refreshing returns to case creation while the case remains stored."
+}

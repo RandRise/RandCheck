@@ -1,4 +1,6 @@
 .git
+.env
+**/.env
 .ruff_cache
 **/bin
 **/obj
@@ -10,3 +12,7 @@ data/uploads
 outputs
 samples
 work
+.dotnet
+.node
+tmp
+.venv

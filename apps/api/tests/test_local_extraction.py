@@ -29,7 +29,7 @@ from app.main import app
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE_ROOT = REPO_ROOT / "samples" / "phase-2"
-GOLDEN_ROOT = REPO_ROOT / "apps" / "api" / "tests" / "goldens" / "local-provider"
+GOLDEN_ROOT = REPO_ROOT / "apps" / "api" / "tests" / "goldens" / "local-provider" / "local-1.3.0"
 RUN_RUNTIME = os.getenv("RUN_LOCAL_PROVIDER_INTEGRATION") == "1"
 
 
@@ -118,6 +118,89 @@ class LocalProviderSelectionTests(unittest.TestCase):
             self.assertIsInstance(get_extractor("local"), LocalInvoiceExtractor)
         with self.assertRaisesRegex(ValueError, "Unsupported extraction provider"):
             get_extractor("unknown")
+
+    def test_uae_compound_summary_labels_stop_before_neighboring_values(self):
+        cases = (
+            (
+                "Supplier TRN: 000000000000701 | TIN: 0000000000",
+                ("Supplier TRN",),
+                "000000000000701",
+            ),
+            (
+                "Recipient TRN: 000000000000711 Currency: AED",
+                ("Currency",),
+                "AED",
+            ),
+            (
+                "Payment information Subtotal (AED): 8,400.00",
+                ("Subtotal",),
+                "8,400.00",
+            ),
+            (
+                "Terms: 50% now, balance Net 30 Discount (AED): 1,000.00",
+                ("Terms",),
+                "50% now, balance Net 30",
+            ),
+        )
+        for text, prefixes, expected in cases:
+            with self.subTest(text=text):
+                match = LocalInvoiceExtractor._match_line(text, prefixes)
+                self.assertIsNotNone(match)
+                self.assertEqual(expected, match[0])
+
+    def test_specific_uae_vat_label_wins_over_earlier_invoice_currency_vat(self):
+        lines = [
+            _TextLine("Invoice VAT (USD): 75.00", [None] * 24, [None] * 24),
+            _TextLine("VAT charged (AED): 275.44", [None] * 25, [None] * 25),
+        ]
+        page = _ExtractedPage(
+            1,
+            "\n".join(line.text for line in lines) + "\n",
+            lines,
+            0,
+            None,
+            False,
+        )
+
+        vat = next(field for field in LocalInvoiceExtractor._fields([page]) if field.key == "vat")
+
+        self.assertEqual("275.44", vat.value)
+
+    def test_classifies_procurement_document_titles(self):
+        cases = {
+            "QUOTATION\nQuotation Number: Q-1\n": "quotation",
+            "PURCHASE ORDER\nPurchase Order Number: PO-1\n": "purchase_order",
+            "TAX INVOICE\nInvoice Number: I-1\n": "invoice",
+        }
+        for text, expected in cases.items():
+            with self.subTest(expected=expected):
+                page = _ExtractedPage(1, text, [], 0, None, False)
+                self.assertEqual(expected, LocalInvoiceExtractor._document_type([page]))
+
+    def test_extracts_repeated_reconciliation_line_fields_with_page_evidence(self):
+        texts = [
+            "Line 1 Item Code: DOC-WORKFLOW",
+            "Line 1 Description: Document workflow configuration",
+            "Line 1 Quantity: 1",
+            "Line 1 Unit Price: 6000.00",
+            "Line 1 Tax: 300.00",
+            "Line 1 Total: 6300.00",
+            "Line 2 Item Code: TRAINING",
+            "Line 2 Quantity: 2",
+        ]
+        lines = [_TextLine(text, [None] * len(text), [None] * len(text)) for text in texts]
+        page = _ExtractedPage(2, "\n".join(texts) + "\n", lines, 0, None, False)
+
+        fields = LocalInvoiceExtractor._line_fields([page])
+
+        self.assertEqual(8, len(fields))
+        quantity = next(field for field in fields if field.key == "line_quantity" and field.occurrence == 2)
+        self.assertEqual("2", quantity.normalized_value)
+        self.assertEqual(2, quantity.evidence[0].page_number)
+        selected = page.canonical_text.encode("utf-8")[
+            quantity.evidence[0].start_utf8:quantity.evidence[0].end_utf8
+        ].decode("utf-8")
+        self.assertEqual("2", selected)
 
     def test_local_configuration_fails_fast_for_invalid_settings(self):
         invalid_settings = (

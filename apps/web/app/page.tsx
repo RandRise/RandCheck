@@ -1,7 +1,11 @@
 "use client";
 
+import Link from "next/link";
+import { API, apiFetch } from "./security/api-fetch";
+import { can, useEnterprise } from "./security/enterprise-provider";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { readReviewResponse, requireSuccess, sendReviewMutation } from "./review-request.mjs";
+import { SourceDownload } from "./source-download";
 
 type Field = { name: string; value: string; confidence: number; page: number };
 type Document = {
@@ -13,11 +17,11 @@ type ProcessingStatus = {
   jobId: string; extractionRunId: string; status: "Queued" | "Processing" | "Ready" | "Partial" | "Failed" | "Cancelled";
   attemptCount: number; retryAt?: string; errorCode?: string; errorMessage?: string;
 };
-type MachineValue = { id: string; value: string; valueType: string; confidence: number; evidence: { page: number; quotedText?: string }[] };
+type MachineValue = { id: string; value: string; valueType: string; confidence: number | null; evidence: { page: number; quotedText?: string }[] };
 type ReviewDecision = { id: string; action: string; value?: string; valueType?: string; reason?: string; sequenceNumber: number };
 type ReviewField = {
   fieldKey: string; occurrenceIndex: number; machine?: MachineValue; latestAction?: ReviewDecision;
-  effective: { isPresent: boolean; value?: string; valueType?: string; source: string }; decisionStatus: string;
+  effective: { isPresent: boolean; value?: string; valueType?: string; source: string }; decisionStatus: string; cues: string[];
 };
 type ReviewWorkspace = {
   documentId: string; selectedExtractionRunId: string; extractionRunId: string;
@@ -25,14 +29,22 @@ type ReviewWorkspace = {
   fields: ReviewField[];
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+
 const labels: Record<string, string> = {
-  invoice_number: "Invoice number", supplier: "Supplier", supplier_ar: "Supplier (Arabic)",
-  invoice_date: "Invoice date", currency: "Currency", subtotal: "Subtotal", vat: "VAT", total: "Total", trn: "TRN"
+  invoice_number: "Invoice number", invoice_date: "Invoice date", supplier_trn: "Supplier TRN",
+  currency: "Currency", subtotal: "Subtotal", vat: "VAT", total: "Total", payment_terms: "Payment terms",
+  supplier: "Supplier", supplier_ar: "Supplier (Arabic)", trn: "TRN"
+};
+const cueLabels: Record<string, string> = {
+  MissingMachineValue: "Missing extraction",
+  LowConfidence: "Low confidence",
+  ConfidenceUnavailable: "Confidence unavailable",
 };
 const fieldIdentity = (field: ReviewField) => `${field.fieldKey}:${field.occurrenceIndex}`;
 
 export default function Home() {
+  const { session } = useEnterprise();
+  const canReview = can(session, "Review"); const canOperate = can(session, "Operate");
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selected, setSelected] = useState<Document | null>(null);
   const [review, setReview] = useState<ReviewWorkspace | null>(null);
@@ -54,7 +66,7 @@ export default function Home() {
   const loadReview = useCallback(async (document: Document) => {
     setReview(null); setEtag(null);
     if (document.status !== "Ready" && document.fields.length === 0) return;
-    const response = await fetch(`${API}/api/documents/${document.id}/review`);
+    const response = await apiFetch(`${API}/api/documents/${document.id}/review`);
     try { await requireSuccess(response); }
     catch (error) { setMessage(error instanceof Error ? error.message : "Could not load review"); return; }
     const result = await readReviewResponse<ReviewWorkspace>(response);
@@ -67,7 +79,7 @@ export default function Home() {
   }, [loadReview]);
 
   const loadProcessing = useCallback(async (documentId: string) => {
-    const response = await fetch(`${API}/api/documents/${documentId}/processing`);
+    const response = await apiFetch(`${API}/api/documents/${documentId}/processing`);
     if (response.status === 404) return null;
     await requireSuccess(response);
     const state: ProcessingStatus = await response.json();
@@ -76,7 +88,7 @@ export default function Home() {
   }, []);
 
   const loadDocuments = useCallback(async (preferredId?: string) => {
-    const response = await fetch(`${API}/api/documents`);
+    const response = await apiFetch(`${API}/api/documents`);
     if (!response.ok) throw new Error("API unavailable");
     const data: Document[] = await response.json();
     setDocuments(data);
@@ -87,7 +99,7 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API}/api/documents`)
+    apiFetch(`${API}/api/documents`)
       .then(response => response.ok ? response.json() : Promise.reject(new Error("API unavailable")))
       .then(async (data: Document[]) => {
         if (cancelled) return;
@@ -95,7 +107,7 @@ export default function Home() {
         const first = data[0] ?? null;
         setSelected(first);
         if (!first || first.status !== "Ready") return;
-        const response = await fetch(`${API}/api/documents/${first.id}/review`);
+        const response = await apiFetch(`${API}/api/documents/${first.id}/review`);
         const result = await readReviewResponse<ReviewWorkspace>(response);
         if (!cancelled) applyReview(result.workspace, result.etag);
       })
@@ -127,7 +139,7 @@ export default function Home() {
     setBusy(true); setMessage("Uploading securely to the processing queue…");
     const body = new FormData(); body.append("file", input.files[0]);
     try {
-      const response = await fetch(`${API}/api/documents`, { method: "POST", body });
+      const response = await apiFetch(`${API}/api/documents`, { method: "POST", body });
       await requireSuccess(response);
       const result: Document = await response.json();
       await loadDocuments(result.id); setMessage("Document queued. You can leave it processing in the background."); formElement.reset();
@@ -139,7 +151,7 @@ export default function Home() {
     if (!processing || !selected) return;
     setBusy(true);
     try {
-      const response = await fetch(`${API}/api/extraction-jobs/${processing.jobId}/cancel`, { method: "POST" });
+      const response = await apiFetch(`${API}/api/extraction-jobs/${processing.jobId}/cancel`, { method: "POST" });
       await requireSuccess(response); await loadProcessing(selected.id); await loadDocuments(selected.id);
       setMessage("Processing cancelled.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Could not cancel processing"); }
@@ -150,7 +162,7 @@ export default function Home() {
     if (!selected) return;
     setBusy(true);
     try {
-      const response = await fetch(`${API}/api/documents/${selected.id}/reprocess`, { method: "POST" });
+      const response = await apiFetch(`${API}/api/documents/${selected.id}/reprocess`, { method: "POST" });
       await requireSuccess(response); const state: ProcessingStatus = await response.json();
       setProcessing(state); await loadDocuments(selected.id);
       setMessage("Reprocessing queued. Existing reviewable output stays visible until replacement succeeds.");
@@ -162,7 +174,7 @@ export default function Home() {
     if (!selected) return;
     setReviewBusy("start");
     try {
-      const response = await fetch(`${API}/api/documents/${selected.id}/reviews`, { method: "POST" });
+      const response = await apiFetch(`${API}/api/documents/${selected.id}/reviews`, { method: "POST" });
       const result = await readReviewResponse<ReviewWorkspace>(response);
       applyReview(result.workspace, result.etag); setMessage("Review started. Machine values remain unchanged.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Could not start review"); }
@@ -179,6 +191,7 @@ export default function Home() {
     try {
       if (action !== "Confirmed" && !reasons[key]?.trim()) throw new Error("Add a reason before changing or clearing a value.");
       const result = await sendReviewMutation<ReviewWorkspace>({
+        fetcher: apiFetch,
         url: `${API}/api/documents/${selected.id}/reviews/${review.session.id}/actions`,
         init: { method: "POST", headers: { "Content-Type": "application/json", "If-Match": etag }, body: JSON.stringify(body) },
         onStale: () => loadReview(selected),
@@ -200,6 +213,7 @@ export default function Home() {
       const reason = String(form.get("reason") ?? "").trim();
       if (!fieldKey || !value || !reason) throw new Error("Field key, value, and reason are required.");
       const result = await sendReviewMutation<ReviewWorkspace>({
+        fetcher: apiFetch,
         url: `${API}/api/documents/${selected.id}/reviews/${review.session.id}/actions`,
         init: {
           method: "POST", headers: { "Content-Type": "application/json", "If-Match": etag },
@@ -219,6 +233,7 @@ export default function Home() {
     setReviewBusy("complete");
     try {
       const result = await sendReviewMutation<ReviewWorkspace>({
+        fetcher: apiFetch,
         url: `${API}/api/documents/${selected.id}/reviews/${review.session.id}/complete`,
         init: { method: "POST", headers: { "If-Match": etag } },
         onStale: () => loadReview(selected),
@@ -230,15 +245,28 @@ export default function Home() {
     finally { setReviewBusy(null); }
   }
 
-  const active = review?.session?.status === "InProgress";
+  async function exportHistory() {
+    if (!selected) return;
+    try {
+      const response = await apiFetch(`${API}/api/documents/${selected.id}/review-history`);
+      await requireSuccess(response);
+      const url = URL.createObjectURL(await response.blob());
+      const link = window.document.createElement("a"); link.href = url; link.download = `review-history-${selected.id}.json`;
+      link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch { setMessage("Review history could not be downloaded."); }
+  }
+
+  const active = canReview && review?.session?.status === "InProgress";
   const pendingCount = review?.fields.filter(field => field.machine && field.decisionStatus === "Unreviewed").length ?? 0;
+  const attentionCount = review?.fields.filter(field => (field.cues?.length ?? 0) > 0).length ?? 0;
 
   return <main>
+    <nav className="phase-nav"><span>Phases 1–3 · Document review</span><Link href="/questions">Search evidence</Link><Link href="/reconciliation">Reconcile documents →</Link></nav>
     <header><div><span className="eyebrow">UAE · DOCUMENT INTELLIGENCE</span><h1>Document intelligence,<br/><em>with evidence.</em></h1></div>
-      <p>Review Arabic and English business documents with traceable machine output and append-only human decisions.</p></header>
+      <p>Review English business documents with traceable machine output and append-only human decisions. Arabic and bilingual support is planned.</p></header>
     <section className="upload-card">
       <div><span className="step">01 / INGEST</span><h2>Add a business document</h2><p>PDF, PNG, JPEG, or TXT · maximum 10 MB</p></div>
-      <form onSubmit={upload}><input name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" required/><button disabled={busy}>{busy ? "Processing…" : "Upload & extract"}</button></form>
+      <form onSubmit={upload}><fieldset disabled={!canOperate || busy} style={{border:0,padding:0,display:"contents"}}><input name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" required/><button disabled={!canOperate || busy}>{busy ? "Processing…" : "Upload & extract"}</button></fieldset></form>
       {message && <p className="message" role="status">{message}</p>}
     </section>
     <div className="workspace">
@@ -251,27 +279,30 @@ export default function Home() {
       <section className="review"><span className="step">03 / REVIEW</span>
         {!selected ? <div className="placeholder"><div>DI</div><h2>Evidence appears here</h2><p>Select or upload a document to inspect extracted fields and page provenance.</p></div> : <>
           <div className="review-head"><div><h2>{selected.originalFilename}</h2><p>{selected.documentType ?? "Unknown type"} · {selected.language ?? "—"} · {selected.processingMs ?? 0} ms</p></div><span className="provider">{selected.extractor ?? "pending"}</span></div>
+          {session.tenantId && can(session, "Read") && <SourceDownload key={selected.id} documentId={selected.id}/>}
           {(selected.status === "Processing" || processing) && <div className={`processing-panel state-${(processing?.status ?? "Queued").toLowerCase()}`} aria-live="polite">
             <div><strong>{processing?.status ?? "Queued"}</strong><small>{processing?.status === "Processing" ? `Extraction attempt ${processing.attemptCount} is running.` : processing?.retryAt ? `Retry scheduled for ${new Date(processing.retryAt).toLocaleTimeString()}.` : "Waiting for a durable worker claim."}</small></div>
-            {processing && ["Queued", "Processing"].includes(processing.status) && <button className="secondary" disabled={busy} onClick={cancelProcessing}>Cancel</button>}
+            {processing && ["Queued", "Processing"].includes(processing.status) && <button className="secondary" disabled={!canOperate || busy} onClick={cancelProcessing}>Cancel</button>}
           </div>}
           {processing?.status === "Partial" && <p className="warning">Extraction completed with warnings. Review the available fields and evidence carefully.</p>}
-          {(selected.status === "Failed" || selected.status === "Cancelled" || processing?.status === "Failed" || processing?.status === "Cancelled") && <div className="terminal-state"><p>{processing?.errorMessage ?? selected.errorMessage ?? (processing?.status === "Cancelled" ? "Processing was cancelled." : "Processing did not complete.")}</p><button disabled={busy} onClick={reprocess}>Try processing again</button></div>}
-          {selected.status === "Ready" && <div className="reprocess-row"><button className="secondary" disabled={busy || !!processing && ["Queued", "Processing"].includes(processing.status)} onClick={reprocess}>Reprocess document</button></div>}
+          {(selected.status === "Failed" || selected.status === "Cancelled" || processing?.status === "Failed" || processing?.status === "Cancelled") && <div className="terminal-state"><p>{processing?.errorMessage ?? selected.errorMessage ?? (processing?.status === "Cancelled" ? "Processing was cancelled." : "Processing did not complete.")}</p><button disabled={!canOperate || busy} onClick={reprocess}>Try processing again</button></div>}
+          {selected.status === "Ready" && <div className="reprocess-row"><button className="secondary" disabled={!canOperate || busy || !!processing && ["Queued", "Processing"].includes(processing.status)} onClick={reprocess}>Reprocess document</button></div>}
           {selected.errorMessage && <p className="error">{selected.errorMessage}</p>}
           {(selected.status === "Ready" || selected.fields.length > 0) && review && <>
             <div className="review-toolbar">
-              <div><strong>{review.session ? `Review ${review.session.revisionNumber} · ${review.session.status}` : "Not reviewed"}</strong><small>{review.session ? `${pendingCount} machine fields pending` : "Start a review to confirm or correct extracted values."}</small></div>
-              {!review.session && <button onClick={startReview} disabled={reviewBusy === "start"}>Start review</button>}
+              <div><strong>{review.session ? `Review ${review.session.revisionNumber} · ${review.session.status}` : "Not reviewed"}</strong><small>{review.session ? `${pendingCount} machine fields pending · ${attentionCount} need attention` : `${attentionCount} fields need attention before review.`}</small></div>
+              {canReview && !review.session && <button onClick={startReview} disabled={reviewBusy === "start"}>Start review</button>}
               {active && <button onClick={completeReview} disabled={reviewBusy !== null || pendingCount > 0}>Complete review</button>}
               {review.session?.status === "Completed" && <span className="locked">Read only</span>}
+              {review.session && selected && <button className="history-link" onClick={exportHistory}>Export history</button>}
             </div>
             <div className="review-fields">{review.fields.map(field => {
-              const key = fieldIdentity(field); const isBusy = reviewBusy === key;
-              return <article className={`review-field decision-${field.decisionStatus.toLowerCase()}`} key={key}>
+              const key = fieldIdentity(field); const isBusy = reviewBusy === key; const cues = field.cues ?? [];
+              return <article className={`review-field decision-${field.decisionStatus.toLowerCase()} ${cues.length ? "needs-attention" : ""}`} key={key}>
                 <div className="field-title"><span>{labels[field.fieldKey] ?? field.fieldKey}</span><i>{field.decisionStatus}</i></div>
-                {field.machine ? <div className="machine-value"><small>AI output · {Math.round(field.machine.confidence * 100)}% · page {field.machine.evidence[0]?.page ?? 1}</small><p dir={field.fieldKey.endsWith("_ar") ? "rtl" : "auto"}>{field.machine.value}</p></div> : <div className="machine-value"><small>No machine value</small><p>Reviewer-added field</p></div>}
-                <div className="effective-value"><small>Effective reviewed value</small><p>{field.effective.isPresent ? field.effective.value : "Excluded"}</p>{field.latestAction?.reason && <em>Reason: {field.latestAction.reason}</em>}</div>
+                {cues.length > 0 && <div className="review-cues" role="alert">{cues.map(cue => <span key={cue}>{cueLabels[cue] ?? cue}</span>)}</div>}
+                {field.machine ? <div className="machine-value"><small>AI output · {field.machine.confidence === null ? "confidence unavailable" : `${Math.round(field.machine.confidence * 100)}%`} · page {field.machine.evidence[0]?.page ?? 1}</small><p dir={field.fieldKey.endsWith("_ar") ? "rtl" : "auto"}>{field.machine.value}</p></div> : <div className="machine-value"><small>No machine value</small><p>{field.decisionStatus === "Missing" ? "Expected field was not extracted" : "Reviewer-added field"}</p></div>}
+                <div className="effective-value"><small>Effective reviewed value</small><p>{field.effective.isPresent ? field.effective.value : field.decisionStatus === "Missing" ? "Not extracted" : "Excluded"}</p>{field.latestAction?.reason && <em>Reason: {field.latestAction.reason}</em>}</div>
                 {active && field.machine && <div className="field-controls">
                   <label>Reviewed value<input value={drafts[key] ?? ""} onChange={event => setDrafts(current => ({ ...current, [key]: event.target.value }))}/></label>
                   <label>Reason for change or clear<input value={reasons[key] ?? ""} onChange={event => setReasons(current => ({ ...current, [key]: event.target.value }))}/></label>

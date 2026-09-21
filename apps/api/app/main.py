@@ -1,7 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
 import hashlib
-import hmac
 from pathlib import Path
 import re
 import time
@@ -13,10 +12,17 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .config import get_settings
+from .service_security import authorize, PrivateServiceBoundary
 from .extraction import ExtractionError, get_extractor
 from .fixture_contract import ContractValidationError, validate_normalized_result
 
 app = FastAPI(title="UAE Document Intelligence Private AI Service", version="0.1.0")
+app.add_middleware(PrivateServiceBoundary, settings=lambda: get_settings())
+
+from .cited_routes import router as cited_router
+app.include_router(cited_router)
+from .cited_answer_routes import router as cited_answer_router
+app.include_router(cited_answer_router)
 
 
 @app.exception_handler(ExtractionError)
@@ -195,10 +201,7 @@ def extract_for_worker(
     payload: WorkerExtractRequest, response: Response, http_request: Request
 ) -> ExtractResponse:
     response.headers["X-Request-ID"] = payload.correlation_id
-    configured_secret = get_settings().worker_shared_secret
-    supplied_secret = http_request.headers.get("x-worker-token", "")
-    if not configured_secret or not hmac.compare_digest(configured_secret, supplied_secret):
-        raise HTTPException(status_code=404, detail="Not found")
+    authorize(http_request, get_settings())
     if payload.schema_version != "2.0":
         raise ExtractionError(
             "unsupported_schema_version",

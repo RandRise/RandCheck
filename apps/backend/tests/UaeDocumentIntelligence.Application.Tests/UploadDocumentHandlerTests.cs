@@ -10,6 +10,21 @@ public sealed class UploadDocumentHandlerTests
     private static readonly Guid OrganizationId = Guid.Parse("10000000-0000-0000-0000-000000000001");
     private static readonly Guid ActorId = Guid.Parse("20000000-0000-0000-0000-000000000002");
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scan_receipt_is_forwarded_and_failed_admission_compensates_source(bool fail)
+    {
+        var storage = new FakeDocumentStorage();
+        var receipt = new FileScanReceipt(storage.StoredFile.Sha256, 4, "clamav-instream-v1");
+        storage.StoredFile = storage.StoredFile with { Scan = receipt };
+        var queue = new FakeUploadQueueStore { Exception = fail ? new InvalidOperationException("Admission failed") : null };
+        if (fail) await Assert.ThrowsAsync<InvalidOperationException>(() => CreateHandler(queue, storage).HandleAsync(CreateCommand(), default));
+        else await CreateHandler(queue, storage).HandleAsync(CreateCommand(), default);
+        Assert.Same(receipt, queue.Scan);
+        Assert.Equal(fail ? 1 : 0, storage.DeletedStorageKeys.Count);
+    }
+
     [Fact]
     public async Task Queue_persistence_failure_deletes_the_stored_file_with_a_compensation_token()
     {
@@ -119,6 +134,12 @@ public sealed class UploadDocumentHandlerTests
         public int AddCallCount { get; private set; }
         public Document? Document { get; private set; }
         public ExtractionJob? Job { get; private set; }
+        public FileScanReceipt? Scan { get; private set; }
+        public Task<ExtractionJob> AddScannedAsync(Document document, Guid extractionRunId, Guid jobId, FileScanReceipt scan, CancellationToken ct)
+        {
+            Scan = scan;
+            return AddAsync(document, extractionRunId, jobId, ct);
+        }
 
         public Task<ExtractionJob> AddAsync(Document document, Guid extractionRunId, Guid jobId,
             CancellationToken cancellationToken)
@@ -134,7 +155,7 @@ public sealed class UploadDocumentHandlerTests
 
     private sealed class FakeDocumentStorage : IDocumentStorage
     {
-        public StoredFile StoredFile { get; } = new(
+        public StoredFile StoredFile { get; set; } = new(
             "organizations/test/documents/test/source.pdf",
             @"C:\safe-test-storage\source.pdf",
             4,

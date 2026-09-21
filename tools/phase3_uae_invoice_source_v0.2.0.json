@@ -1,0 +1,196 @@
+{
+  "source_schema_version": "2.0",
+  "dataset_id": "phase3-uae-fta-field-complete-development",
+  "dataset_version": "0.2.0",
+  "license": "CC0-1.0",
+  "notice": "All entities, identifiers, addresses, contacts, transactions, exchange-rate references, and values are fictional.",
+  "fta_reference": "https://tax.gov.ae/Datafolder/Files/Pdf/2023/Knowledge%20Center%20Page/VAT11%20-%20Tax%20invoices%20En.pdf",
+  "fta_detailed_reference": "https://tax.gov.ae/DataFolder/Files/Pdf/06-Tax-Invoices.pdf",
+  "mof_reference": "https://mof.gov.ae/wp-content/uploads/2026/02/UAE-Electronic-Invoice-mandatory-fields_V-1.0-23Feb2026.pdf",
+  "samples": [
+    {
+      "sample_id": "fta-standard-services-native",
+      "filename": "fta-standard-services-native.pdf",
+      "scenario": "standard_full",
+      "layout": "one_page_detailed",
+      "scan_type": "native_pdf",
+      "style": "corporate",
+      "invoice_number": "SYN-STD-260801",
+      "invoice_date": "2026-08-01",
+      "supply_date": "2026-07-31",
+      "invoice_currency": "AED",
+      "seller": {"name": "Sand Dune Systems L.L.C.", "trn": "000000000000701", "tin": "0000000000", "trade_license": "SYN-TL-DXB-0701", "address_line_1": "Unit 701, Synthetic Business District", "city": "Dubai", "subdivision": "Dubai", "country_code": "AE"},
+      "buyer": {"name": "Falcon Ridge Trading L.L.C.", "registered_for_vat": true, "trn": "000000000000711", "address_line_1": "Unit 711, Synthetic Commercial District", "city": "Sharjah", "subdivision": "Sharjah", "country_code": "AE"},
+      "payment_terms": "Net 30", "payment_due_date": "2026-08-31", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "items": [
+        {"description": "Document workflow configuration", "quantity": "1", "unit": "EA", "unit_price": "6000.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Reviewer onboarding workshop", "quantity": "2", "unit": "DAY", "unit_price": "1200.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    },
+    {
+      "sample_id": "fta-standard-goods-native",
+      "filename": "fta-standard-goods-native.pdf",
+      "scenario": "standard_full",
+      "layout": "one_page_detailed",
+      "scan_type": "native_pdf",
+      "style": "desert",
+      "invoice_number": "SYN-STD-260802",
+      "invoice_date": "2026-08-02",
+      "supply_date": "2026-08-01",
+      "invoice_currency": "AED",
+      "seller": {"name": "Harbour Office Equipment L.L.C.", "trn": "000000000000702", "tin": "0000000000", "trade_license": "SYN-TL-AUH-0702", "address_line_1": "Warehouse 702, Synthetic Industrial District", "city": "Abu Dhabi", "subdivision": "Abu Dhabi", "country_code": "AE"},
+      "buyer": {"name": "Crescent Facilities Management L.L.C.", "registered_for_vat": true, "trn": "000000000000712", "address_line_1": "Office 712, Synthetic Central District", "city": "Abu Dhabi", "subdivision": "Abu Dhabi", "country_code": "AE"},
+      "payment_terms": "Net 45", "payment_due_date": "2026-09-16", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "items": [
+        {"description": "Ergonomic task chair", "quantity": "12", "unit": "EA", "unit_price": "650.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Height-adjustable desk", "quantity": "4", "unit": "EA", "unit_price": "1400.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Delivery and installation", "quantity": "1", "unit": "EA", "unit_price": "1700.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    },
+    {
+      "sample_id": "fta-simplified-native",
+      "filename": "fta-simplified-native.pdf",
+      "scenario": "simplified",
+      "layout": "one_page_simplified",
+      "scan_type": "native_pdf",
+      "style": "retail",
+      "invoice_number": "SYN-SIM-260803",
+      "invoice_date": "2026-08-03",
+      "supply_date": "2026-08-03",
+      "invoice_currency": "AED",
+      "seller": {"name": "Palm & Pearl Stationery L.L.C.", "trn": "000000000000703", "tin": "0000000000", "trade_license": "SYN-TL-AJM-0703", "address_line_1": "Shop 703, Synthetic Retail District", "city": "Ajman", "subdivision": "Ajman", "country_code": "AE"},
+      "buyer": {"name": "Cash Customer", "registered_for_vat": false, "trn": null, "address_line_1": "Not required for simplified fixture", "city": "Ajman", "subdivision": "Ajman", "country_code": "AE"},
+      "payment_terms": "Due on receipt", "payment_due_date": "2026-08-03", "payment_method": "Cash", "payment_means_code": "10",
+      "items": [
+        {"description": "Archive boxes", "quantity": "10", "unit": "EA", "unit_price": "18.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "A4 paper cartons", "quantity": "2", "unit": "EA", "unit_price": "100.475", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    },
+    {
+      "sample_id": "fta-zero-rated-native",
+      "filename": "fta-zero-rated-native.pdf",
+      "scenario": "zero_rated",
+      "layout": "one_page_detailed",
+      "scan_type": "native_pdf",
+      "style": "corporate",
+      "invoice_number": "SYN-ZER-260804",
+      "invoice_date": "2026-08-04",
+      "supply_date": "2026-08-04",
+      "invoice_currency": "AED",
+      "seller": {"name": "Gulf Horizon Export Services L.L.C.", "trn": "000000000000704", "tin": "0000000000", "trade_license": "SYN-TL-DXB-0704", "address_line_1": "Unit 704, Synthetic Export District", "city": "Dubai", "subdivision": "Dubai", "country_code": "AE"},
+      "buyer": {"name": "Meridian Overseas Pte. Ltd.", "registered_for_vat": false, "trn": null, "address_line_1": "88 Fictional Commerce Road", "city": "Singapore", "subdivision": "Singapore", "country_code": "SG"},
+      "payment_terms": "Net 15", "payment_due_date": "2026-08-19", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "conditional_statement": "Zero-rated export supply - Article 45, Federal Decree-Law No. 8 of 2017, as amended.",
+      "items": [
+        {"description": "Export market research service", "quantity": "1", "unit": "EA", "unit_price": "4500.00", "discount": "0.00", "vat_rate": "0.00", "tax_category": "Z"},
+        {"description": "Remote implementation support", "quantity": "3", "unit": "DAY", "unit_price": "500.00", "discount": "0.00", "vat_rate": "0.00", "tax_category": "Z"}
+      ]
+    },
+    {
+      "sample_id": "fta-reverse-charge-native",
+      "filename": "fta-reverse-charge-native.pdf",
+      "scenario": "reverse_charge",
+      "layout": "one_page_detailed",
+      "scan_type": "native_pdf",
+      "style": "desert",
+      "invoice_number": "SYN-RCM-260805",
+      "invoice_date": "2026-08-05",
+      "supply_date": "2026-08-05",
+      "invoice_currency": "AED",
+      "seller": {"name": "Desert Energy Materials L.L.C.", "trn": "000000000000705", "tin": "0000000000", "trade_license": "SYN-TL-AUH-0705", "address_line_1": "Plot 705, Synthetic Energy District", "city": "Abu Dhabi", "subdivision": "Abu Dhabi", "country_code": "AE"},
+      "buyer": {"name": "Coastal Power Operations PJSC", "registered_for_vat": true, "trn": "000000000000715", "address_line_1": "Plant 715, Synthetic Utilities District", "city": "Abu Dhabi", "subdivision": "Abu Dhabi", "country_code": "AE"},
+      "payment_terms": "Net 30", "payment_due_date": "2026-09-04", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "conditional_statement": "Customer must account for VAT under the reverse-charge provisions of Article 48, Federal Decree-Law No. 8 of 2017, as amended.",
+      "items": [
+        {"description": "Refined hydrocarbon feedstock - synthetic batch", "quantity": "10", "unit": "TNE", "unit_price": "500.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "RC"}
+      ]
+    },
+    {
+      "sample_id": "fta-foreign-currency-native",
+      "filename": "fta-foreign-currency-native.pdf",
+      "scenario": "foreign_currency",
+      "layout": "one_page_detailed",
+      "scan_type": "native_pdf",
+      "style": "corporate",
+      "invoice_number": "SYN-FX-260806",
+      "invoice_date": "2026-08-06",
+      "supply_date": "2026-08-05",
+      "invoice_currency": "USD",
+      "exchange_rate_to_aed": "3.6725",
+      "exchange_rate_source": "CBUAE-approved exchange-rate reference - fictional training entry",
+      "seller": {"name": "Skyline Advisory Services L.L.C.", "trn": "000000000000706", "tin": "0000000000", "trade_license": "SYN-TL-DXB-0706", "address_line_1": "Office 706, Synthetic Financial District", "city": "Dubai", "subdivision": "Dubai", "country_code": "AE"},
+      "buyer": {"name": "Northern Gate Investments L.L.C.", "registered_for_vat": true, "trn": "000000000000716", "address_line_1": "Office 716, Synthetic Investment District", "city": "Dubai", "subdivision": "Dubai", "country_code": "AE"},
+      "payment_terms": "Net 30", "payment_due_date": "2026-09-05", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "conditional_statement": "VAT and gross payable are converted to AED using the stated fictional training exchange-rate reference.",
+      "items": [
+        {"description": "Cross-border advisory engagement", "quantity": "1", "unit": "EA", "unit_price": "1000.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Implementation support", "quantity": "2", "unit": "DAY", "unit_price": "250.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    },
+    {
+      "sample_id": "fta-discounted-multipage-native",
+      "filename": "fta-discounted-multipage-native.pdf",
+      "scenario": "discounted_multipage",
+      "layout": "two_page_detailed",
+      "scan_type": "native_pdf",
+      "style": "retail",
+      "invoice_number": "SYN-DSC-260807",
+      "invoice_date": "2026-08-07",
+      "supply_date": "2026-08-06",
+      "invoice_currency": "AED",
+      "seller": {"name": "Emirates Coast Technical Services L.L.C.", "trn": "000000000000707", "tin": "0000000000", "trade_license": "SYN-TL-RAK-0707", "address_line_1": "Unit 707, Synthetic Free Zone District", "city": "Ras Al Khaimah", "subdivision": "Ras Al Khaimah", "country_code": "AE"},
+      "buyer": {"name": "Summit Hospitality Operations L.L.C.", "registered_for_vat": true, "trn": "000000000000717", "address_line_1": "Tower 717, Synthetic Hospitality District", "city": "Dubai", "subdivision": "Dubai", "country_code": "AE"},
+      "payment_terms": "50% now, balance Net 30", "payment_due_date": "2026-09-06", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "items": [
+        {"description": "Preventive maintenance - Zone A", "quantity": "1", "unit": "EA", "unit_price": "1200.00", "discount": "120.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Preventive maintenance - Zone B", "quantity": "2", "unit": "EA", "unit_price": "800.00", "discount": "160.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Air filter replacement set", "quantity": "5", "unit": "EA", "unit_price": "400.00", "discount": "200.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Control panel inspection", "quantity": "1", "unit": "EA", "unit_price": "900.00", "discount": "90.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Emergency call-out coverage", "quantity": "3", "unit": "EA", "unit_price": "500.00", "discount": "150.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Duct cleaning service", "quantity": "2", "unit": "EA", "unit_price": "700.00", "discount": "140.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Engineering report", "quantity": "1", "unit": "EA", "unit_price": "800.00", "discount": "80.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Consumables and disposal", "quantity": "2", "unit": "EA", "unit_price": "300.00", "discount": "60.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    },
+    {
+      "sample_id": "fta-standard-services-scanned",
+      "filename": "fta-standard-services-scanned.pdf",
+      "scenario": "standard_full",
+      "layout": "one_page_detailed",
+      "scan_type": "scanned_pdf_200dpi",
+      "style": "desert",
+      "invoice_number": "SYN-SCN-260808",
+      "invoice_date": "2026-08-08",
+      "supply_date": "2026-08-08",
+      "invoice_currency": "AED",
+      "seller": {"name": "Northern Star Cleaning Services L.L.C.", "trn": "000000000000708", "tin": "0000000000", "trade_license": "SYN-TL-UAQ-0708", "address_line_1": "Unit 708, Synthetic Service District", "city": "Umm Al Quwain", "subdivision": "Umm Al Quwain", "country_code": "AE"},
+      "buyer": {"name": "Marina View Property Services L.L.C.", "registered_for_vat": true, "trn": "000000000000718", "address_line_1": "Tower 718, Synthetic Coastal District", "city": "Dubai", "subdivision": "Dubai", "country_code": "AE"},
+      "payment_terms": "Net 15", "payment_due_date": "2026-08-23", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "items": [
+        {"description": "Monthly common-area cleaning", "quantity": "1", "unit": "MON", "unit_price": "3200.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Deep-cleaning team", "quantity": "2", "unit": "DAY", "unit_price": "850.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Consumable supplies", "quantity": "1", "unit": "EA", "unit_price": "420.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    },
+    {
+      "sample_id": "fta-standard-rotated-degraded-scan",
+      "filename": "fta-standard-rotated-degraded-scan.pdf",
+      "scenario": "standard_full",
+      "layout": "one_page_detailed",
+      "scan_type": "scanned_pdf_rotated_degraded",
+      "style": "corporate",
+      "invoice_number": "SYN-SCN-260809",
+      "invoice_date": "2026-08-09",
+      "supply_date": "2026-08-08",
+      "invoice_currency": "AED",
+      "seller": {"name": "Oasis Field Support L.L.C.", "trn": "000000000000709", "tin": "0000000000", "trade_license": "SYN-TL-FUJ-0709", "address_line_1": "Unit 709, Synthetic Logistics District", "city": "Fujairah", "subdivision": "Fujairah", "country_code": "AE"},
+      "buyer": {"name": "East Gate Marine Supplies L.L.C.", "registered_for_vat": true, "trn": "000000000000719", "address_line_1": "Unit 719, Synthetic Port District", "city": "Fujairah", "subdivision": "Fujairah", "country_code": "AE"},
+      "payment_terms": "Net 30", "payment_due_date": "2026-09-08", "payment_method": "Bank transfer", "payment_means_code": "30",
+      "items": [
+        {"description": "On-site equipment inspection", "quantity": "3", "unit": "EA", "unit_price": "725.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Replacement safety sensor", "quantity": "4", "unit": "EA", "unit_price": "315.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"},
+        {"description": "Travel and mobilization", "quantity": "1", "unit": "EA", "unit_price": "480.00", "discount": "0.00", "vat_rate": "5.00", "tax_category": "S"}
+      ]
+    }
+  ]
+}

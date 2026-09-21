@@ -50,11 +50,31 @@ internal sealed class DocumentRepository(AppDbContext db) : IDocumentRepository
     {
         var source = db.Documents.Where(x => x.OrganizationId == organizationId);
         var durations = db.ExtractionRuns.Where(x => x.OrganizationId == organizationId && x.DurationMs != null);
+        var sessions = db.ReviewSessions.Where(x => x.OrganizationId == organizationId);
+        var actions = db.ReviewActions.Where(x => x.OrganizationId == organizationId);
+        var actionCounts = await actions.GroupBy(x => x.Action)
+            .Select(group => new { Action = group.Key, Count = group.Count() })
+            .ToDictionaryAsync(x => x.Action, x => x.Count, cancellationToken);
+        var confirmed = actionCounts.GetValueOrDefault(ReviewActionType.Confirmed);
+        var corrected = actionCounts.GetValueOrDefault(ReviewActionType.Corrected);
+        var added = actionCounts.GetValueOrDefault(ReviewActionType.Added);
+        var cleared = actionCounts.GetValueOrDefault(ReviewActionType.Cleared);
+        var machineCleared = await actions.CountAsync(x =>
+            x.Action == ReviewActionType.Cleared && x.MachineFieldValueId != null,
+            cancellationToken);
+        var machineDecisions = confirmed + corrected + machineCleared;
+        var reviewMetrics = new ReviewActionMetrics(
+            await sessions.CountAsync(cancellationToken),
+            await sessions.CountAsync(x => x.Status == ReviewStatus.Completed, cancellationToken),
+            confirmed + corrected + added + cleared,
+            confirmed, corrected, added, cleared,
+            machineDecisions == 0 ? null : (double)(corrected + machineCleared) / machineDecisions);
         return new DocumentMetrics(
             await source.CountAsync(cancellationToken),
             await source.CountAsync(x => x.ProcessingStatus == DocumentProcessingStatus.ReadyForReview, cancellationToken),
             await source.CountAsync(x => x.ProcessingStatus == DocumentProcessingStatus.ExtractionFailed, cancellationToken),
-            await durations.Select(x => (double?)x.DurationMs).AverageAsync(cancellationToken));
+            await durations.Select(x => (double?)x.DurationMs).AverageAsync(cancellationToken),
+            reviewMetrics);
     }
 
     private IQueryable<Document> ListQuery() => db.Documents

@@ -1,0 +1,11 @@
+{
+  "passed": 1365,
+  "projects": {
+    "Api": 260,
+    "Application": 337,
+    "Architecture": 4,
+    "Domain": 111,
+    "Infrastructure": 220,
+    "Persistence": 433
+  }
+}

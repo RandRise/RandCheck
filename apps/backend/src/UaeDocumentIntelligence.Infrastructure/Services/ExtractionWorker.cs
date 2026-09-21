@@ -14,6 +14,15 @@ public sealed class ExtractionWorkerOptions
 {
     public bool Enabled { get; set; }
     public int PollIntervalMilliseconds { get; set; } = 1000;
+    public string SecurityMode { get; set; } = "Development";
+    public string DatabaseRole { get; set; } = string.Empty;
+
+    public static string ResolveSecurityMode(string? configured, string environment)
+    {
+        var local = environment is "Development" or "Testing";
+        var mode = string.IsNullOrEmpty(configured) ? (local ? "Development" : "Locked") : configured;
+        return mode == "Enforced" || mode == "Development" && local ? mode : "Locked";
+    }
 }
 
 internal sealed class ExtractionWorker(
@@ -52,9 +61,9 @@ internal sealed class ExtractionWorker(
             {
                 break;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                logger.LogError(exception, "Extraction worker loop failed safely; polling will continue");
+                logger.LogError("Extraction worker loop failed; polling will continue. Database/provider diagnostics withheld.");
                 await Task.Delay(Math.Max(100, options.Value.PollIntervalMilliseconds), stoppingToken);
             }
         }
@@ -79,6 +88,8 @@ internal sealed class ExtractionWorker(
             ExtractionResult result;
             await using (var providerScope = scopes.CreateAsyncScope())
             {
+                if (options.Value.SecurityMode == "Enforced")
+                    await providerScope.ServiceProvider.GetRequiredService<ExtractionFileSafety>().VerifyAsync(claim, attempt.Token);
                 var client = providerScope.ServiceProvider.GetRequiredService<IExtractionClient>();
                 var request = new WorkerExtractionRequest(claim.SchemaVersion, claim.JobId,
                     claim.DocumentId, claim.ExtractionRunId, claim.StorageKey, claim.Sha256, claim.Bytes,
@@ -115,9 +126,9 @@ internal sealed class ExtractionWorker(
             await RecordFailureAsync(claim, exception.Code, exception.SafeSummary,
                 exception.Retryable, stoppingToken);
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            logger.LogWarning(exception, "Extraction attempt failed with an internal safe classification");
+            logger.LogWarning("Extraction attempt failed with an internal safe classification");
             await RecordFailureAsync(claim, "internal_extraction_error",
                 "The extraction provider could not process this document.", false, stoppingToken);
         }
@@ -137,7 +148,8 @@ internal sealed class ExtractionWorker(
             try
             {
                 await using var scope = scopes.CreateAsyncScope();
-                var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+                await using var session = await WorkerQueueSession.OpenAsync(scope.ServiceProvider, cancellationToken);
+                var queue = session.Queue;
                 if (!await queue.HeartbeatAsync(claim.JobId, claim.LeaseOwner, claim.LeaseToken,
                         cancellationToken))
                 {
@@ -149,9 +161,9 @@ internal sealed class ExtractionWorker(
             {
                 return;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                logger.LogWarning(exception, "Extraction lease heartbeat failed; authority was not extended");
+                logger.LogWarning("Extraction lease heartbeat failed; authority was not extended");
                 await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
         }
@@ -161,7 +173,8 @@ internal sealed class ExtractionWorker(
         string summary, bool retryable, CancellationToken stoppingToken)
     {
         await using var scope = scopes.CreateAsyncScope();
-        var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        await using var session = await WorkerQueueSession.OpenAsync(scope.ServiceProvider, stoppingToken);
+        var queue = session.Queue;
         var recorded = await queue.RecordFailureAsync(claim, code, summary, retryable, stoppingToken);
         if (!recorded)
         {
@@ -185,7 +198,8 @@ internal sealed class ExtractionWorker(
     private async Task<ClaimedExtractionJob?> ClaimAsync(CancellationToken cancellationToken)
     {
         await using var scope = scopes.CreateAsyncScope();
-        return await scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>()
+        await using var session = await WorkerQueueSession.OpenAsync(scope.ServiceProvider, cancellationToken);
+        return await session.Queue
             .ClaimAsync(_owner, cancellationToken);
     }
 
@@ -193,14 +207,16 @@ internal sealed class ExtractionWorker(
         CancellationToken cancellationToken)
     {
         await using var scope = scopes.CreateAsyncScope();
-        return await scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>()
+        await using var session = await WorkerQueueSession.OpenAsync(scope.ServiceProvider, cancellationToken);
+        return await session.Queue
             .CompleteAsync(claim, result, cancellationToken);
     }
 
     private async Task TerminalizeExpiredAsync(CancellationToken cancellationToken)
     {
         await using var scope = scopes.CreateAsyncScope();
-        var queue = scope.ServiceProvider.GetRequiredService<IExtractionJobQueue>();
+        await using var session = await WorkerQueueSession.OpenAsync(scope.ServiceProvider, cancellationToken);
+        var queue = session.Queue;
         while (await queue.TerminalizeOneExpiredAsync(cancellationToken))
             Failed.Add(1, new KeyValuePair<string, object?>("code", "worker_lease_expired"));
     }
@@ -208,7 +224,21 @@ internal sealed class ExtractionWorker(
     private async Task EnsurePostgresAsync(CancellationToken cancellationToken)
     {
         await using var scope = scopes.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        if (options.Value.SecurityMode == "Enforced")
+        {
+            var ai = scope.ServiceProvider.GetRequiredService<IOptions<AiServiceOptions>>().Value;
+            if (ai.AuthenticationMode != "ServiceKeys" || !Uri.TryCreate(ai.BaseUrl, UriKind.Absolute, out var origin))
+                throw new InvalidOperationException("Enforced workers require the private extraction service credential and HTTPS transport before claiming work.");
+            using var http = new HttpClient { BaseAddress = origin };
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/internal/extractions");
+            if (!PrivateServiceCredentials.TryApply(request, http, ai))
+                throw new InvalidOperationException("Enforced workers require the private extraction service credential and HTTPS transport before claiming work.");
+            if (scope.ServiceProvider.GetRequiredService<IOptions<StorageOptions>>().Value.SecurityMode != "Enforced" ||
+                scope.ServiceProvider.GetRequiredService<IOptions<MalwareScanOptions>>().Value.Mode != "ClamAv")
+                throw new InvalidOperationException("Enforced workers require protected storage and malware screening.");
+        }
+        await using var session = await WorkerQueueSession.OpenAsync(scope.ServiceProvider, cancellationToken);
+        var db = session.Database;
         if (!db.Database.IsNpgsql())
             throw new InvalidOperationException("ExtractionWorker:Enabled requires PostgreSQL.");
         await db.Database.CanConnectAsync(cancellationToken);

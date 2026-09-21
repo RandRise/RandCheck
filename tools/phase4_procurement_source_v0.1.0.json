@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "uae-procurement-reconciliation-synthetic",
+  "dataset_version": "0.1.0",
+  "license": "CC0-1.0",
+  "synthetic": true,
+  "claim_eligible": false,
+  "supplier": {
+    "name": "Sand Dune Systems L.L.C.",
+    "trn": "000000000000701",
+    "address": "Unit 701, Synthetic Business District, Dubai, UAE"
+  },
+  "buyer": {
+    "name": "Falcon Ridge Trading L.L.C.",
+    "trn": "000000000000711",
+    "address": "Unit 711, Synthetic Commercial District, Sharjah, UAE"
+  },
+  "currency": "AED",
+  "documents": [
+    {
+      "role": "Quotation",
+      "filename": "synthetic-quotation-Q-260801.pdf",
+      "document_number": "Q-260801",
+      "date": "2026-07-15",
+      "valid_until": "2026-08-14",
+      "subtotal": "8400.00",
+      "vat": "420.00",
+      "total": "8820.00",
+      "lines": [
+        {"occurrence": 1, "item_code": "DOC-WORKFLOW", "description": "Document workflow configuration", "quantity": "1", "unit_price": "6000.00", "tax": "300.00", "total": "6300.00"},
+        {"occurrence": 2, "item_code": "TRAINING", "description": "Reviewer onboarding workshop", "quantity": "2", "unit_price": "1200.00", "tax": "120.00", "total": "2520.00"}
+      ]
+    },
+    {
+      "role": "PurchaseOrder",
+      "filename": "synthetic-purchase-order-PO-260801.pdf",
+      "document_number": "PO-260801",
+      "date": "2026-07-18",
+      "subtotal": "8500.00",
+      "vat": "425.00",
+      "total": "8925.00",
+      "lines": [
+        {"occurrence": 1, "item_code": "DOC-WORKFLOW", "description": "Document workflow configuration", "quantity": "1", "unit_price": "6000.00", "tax": "300.00", "total": "6300.00"},
+        {"occurrence": 2, "item_code": "TRAINING", "description": "Reviewer onboarding workshop", "quantity": "2", "unit_price": "1250.00", "tax": "125.00", "total": "2625.00"}
+      ]
+    },
+    {
+      "role": "Invoice",
+      "filename": "synthetic-tax-invoice-SYN-STD-260801.pdf",
+      "document_number": "SYN-STD-260801",
+      "date": "2026-08-01",
+      "source_invoice": "output/pdf/uae-invoice-development-v0.2.0/fta-standard-services-native.pdf",
+      "subtotal": "8400.00",
+      "vat": "420.00",
+      "total": "8820.00",
+      "lines": [
+        {"occurrence": 1, "item_code": "DOC-WORKFLOW", "description": "Document workflow configuration", "quantity": "1", "unit_price": "6000.00", "tax": "300.00", "total": "6300.00"},
+        {"occurrence": 2, "item_code": "TRAINING", "description": "Reviewer onboarding workshop", "quantity": "2", "unit_price": "1200.00", "tax": "120.00", "total": "2520.00"}
+      ]
+    }
+  ],
+  "expected_findings": [
+    {"rule_code": "AMT-001", "left_role": "Quotation", "right_role": "PurchaseOrder", "field_key": "total", "occurrence": 0},
+    {"rule_code": "AMT-002", "left_role": "PurchaseOrder", "right_role": "Invoice", "field_key": "total", "occurrence": 0},
+    {"rule_code": "TAX-001", "left_role": "PurchaseOrder", "right_role": "Invoice", "field_key": "vat", "occurrence": 0},
+    {"rule_code": "LINE-003", "left_role": "Quotation", "right_role": "PurchaseOrder", "field_key": "line_unit_price", "occurrence": 2},
+    {"rule_code": "LINE-004", "left_role": "Quotation", "right_role": "PurchaseOrder", "field_key": "line_tax", "occurrence": 2},
+    {"rule_code": "LINE-005", "left_role": "Quotation", "right_role": "PurchaseOrder", "field_key": "line_total", "occurrence": 2},
+    {"rule_code": "LINE-003", "left_role": "PurchaseOrder", "right_role": "Invoice", "field_key": "line_unit_price", "occurrence": 2},
+    {"rule_code": "LINE-004", "left_role": "PurchaseOrder", "right_role": "Invoice", "field_key": "line_tax", "occurrence": 2},
+    {"rule_code": "LINE-005", "left_role": "PurchaseOrder", "right_role": "Invoice", "field_key": "line_total", "occurrence": 2}
+  ]
+}

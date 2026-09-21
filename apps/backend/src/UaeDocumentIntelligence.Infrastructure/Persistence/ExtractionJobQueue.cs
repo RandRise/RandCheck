@@ -8,13 +8,14 @@ using UaeDocumentIntelligence.Infrastructure.Services;
 
 namespace UaeDocumentIntelligence.Infrastructure.Persistence;
 
-internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtractionJobQueue
+internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock, string? workerSubject = null,
+    Microsoft.Extensions.Options.IOptions<CapacityOptions>? capacity = null) : IExtractionJobQueue
 {
     internal static readonly TimeSpan LeaseDuration = TimeSpan.FromSeconds(180);
     internal static readonly TimeSpan AttemptDuration = TimeSpan.FromSeconds(120);
     private static readonly HashSet<string> RetryableCodes =
     [
-        "provider_network_error", "provider_timeout", "provider_throttled", "provider_unavailable"
+        "provider_network_error", "provider_timeout", "provider_throttled", "provider_unavailable", "malware_scan_unavailable"
     ];
 
     public async Task<bool> TerminalizeOneExpiredAsync(CancellationToken cancellationToken)
@@ -43,6 +44,7 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
         var businessNow = BusinessNow(document, run);
         run.Fail("worker_lease_expired", "The extraction worker lease expired after the final claim.", businessNow);
         document.RecordExtractionFailure(run, businessNow);
+        await AuditWorkerAsync(job, "worker.lease-expired", cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return true;
@@ -80,6 +82,7 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
         job.Lease(owner, token, now, LeaseDuration);
         if (run.Status == ExtractionRunStatus.Queued)
             run.Start(Latest(clock.UtcNow, run.CreatedAtUtc));
+        await AuditWorkerAsync(job, "worker.claimed", cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
@@ -120,13 +123,14 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
         var document = await LoadDocumentAsync(claim.OrganizationId, claim.DocumentId, cancellationToken);
         var run = document.ExtractionRuns.Single(x => x.Id == claim.ExtractionRunId);
         var businessNow = BusinessNow(document, run);
-        ValidateIdentity(claim, result);
+        ValidateIdentity(run, result);
         ExtractionResultContract.Apply(run, result, businessNow);
         document.RecordExtractionSuccess(run, businessNow);
         job.Succeed(claim.LeaseOwner, claim.LeaseToken,
             result.Outcome == ExtractionOutcome.Ready
                 ? ExtractionOutcomeValue.Ready
                 : ExtractionOutcomeValue.Partial, now);
+        await AuditWorkerAsync(job, "worker.completed", cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return true;
@@ -157,6 +161,7 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
             run.Fail(code, safeSummary, businessNow);
             document.RecordExtractionFailure(run, businessNow);
         }
+        await AuditWorkerAsync(job, job.Status == ExtractionJobStatus.RetryScheduled ? "worker.retry-scheduled" : "worker.failed", cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return true;
@@ -165,6 +170,7 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
     public async Task<bool> CancelAsync(Guid organizationId, Guid jobId, string code,
         string safeSummary, CancellationToken cancellationToken)
     {
+        if (workerSubject is not null) throw new InvalidOperationException("Worker identity cannot perform human cancellation.");
         EnsurePostgres();
         db.ChangeTracker.Clear();
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted,
@@ -206,10 +212,12 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
         Guid runId, Guid jobId, string providerAlias, string providerVersion,
         string schemaVersion, string correlationId, CancellationToken cancellationToken)
     {
+        if (workerSubject is not null) throw new InvalidOperationException("Worker identity cannot request reprocessing.");
         EnsurePostgres();
         db.ChangeTracker.Clear();
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted,
             cancellationToken);
+        await OrganizationCapacity.LockAsync(db, organizationId, cancellationToken);
         var lockedDocumentId = await LockOneIdAsync("""
             SELECT id
             FROM documents
@@ -228,6 +236,7 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
             .SingleAsync(item => item.OrganizationId == organizationId && item.Id == documentId,
                 cancellationToken);
         var runNumber = document.ExtractionRuns.Select(run => run.RunNumber).DefaultIfEmpty().Max() + 1;
+        await OrganizationCapacity.CheckLockedAsync(db, organizationId, 0, capacity?.Value.RequirePolicy == true, cancellationToken);
         var businessNow = Latest(clock.UtcNow, document.UpdatedAtUtc);
         document.QueueExtraction(runId, runNumber, providerAlias, providerVersion, schemaVersion,
             correlationId, businessNow);
@@ -247,6 +256,9 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
             FROM extraction_jobs
             WHERE id = @job_id
               AND organization_id = @organization_id
+              AND document_id = @document_id
+              AND extraction_run_id = @run_id
+              AND attempt_count = @attempt
               AND status = 'Leased'
               AND lease_owner = @lease_owner
               AND lease_token = @lease_token
@@ -254,6 +266,7 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
             FOR UPDATE
             """,
             [("job_id", claim.JobId), ("organization_id", claim.OrganizationId),
+             ("document_id", claim.DocumentId), ("run_id", claim.ExtractionRunId), ("attempt", claim.Attempt),
              ("lease_owner", claim.LeaseOwner), ("lease_token", claim.LeaseToken)],
             cancellationToken);
         return id.HasValue;
@@ -300,13 +313,28 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock) : IExtra
         .Include(x => x.ExtractionRuns).ThenInclude(x => x.Warnings)
         .SingleAsync(x => x.OrganizationId == organizationId && x.Id == documentId, cancellationToken);
 
-    private static void ValidateIdentity(ClaimedExtractionJob claim, ExtractionResult result)
+    private static void ValidateIdentity(ExtractionRun run, ExtractionResult result)
     {
-        if (result.SchemaVersion != claim.SchemaVersion || result.Provider.Alias != claim.ProviderAlias ||
-            result.Provider.AdapterVersion != claim.ProviderVersion ||
+        if (result.SchemaVersion != run.ExtractionSchemaVersion || result.Provider.Alias != run.ProviderName ||
+            result.Provider.AdapterVersion != run.ProviderVersion ||
             string.IsNullOrWhiteSpace(result.Provider.Model) || result.Provider.Model.Length > 100 ||
             string.IsNullOrWhiteSpace(result.Provider.ModelVersion) || result.Provider.ModelVersion.Length > 100)
             throw new InvalidDataException("Provider result identity does not match the claimed job.");
+    }
+
+    private async Task AuditWorkerAsync(ExtractionJob job, string action, CancellationToken ct)
+    {
+        if (workerSubject is null) return; // Explicit local development / older fixture schemas.
+        var actorIds = await db.Actors.AsNoTracking().Where(a => a.OrganizationId == job.OrganizationId &&
+            a.ExternalSubject == workerSubject && a.Kind == ActorKind.System && a.IsActive)
+            .Select(a => a.Id).Take(2).ToArrayAsync(ct);
+        if (actorIds.Length != 1)
+            throw new InvalidOperationException("The organization's extraction service actor is not provisioned or active.");
+        var before = db.Entry(job).Property(x => x.Status).OriginalValue.ToString();
+        db.SecurityAuditEvents.Add(new SecurityAuditEvent(job.OrganizationId, actorIds[0], "System", action,
+            "extraction-job", job.Id, "Succeeded", job.LastErrorCode is "malware_detected" or "malware_scan_unavailable" or "storage_integrity_failed"
+                ? job.LastErrorCode : "committed", Guid.NewGuid().ToString("N"),
+            before, $"{job.Status};attempt={job.AttemptCount}"));
     }
 
     private DateTimeOffset BusinessNow(Document document, ExtractionRun run) =>

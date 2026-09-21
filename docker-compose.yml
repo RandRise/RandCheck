@@ -33,7 +33,7 @@ services:
       Storage__UploadDirectory: /data/uploads
       AiService__BaseUrl: http://ai:8001
       AiService__ProviderAlias: local
-      AiService__AdapterVersion: local-1.0.0
+      AiService__AdapterVersion: local-1.2.0
       AiService__SchemaVersion: "2.0"
       AiService__WorkerToken: local_worker_only_change_me
       ExtractionWorker__Enabled: "true"

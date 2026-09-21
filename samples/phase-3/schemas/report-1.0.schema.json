@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uae-document-intelligence:phase3:report:1.0",
+  "title": "Phase 3 evaluation report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_schema_version",
+    "evaluator_version",
+    "dataset",
+    "prediction_set_id",
+    "input_fingerprints",
+    "normalization",
+    "metrics",
+    "breakdowns",
+    "methodology"
+  ],
+  "properties": {
+    "report_schema_version": {"const": "1.0"},
+    "evaluator_version": {"type": "string", "minLength": 1},
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "sample_count",
+        "purpose",
+        "claim_eligible",
+        "claim_exclusion_reason"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "sample_count": {"type": "integer", "minimum": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "claim_eligible": {"type": "boolean"},
+        "claim_exclusion_reason": {"type": ["string", "null"]}
+      }
+    },
+    "prediction_set_id": {"type": "string", "minLength": 1},
+    "input_fingerprints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_canonical_sha256", "prediction_set_canonical_sha256"],
+      "properties": {
+        "dataset_canonical_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "prediction_set_canonical_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      }
+    },
+    "metrics": {"$ref": "#/$defs/metrics"},
+    "breakdowns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "layout", "scan_type", "provider_version"],
+      "properties": {
+        "field": {"$ref": "#/$defs/metricMap"},
+        "layout": {"$ref": "#/$defs/metricMap"},
+        "scan_type": {"$ref": "#/$defs/metricMap"},
+        "provider_version": {"$ref": "#/$defs/metricMap"}
+      }
+    },
+    "methodology": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "nullableRate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "nullableNumber": {"type": ["number", "null"], "minimum": 0},
+    "metricMap": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/metrics"}
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_count",
+        "expected_field_count",
+        "predicted_field_count",
+        "correct_field_count",
+        "incorrect_field_count",
+        "missing_field_count",
+        "unexpected_field_count",
+        "exact_match",
+        "precision",
+        "recall",
+        "correction_rate",
+        "failure_rate",
+        "latency_ms",
+        "cost"
+      ],
+      "properties": {
+        "sample_count": {"type": "integer", "minimum": 0},
+        "expected_field_count": {"type": "integer", "minimum": 0},
+        "predicted_field_count": {"type": "integer", "minimum": 0},
+        "correct_field_count": {"type": "integer", "minimum": 0},
+        "incorrect_field_count": {"type": "integer", "minimum": 0},
+        "missing_field_count": {"type": "integer", "minimum": 0},
+        "unexpected_field_count": {"type": "integer", "minimum": 0},
+        "exact_match": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field_value_rate", "document_rate"],
+          "properties": {
+            "field_value_rate": {"$ref": "#/$defs/nullableRate"},
+            "document_rate": {"$ref": "#/$defs/nullableRate"}
+          }
+        },
+        "precision": {"$ref": "#/$defs/nullableRate"},
+        "recall": {"$ref": "#/$defs/nullableRate"},
+        "correction_rate": {"$ref": "#/$defs/nullableRate"},
+        "failure_rate": {"$ref": "#/$defs/nullableRate"},
+        "latency_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["measured_sample_count", "mean", "p50", "p95"],
+          "properties": {
+            "measured_sample_count": {"type": "integer", "minimum": 0},
+            "mean": {"$ref": "#/$defs/nullableNumber"},
+            "p50": {"$ref": "#/$defs/nullableNumber"},
+            "p95": {"$ref": "#/$defs/nullableNumber"}
+          }
+        },
+        "cost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["measured_sample_count", "coverage_rate", "totals_by_currency"],
+          "properties": {
+            "measured_sample_count": {"type": "integer", "minimum": 0},
+            "coverage_rate": {"$ref": "#/$defs/nullableRate"},
+            "totals_by_currency": {
+              "type": "object",
+              "additionalProperties": {"type": "number", "minimum": 0}
+            }
+          }
+        }
+      }
+    }
+  }
+}

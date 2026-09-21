@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -22,6 +22,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Infrastructure.Tests", "tests\UaeDocumentIntelligence.Infrastructure.Tests\UaeDocumentIntelligence.Infrastructure.Tests.csproj", "{CFC10916-A87E-48DB-BCFC-9457E49A8D47}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UaeDocumentIntelligence.Api.Tests", "tests\UaeDocumentIntelligence.Api.Tests\UaeDocumentIntelligence.Api.Tests.csproj", "{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{76EF019C-4005-4C0B-94C5-C93CF5061891}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnterpriseReadiness", "tools\EnterpriseReadiness\EnterpriseReadiness.csproj", "{AAB203F9-8609-4D6E-B308-C26123BFCE3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnterpriseAudit", "tools\EnterpriseAudit\EnterpriseAudit.csproj", "{66CB9204-B626-4CAE-AB95-E2B722CA4D34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnterpriseAdmin", "tools\EnterpriseAdmin\EnterpriseAdmin.csproj", "{1049C45C-25EB-48B9-B333-03D0CCC25B94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnterpriseRecovery", "tools\EnterpriseRecovery\EnterpriseRecovery.csproj", "{065EE7F2-33D0-45AE-AF3E-6E2EB5BF36C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,5 +79,27 @@ Global
 		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E9E0735-23DD-4F6E-8F87-49E0FD58F54B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAB203F9-8609-4D6E-B308-C26123BFCE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAB203F9-8609-4D6E-B308-C26123BFCE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAB203F9-8609-4D6E-B308-C26123BFCE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAB203F9-8609-4D6E-B308-C26123BFCE3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66CB9204-B626-4CAE-AB95-E2B722CA4D34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66CB9204-B626-4CAE-AB95-E2B722CA4D34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66CB9204-B626-4CAE-AB95-E2B722CA4D34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66CB9204-B626-4CAE-AB95-E2B722CA4D34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1049C45C-25EB-48B9-B333-03D0CCC25B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1049C45C-25EB-48B9-B333-03D0CCC25B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1049C45C-25EB-48B9-B333-03D0CCC25B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1049C45C-25EB-48B9-B333-03D0CCC25B94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{065EE7F2-33D0-45AE-AF3E-6E2EB5BF36C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{065EE7F2-33D0-45AE-AF3E-6E2EB5BF36C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{065EE7F2-33D0-45AE-AF3E-6E2EB5BF36C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{065EE7F2-33D0-45AE-AF3E-6E2EB5BF36C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AAB203F9-8609-4D6E-B308-C26123BFCE3E} = {76EF019C-4005-4C0B-94C5-C93CF5061891}
+		{66CB9204-B626-4CAE-AB95-E2B722CA4D34} = {76EF019C-4005-4C0B-94C5-C93CF5061891}
+		{1049C45C-25EB-48B9-B333-03D0CCC25B94} = {76EF019C-4005-4C0B-94C5-C93CF5061891}
+		{065EE7F2-33D0-45AE-AF3E-6E2EB5BF36C5} = {76EF019C-4005-4C0B-94C5-C93CF5061891}
 	EndGlobalSection
 EndGlobal

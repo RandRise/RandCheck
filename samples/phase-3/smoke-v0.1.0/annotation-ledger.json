@@ -1,0 +1,44 @@
+{
+  "annotation_ledger_schema_version": "1.0",
+  "ledger_id": "phase3-smoke-annotation-ledger-v1",
+  "dataset_id": "phase3-synthetic-contract-smoke",
+  "dataset_version": "0.1.0",
+  "annotation_guide_version": "1.0",
+  "field_schema_version": "invoice-fields-1.0",
+  "records": [
+    {
+      "sample_id": "synthetic-native-two-page-invoice",
+      "initial_annotation": {
+        "reviewer_id": "fixture-annotator-a",
+        "completed_at_utc": "2026-08-13T00:00:00Z",
+        "fields_canonical_sha256": "ffddeabc59a8eb4b977da582a1d05451e5e37b974ec30ce27ef9f5af84f07cee"
+      },
+      "independent_verification": {
+        "reviewer_id": "fixture-verifier-b",
+        "completed_at_utc": "2026-08-13T00:01:00Z",
+        "disposition": "accepted",
+        "reason": "Verified against the deterministic synthetic source definition."
+      },
+      "adjudication": null,
+      "final_label_revision": 1,
+      "final_fields_canonical_sha256": "ffddeabc59a8eb4b977da582a1d05451e5e37b974ec30ce27ef9f5af84f07cee"
+    },
+    {
+      "sample_id": "synthetic-scanned-two-page-invoice",
+      "initial_annotation": {
+        "reviewer_id": "fixture-annotator-a",
+        "completed_at_utc": "2026-08-13T00:02:00Z",
+        "fields_canonical_sha256": "ffddeabc59a8eb4b977da582a1d05451e5e37b974ec30ce27ef9f5af84f07cee"
+      },
+      "independent_verification": {
+        "reviewer_id": "fixture-verifier-b",
+        "completed_at_utc": "2026-08-13T00:03:00Z",
+        "disposition": "accepted",
+        "reason": "Verified against the deterministic synthetic source definition."
+      },
+      "adjudication": null,
+      "final_label_revision": 1,
+      "final_fields_canonical_sha256": "ffddeabc59a8eb4b977da582a1d05451e5e37b974ec30ce27ef9f5af84f07cee"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "threshold_schema_version": "1.0",
+  "threshold_set_id": "phase3-smoke-strict-v1",
+  "rules": [
+    {
+      "rule_id": "overall-document-exact-match",
+      "scope": "overall",
+      "metric": "exact_match.document_rate",
+      "minimum_candidate": 1.0,
+      "maximum_regression": 0.0
+    },
+    {
+      "rule_id": "overall-recall",
+      "scope": "overall",
+      "metric": "recall",
+      "minimum_candidate": 1.0,
+      "maximum_regression": 0.0
+    },
+    {
+      "rule_id": "overall-failure-rate",
+      "scope": "overall",
+      "metric": "failure_rate",
+      "maximum_candidate": 0.0,
+      "maximum_regression": 0.0
+    },
+    {
+      "rule_id": "total-field-recall",
+      "scope": "field.total",
+      "metric": "recall",
+      "minimum_candidate": 1.0,
+      "maximum_regression": 0.0
+    }
+  ]
+}

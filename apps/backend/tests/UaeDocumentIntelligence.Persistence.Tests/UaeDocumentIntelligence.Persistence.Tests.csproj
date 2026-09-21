@@ -5,22 +5,43 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- Explicit test-only entry point lets crash tests kill a separate process. -->
+    <OutputType>Exe</OutputType>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="Npgsql" Version="8.0.3" />
-    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.31" />
+    <PackageReference Include="Npgsql" Version="8.0.6" />
+    <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../Fixtures/EmbeddingFixture.cs" Link="Fixtures/EmbeddingFixture.cs" />
     <ProjectReference Include="..\..\src\UaeDocumentIntelligence.Domain\UaeDocumentIntelligence.Domain.csproj" />
+    <ProjectReference Include="..\..\src\UaeDocumentIntelligence.Api\UaeDocumentIntelligence.Api.csproj" />
+    <ProjectReference Include="..\..\tools\EnterpriseAdmin\EnterpriseAdmin.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\tools\EnterpriseRecovery\EnterpriseRecovery.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\tools\EnterpriseReadiness\EnterpriseReadiness.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\tools\EnterpriseAudit\EnterpriseAudit.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\UaeDocumentIntelligence.Infrastructure\UaeDocumentIntelligence.Infrastructure.csproj" />
   </ItemGroup>
+  <!-- Child-process security/recovery tests need the CLI entry points alongside
+       the test assemblies; do not depend on a previous shared-output host build. -->
+  <Target Name="CopyTestCommandLineTools" AfterTargets="Build">
+    <ItemGroup>
+      <TestCommandLineFiles Include="../../tools/EnterpriseAdmin/bin/$(Configuration)/$(TargetFramework)/EnterpriseAdmin.*" />
+      <TestCommandLineFiles Include="../../tools/EnterpriseRecovery/bin/$(Configuration)/$(TargetFramework)/EnterpriseRecovery.*" />
+      <TestCommandLineFiles Include="../../tools/EnterpriseReadiness/bin/$(Configuration)/$(TargetFramework)/EnterpriseReadiness.*" />
+      <TestCommandLineFiles Include="../../tools/EnterpriseAudit/bin/$(Configuration)/$(TargetFramework)/EnterpriseAudit.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TestCommandLineFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

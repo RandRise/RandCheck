@@ -11,6 +11,33 @@ namespace UaeDocumentIntelligence.Infrastructure.Tests;
 
 public sealed class PythonExtractionClientTests
 {
+    [Theory]
+    [InlineData("ServiceKeys", true)]
+    [InlineData("Locked", false)]
+    public async Task Worker_uses_named_credential_or_rejects_before_sending(string mode, bool allowed)
+    {
+        var handler = new CapturingHandler(HttpStatusCode.OK, ReadyBody);
+        using var http = new HttpClient(handler) { BaseAddress = new("https://private.test") };
+        var options = CreateOptions();
+        options.BaseUrl = "https://private.test";
+        options.AuthenticationMode = mode;
+        options.ExtractionCredential = new() { KeyId = "worker-rotation-1", Token = new('w', 43) };
+        var client = new PythonExtractionClient(http, Options.Create(options));
+        if (allowed)
+        {
+            var result = await client.ExtractAsync(CreateRequest(), default);
+            Assert.Equal(ExtractionOutcome.Ready, result.Outcome);
+            Assert.Equal("worker-rotation-1", Assert.Single(handler.Request!.Headers.GetValues("X-Service-Key-Id")));
+            Assert.Equal(new string('w', 43), Assert.Single(handler.Request.Headers.GetValues("X-Worker-Token")));
+        }
+        else
+        {
+            var error = await Assert.ThrowsAsync<ExtractionProviderException>(() => client.ExtractAsync(CreateRequest(), default));
+            Assert.Equal("provider_configuration_error", error.Code);
+            Assert.Null(handler.Request);
+        }
+    }
+
     private const string ReadyBody = """
         {
           "schema_version":"2.0","outcome":"Ready","document_type":"invoice","language":"en",

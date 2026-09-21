@@ -1,5 +1,28 @@
 .env
+.env.*
+!.env.example
+!.env.*.example
+*.pfx
+*.p12
+*.key
 .venv/
+.dotnet/
+.node/
+audit-archives/
+local-backups/
+# Local databases, raw logs, test receipts, downloaded runtimes and private plans.
+# Curate shareable evidence into docs before publication; preserve local files.
+tmp/
+outputs/
+# Generated development packs stay local; reviewed regression inputs live in samples/.
+output/
+*.log
+*.trx
+.vite/
+*.egg-info/
+tmp/fixture-tests/
+tmp/phase2-fixture-runtime-20260910/
+tmp/dotnet-diagnostics/
 __pycache__/
 .pytest_cache/
 *.py[cod]
@@ -16,3 +39,5 @@ coverage/
 dist/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+
+.next-*/

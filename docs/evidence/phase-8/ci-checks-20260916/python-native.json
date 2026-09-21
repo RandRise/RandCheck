@@ -1,0 +1,6 @@
+{
+  "group": "native",
+  "tests": [
+    "test_due_date_extraction.DueDateExtractionTests.test_existing_synthetic_invoice_yields_due_date_with_exact_page_evidence"
+  ]
+}

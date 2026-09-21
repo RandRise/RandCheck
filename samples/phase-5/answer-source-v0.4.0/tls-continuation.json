@@ -1,0 +1,59 @@
+{
+  "version": "source-tls-continuation-v1",
+  "planSha256": "56fda3a2d5317cea14700f00965b4a808dc855e9d1d6934d48b8190cce7c08be",
+  "maximumNewReservedUsd": "0.050000",
+  "maximumTotalReservedUsd": "0.060000",
+  "priorAttemptReservationCeilingUsd": "0.010000",
+  "remainingCaseIds": [
+    "p5-q-006",
+    "p5-q-007",
+    "p5-q-008",
+    "p5-q-009",
+    "p5-q-010",
+    "p5-q-011",
+    "p5-q-012",
+    "p5-q-013",
+    "p5-q-014",
+    "p5-q-015",
+    "p5-q-016",
+    "p5-q-017",
+    "p5-q-018",
+    "p5-q-019",
+    "p5-q-020",
+    "p5-q-021",
+    "p5-q-022",
+    "p5-q-023",
+    "p5-q-024",
+    "p5-q-025",
+    "p5-q-026",
+    "p5-q-027",
+    "p5-q-028",
+    "p5-q-029",
+    "p5-q-030"
+  ],
+  "priorOutputs": [
+    {
+      "file": "p5-q-001-generation.json",
+      "sha256": "028a283c51cbcec6efc02b90c2383802620e04e142681cd339843683f9b5b528"
+    },
+    {
+      "file": "p5-q-002-generation.json",
+      "sha256": "2594b38be14d54a1d4d082f703dbcb273a5cbfbb8f92e02087cac2854814cdcb"
+    },
+    {
+      "file": "p5-q-003-generation.json",
+      "sha256": "3ca2b4f552663fefba87efb148dda4766cd779bf612f4a5960fac94baae7a668"
+    },
+    {
+      "file": "p5-q-004-generation.json",
+      "sha256": "028a283c51cbcec6efc02b90c2383802620e04e142681cd339843683f9b5b528"
+    },
+    {
+      "file": "p5-q-005-generation.json",
+      "sha256": "028a283c51cbcec6efc02b90c2383802620e04e142681cd339843683f9b5b528"
+    }
+  ],
+  "policy": "pilot-source-count-hold-v1:authorized-budget",
+  "retries": 0,
+  "transportFix": "Operating system trusted certificates; CERT_REQUIRED and hostname verification; no retry"
+}

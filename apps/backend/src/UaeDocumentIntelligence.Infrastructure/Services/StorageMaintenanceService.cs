@@ -41,9 +41,9 @@ internal sealed class StorageMaintenanceService(
             {
                 break;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                logger.LogWarning(exception, "Upload orphan cleanup failed safely and will retry later");
+                logger.LogWarning("Upload orphan cleanup failed safely and will retry later; diagnostics withheld for privacy");
             }
             await Task.Delay(TimeSpan.FromMinutes(
                 Math.Max(1, maintenanceOptions.Value.CleanupIntervalMinutes)), stoppingToken);
@@ -52,6 +52,8 @@ internal sealed class StorageMaintenanceService(
 
     internal async Task<int> CleanupAsync(CancellationToken cancellationToken)
     {
+        // Legacy development orphan cleanup has no enterprise hold/audit protocol.
+        if (storageOptions.Value.SecurityMode != "Development") return 0;
         var root = Path.GetFullPath(storageOptions.Value.UploadDirectory);
         if (string.Equals(Path.TrimEndingDirectorySeparator(root),
                 Path.TrimEndingDirectorySeparator(Path.GetPathRoot(root) ?? string.Empty),

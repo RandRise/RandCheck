@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uae-document-intelligence:phase3:annotation-ledger:1.0",
+  "title": "Phase 3 independent annotation ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "annotation_ledger_schema_version",
+    "ledger_id",
+    "dataset_id",
+    "dataset_version",
+    "annotation_guide_version",
+    "field_schema_version",
+    "records"
+  ],
+  "properties": {
+    "annotation_ledger_schema_version": {"const": "1.0"},
+    "ledger_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_version": {"type": "string", "minLength": 1},
+    "annotation_guide_version": {"type": "string", "minLength": 1},
+    "field_schema_version": {"type": "string", "minLength": 1},
+    "records": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/record"}
+    }
+  },
+  "$defs": {
+    "review": {
+      "type": "object",
+      "required": ["reviewer_id", "completed_at_utc"],
+      "properties": {
+        "reviewer_id": {"type": "string", "minLength": 1},
+        "completed_at_utc": {"type": "string", "format": "date-time"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "initial_annotation",
+        "independent_verification",
+        "adjudication",
+        "final_label_revision",
+        "final_fields_canonical_sha256"
+      ],
+      "properties": {
+        "sample_id": {"type": "string", "minLength": 1},
+        "initial_annotation": {
+          "allOf": [
+            {"$ref": "#/$defs/review"},
+            {
+              "type": "object",
+              "required": ["fields_canonical_sha256"],
+              "properties": {
+                "fields_canonical_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          ]
+        },
+        "independent_verification": {
+          "allOf": [
+            {"$ref": "#/$defs/review"},
+            {
+              "type": "object",
+              "required": ["disposition", "reason"],
+              "properties": {
+                "disposition": {"enum": ["accepted", "changes_required"]},
+                "reason": {"type": "string", "minLength": 1}
+              }
+            }
+          ]
+        },
+        "adjudication": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "allOf": [
+                {"$ref": "#/$defs/review"},
+                {
+                  "type": "object",
+                  "required": ["reason"],
+                  "properties": {
+                    "reason": {"type": "string", "minLength": 1}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "final_label_revision": {"type": "integer", "minimum": 1},
+        "final_fields_canonical_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "independent_verification": {
+                "properties": {"disposition": {"const": "changes_required"}}
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "adjudication": {"type": "object"},
+              "final_label_revision": {"type": "integer", "minimum": 2}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

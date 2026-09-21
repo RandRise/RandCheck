@@ -47,9 +47,12 @@ public sealed class PostgresDatabaseFixture : IAsyncLifetime
 
     public async Task ResetToLatestMigrationAsync()
     {
+        // Production downgrades deliberately refuse to erase embedding accounting.
+        // Test isolation may recreate only the exact disposable fixture database.
+        // Dedicated migration tests still exercise rollback/reapply explicitly.
+        await RecreateDatabaseAsync();
         await using var context = CreateContext();
         var migrator = context.GetService<IMigrator>();
-        await migrator.MigrateAsync(Migration.InitialDatabase);
         await migrator.MigrateAsync();
     }
 

@@ -28,6 +28,7 @@ public sealed class UploadDocumentHandler(
         var jobId = Guid.NewGuid();
         try
         {
+            await uploadQueue.CheckCapacityAsync(execution.OrganizationId, command.SizeBytes, cancellationToken);
             stored = await storage.SaveAsync(command.Content, command.Filename, command.SizeBytes,
                 execution.OrganizationId, documentId, cancellationToken);
             var now = clock.UtcNow;
@@ -37,7 +38,8 @@ public sealed class UploadDocumentHandler(
             document.QueueExtraction(runId, 1, extraction.ProviderName,
                 extraction.ProviderVersion, extraction.SchemaVersion,
                 command.CorrelationId, clock.UtcNow);
-            await uploadQueue.AddAsync(document, runId, jobId, cancellationToken);
+            if (stored.Scan is { } scan) await uploadQueue.AddScannedAsync(document, runId, jobId, scan, cancellationToken);
+            else await uploadQueue.AddAsync(document, runId, jobId, cancellationToken);
             persisted = true;
             return DocumentView.From(document);
         }
@@ -55,3 +57,5 @@ public sealed class UploadDocumentHandler(
 
 public sealed class UnsupportedDocumentTypeException : Exception;
 public sealed class DocumentTooLargeException : Exception;
+public sealed class MalwareDetectedException : Exception;
+public sealed class MalwareScanUnavailableException : Exception;

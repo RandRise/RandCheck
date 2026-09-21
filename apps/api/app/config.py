@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 
 
@@ -9,7 +9,9 @@ class Settings:
     extraction_provider: str
     storage_shared_root: str
     enable_legacy_extract: bool
-    worker_shared_secret: str
+    worker_shared_secret: str = field(repr=False)
+    service_auth_mode: str = ""
+    service_keys_json: str = field(default="[]", repr=False)
 
 @lru_cache
 def get_settings() -> Settings:
@@ -20,4 +22,6 @@ def get_settings() -> Settings:
         enable_legacy_extract=os.getenv("ENABLE_LEGACY_EXTRACT", "false").lower()
         == "true",
         worker_shared_secret=os.getenv("WORKER_SHARED_SECRET", ""),
+        service_auth_mode=os.getenv("SERVICE_AUTH_MODE", ""),
+        service_keys_json=os.getenv("SERVICE_KEYS_JSON", "[]"),
     )

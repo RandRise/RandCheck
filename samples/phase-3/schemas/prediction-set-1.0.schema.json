@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uae-document-intelligence:phase3:prediction-set:1.0",
+  "title": "Phase 3 frozen prediction set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "prediction_schema_version",
+    "prediction_set_id",
+    "dataset_id",
+    "dataset_version",
+    "runs"
+  ],
+  "properties": {
+    "prediction_schema_version": {"const": "1.0"},
+    "prediction_set_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_version": {"type": "string", "minLength": 1},
+    "runs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/run"}
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "occurrence", "value_type", "value", "normalized_value"],
+      "properties": {
+        "key": {"type": "string", "minLength": 1},
+        "occurrence": {"type": "integer", "minimum": 0},
+        "value_type": {
+          "enum": ["String", "Decimal", "Date", "Currency", "Identifier"]
+        },
+        "value": {"type": "string"},
+        "normalized_value": {"type": ["string", "null"]}
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_id", "outcome", "provider", "metrics", "fields"],
+      "properties": {
+        "sample_id": {"type": "string", "minLength": 1},
+        "outcome": {"type": "string", "minLength": 1},
+        "provider": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["alias", "adapter_version", "model", "model_version"],
+          "properties": {
+            "alias": {"type": "string", "minLength": 1},
+            "adapter_version": {"type": "string", "minLength": 1},
+            "model": {"type": "string", "minLength": 1},
+            "model_version": {"type": "string", "minLength": 1}
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provider_duration_ms", "estimated_cost", "cost_currency"],
+          "properties": {
+            "provider_duration_ms": {"type": ["integer", "null"], "minimum": 0},
+            "estimated_cost": {"type": ["number", "null"], "minimum": 0},
+            "cost_currency": {"type": ["string", "null"], "minLength": 1}
+          },
+          "dependentRequired": {
+            "cost_currency": ["estimated_cost"]
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/field"}
+        }
+      }
+    }
+  }
+}

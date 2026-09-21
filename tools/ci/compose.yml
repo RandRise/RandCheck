@@ -1,0 +1,51 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16@sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b
+    environment:
+      POSTGRES_USER: ci
+      POSTGRES_PASSWORD: disposable_ci_only
+      POSTGRES_DB: postgres
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U ci -d postgres']
+      interval: 2s
+      timeout: 3s
+      retries: 60
+  backend:
+    image: ${CI_PROJECT:?}-backend
+    build: {context: ., dockerfile: tools/ci/backend.Dockerfile}
+    # Preserve the application's loopback/TLS and crash-probe connection guards.
+    network_mode: service:db
+    environment:
+      TEST_POSTGRES_CONNECTION: Host=127.0.0.1;Port=5432;Database=postgres;Username=ci;Password=disposable_ci_only
+    volumes: ['${CI_RESULTS_DIRECTORY:?}:/results']
+  web:
+    image: ${CI_PROJECT:?}-web
+    build: {context: ., dockerfile: tools/ci/web.Dockerfile}
+    environment:
+      CI_EXPORT_BROWSER_REVIEW: ${CI_EXPORT_BROWSER_REVIEW:-0}
+    volumes: ['${CI_RESULTS_DIRECTORY:?}:/results']
+  python:
+    image: ${CI_PROJECT:?}-python
+    build: {context: ., dockerfile: tools/ci/python.Dockerfile}
+    volumes: ['${CI_RESULTS_DIRECTORY:?}:/results']
+  fixture:
+    image: ${CI_PROJECT:?}-fixture
+    build: {context: ., dockerfile: tools/ci/fixture.Dockerfile}
+    volumes: ['${CI_RESULTS_DIRECTORY:?}:/results']
+  backend-audit:
+    image: ${CI_PROJECT:?}-backend
+    volumes: ['${CI_RESULTS_DIRECTORY:?}:/results']
+    command: [sh, tools/ci/backend.sh, audit]
+    networks: [audit]
+  web-audit:
+    extends: {service: web}
+    command: [sh, /checks/web.sh, audit]
+    networks: [audit]
+  python-audit:
+    extends: {service: python}
+    command: [sh, tools/ci/python.sh, audit]
+    networks: [audit]
+networks:
+  default: {internal: true}
+  audit: {}

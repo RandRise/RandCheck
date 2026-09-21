@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uae-document-intelligence:phase3:threshold-set:1.0",
+  "title": "Phase 3 comparison threshold set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["threshold_schema_version", "threshold_set_id", "rules"],
+  "properties": {
+    "threshold_schema_version": {"const": "1.0"},
+    "threshold_set_id": {"type": "string", "minLength": 1},
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/rule"}
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule_id", "scope", "metric"],
+      "properties": {
+        "rule_id": {"type": "string", "minLength": 1},
+        "scope": {
+          "type": "string",
+          "pattern": "^(overall|(field|layout|scan_type)\\..+)$"
+        },
+        "metric": {
+          "enum": [
+            "correction_rate",
+            "exact_match.document_rate",
+            "exact_match.field_value_rate",
+            "failure_rate",
+            "latency_ms.mean",
+            "latency_ms.p50",
+            "latency_ms.p95",
+            "precision",
+            "recall"
+          ]
+        },
+        "minimum_candidate": {"type": "number", "minimum": 0},
+        "maximum_candidate": {"type": "number", "minimum": 0},
+        "maximum_regression": {"type": "number", "minimum": 0}
+      },
+      "anyOf": [
+        {"required": ["minimum_candidate"]},
+        {"required": ["maximum_candidate"]},
+        {"required": ["maximum_regression"]}
+      ]
+    }
+  }
+}
