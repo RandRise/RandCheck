@@ -1,6 +1,7 @@
 namespace UaeDocumentIntelligence.Domain.Model;
 
-public enum OrganizationAccessRole { None, Viewer, Reviewer, Operator }
+// Zero is deliberately invalid: omitted access must never grant Staff permissions.
+public enum OrganizationAccessRole { Staff = 10, Admin = 20 }
 
 public sealed class EnterpriseIdentity
 {
@@ -21,29 +22,28 @@ public sealed class OrganizationMembership
 {
     private OrganizationMembership() { }
     public OrganizationMembership(Guid id, Guid organizationId, Guid identityId, Guid actorId,
-        OrganizationAccessRole role, bool canManageMembers, DateTimeOffset now)
+        OrganizationAccessRole role, DateTimeOffset now)
     {
         if (id == Guid.Empty || organizationId == Guid.Empty || identityId == Guid.Empty || actorId == Guid.Empty)
             throw new ArgumentException("Membership IDs are required.");
         Id = id; OrganizationId = organizationId; IdentityId = identityId; ActorId = actorId;
         CreatedAtUtc = now;
-        ChangeAccess(role, canManageMembers, true, now);
+        ChangeAccess(role, true, now);
     }
     public Guid Id { get; private set; }
     public Guid OrganizationId { get; private set; }
     public Guid IdentityId { get; private set; }
     public Guid ActorId { get; private set; }
     public OrganizationAccessRole Role { get; private set; }
-    public bool CanManageMembers { get; private set; }
     public bool IsActive { get; private set; }
     public Guid Version { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
-    public void ChangeAccess(OrganizationAccessRole role, bool canManageMembers, bool active, DateTimeOffset now)
+    public void ChangeAccess(OrganizationAccessRole role, bool active, DateTimeOffset now)
     {
         if (!Enum.IsDefined(role)) throw new ArgumentException("Unknown organization role.");
-        Role = role; CanManageMembers = canManageMembers; IsActive = active;
+        Role = role; IsActive = active;
         UpdatedAtUtc = now; Version = Guid.NewGuid();
     }
-    public string AccessState => $"{Role};manage={CanManageMembers};active={IsActive}";
+    public string AccessState => $"{Role};active={IsActive}";
 }

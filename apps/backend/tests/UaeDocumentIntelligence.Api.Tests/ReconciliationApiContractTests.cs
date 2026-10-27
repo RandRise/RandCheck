@@ -10,7 +10,7 @@ using UaeDocumentIntelligence.Domain.Model;
 
 namespace UaeDocumentIntelligence.Api.Tests;
 
-public sealed class ReconciliationApiContractTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed partial class ReconciliationApiContractTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private static readonly Guid OrganizationId = Guid.Parse("10000000-0000-0000-0000-000000000001");
     private static readonly Guid ActorId = Guid.Parse("20000000-0000-0000-0000-000000000001");
@@ -19,6 +19,56 @@ public sealed class ReconciliationApiContractTests : IClassFixture<WebApplicatio
 
     public ReconciliationApiContractTests(WebApplicationFactory<Program> factory) =>
         _factory = factory.WithWebHostBuilder(builder => builder.UsePhase5DevelopmentIdentity());
+
+    [Fact]
+    public async Task List_is_bounded_scoped_and_returns_summary_contract_with_following_page()
+    {
+        var own = Enumerable.Range(0, 51).Select(i => new ReconciliationCase(Guid.NewGuid(),
+            OrganizationId, ActorId, $"Case {i}", Now.AddMinutes(i))).ToList();
+        var foreign = new ReconciliationCase(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            "Foreign confidential case", Now.AddDays(1));
+        using var factory = WithRepository(new FakeRepository(rows: [foreign, .. own]));
+        using var client = factory.CreateClient();
+
+        using var first = await client.GetAsync("/api/reconciliation-cases");
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var page = await first.Content.ReadFromJsonAsync<JsonElement>();
+        var cases = page.GetProperty("cases");
+        Assert.Equal(50, cases.GetArrayLength());
+        Assert.Equal(own[50].Id, cases[0].GetProperty("id").GetGuid());
+        Assert.Equal("Case 50", cases[0].GetProperty("name").GetString());
+        Assert.Equal("Draft", cases[0].GetProperty("status").GetString());
+        Assert.Equal(Now.AddMinutes(50), cases[0].GetProperty("createdAt").GetDateTimeOffset());
+        Assert.Equal(Now.AddMinutes(50), cases[0].GetProperty("updatedAt").GetDateTimeOffset());
+        Assert.Equal(0, cases[0].GetProperty("documentCount").GetInt32());
+        Assert.Equal(0, cases[0].GetProperty("runCount").GetInt32());
+        Assert.False(cases[0].TryGetProperty("runs", out _));
+        Assert.False(cases[0].TryGetProperty("documents", out _));
+        Assert.DoesNotContain("Foreign confidential case", page.GetRawText());
+        Assert.Equal(50, page.GetProperty("nextOffset").GetInt32());
+
+        var next = await client.GetFromJsonAsync<JsonElement>("/api/reconciliation-cases?offset=50");
+        Assert.Equal(own[0].Id, Assert.Single(next.GetProperty("cases").EnumerateArray()).GetProperty("id").GetGuid());
+        Assert.Equal(JsonValueKind.Null, next.GetProperty("nextOffset").ValueKind);
+        var empty = await client.GetFromJsonAsync<JsonElement>("/api/reconciliation-cases?offset=100");
+        Assert.Empty(empty.GetProperty("cases").EnumerateArray());
+        Assert.Equal(JsonValueKind.Null, empty.GetProperty("nextOffset").ValueKind);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(10001)]
+    public async Task List_rejects_out_of_range_offset_before_querying(int offset)
+    {
+        var repository = new FakeRepository();
+        using var factory = WithRepository(repository);
+        using var client = factory.CreateClient();
+        using var response = await client.GetAsync($"/api/reconciliation-cases?offset={offset}");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("invalid_case_offset", problem.GetProperty("code").GetString());
+        Assert.Equal(0, repository.ListCalls);
+    }
 
     [Fact]
     public async Task Create_and_get_return_case_contract_and_strong_etag()
@@ -96,9 +146,29 @@ public sealed class ReconciliationApiContractTests : IClassFixture<WebApplicatio
             services.AddSingleton<IClock>(new FakeClock(Now));
         }));
 
-    private sealed class FakeRepository(ReconciliationCase? item = null) : IReconciliationRepository
+    private sealed class FakeRepository(ReconciliationCase? item = null,
+        IReadOnlyList<ReconciliationCase>? rows = null) : IReconciliationRepository
     {
+        public int ListCalls { get; private set; }
+        public ReconciliationCaseFilter? Filter { get; private set; }
+        public Task<IReadOnlyList<ReconciliationCaseSummary>> ListAsync(Guid organizationId,
+            int offset, int limit, CancellationToken token, ReconciliationCaseFilter? filter = null)
+        {
+            ListCalls++;
+            Filter = filter;
+            return Task.FromResult<IReadOnlyList<ReconciliationCaseSummary>>(
+                (rows ?? (Item is null ? [] : new[] { Item }))
+                    .Where(value => value.OrganizationId == organizationId)
+                    .OrderByDescending(value => value.CreatedAtUtc).ThenByDescending(value => value.Id)
+                    .Skip(offset).Take(limit).Select(value => new ReconciliationCaseSummary(
+                        value.Id, value.Name, value.Status.ToString(), value.CreatedAtUtc,
+                        value.UpdatedAtUtc, value.DocumentLinks.Count, value.Runs.Count,
+                        value.Reference, value.Category.ToString())).ToList());
+        }
         public ReconciliationCase? Item { get; private set; } = item;
+        public Task<ReconciliationCase?> GetByCreationRequestAsync(Guid organizationId, Guid actorId,
+            string key, CancellationToken token) => Task.FromResult(Item is not null && Item.OrganizationId == organizationId &&
+                Item.CreatedByActorId == actorId && Item.CreationRequestKey == key ? Item : null);
         public Task AddAsync(ReconciliationCase value, CancellationToken token)
         {
             Item = value;

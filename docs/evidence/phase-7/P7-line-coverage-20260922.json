@@ -1,0 +1,113 @@
+{
+  "scope": "Description, quantity and unit price. Net row amounts are not treated as gross line totals.",
+  "results": [
+    {
+      "source": {
+        "name": "mixed-native-two-page.pdf",
+        "sha256": "e6dc0255c374659712e66b04da33bc6333712148fab1aef1ec63e62bee60a990",
+        "bytes": 50858,
+        "pages": 2
+      },
+      "checks": [
+        {
+          "field": "line_description",
+          "occurrence": 0,
+          "expected": "Document review training",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_quantity",
+          "occurrence": 0,
+          "expected": "2",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_unit_price",
+          "occurrence": 0,
+          "expected": "400.00",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_description",
+          "occurrence": 1,
+          "expected": "Workflow configuration session",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_quantity",
+          "occurrence": 1,
+          "expected": "1",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_unit_price",
+          "occurrence": 1,
+          "expected": "400.00",
+          "actual": null,
+          "passed": false
+        }
+      ],
+      "passed": 0,
+      "total": 6
+    },
+    {
+      "source": {
+        "name": "mixed-scanned-two-page.pdf",
+        "sha256": "029c75f02956915f40f0c573e1d4d1a9e7f06fa4badd96acc8153a5a6e705082",
+        "bytes": 389880,
+        "pages": 2
+      },
+      "checks": [
+        {
+          "field": "line_description",
+          "occurrence": 0,
+          "expected": "Document review training",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_quantity",
+          "occurrence": 0,
+          "expected": "2",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_unit_price",
+          "occurrence": 0,
+          "expected": "400.00",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_description",
+          "occurrence": 1,
+          "expected": "Workflow configuration session",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_quantity",
+          "occurrence": 1,
+          "expected": "1",
+          "actual": null,
+          "passed": false
+        },
+        {
+          "field": "line_unit_price",
+          "occurrence": 1,
+          "expected": "400.00",
+          "actual": null,
+          "passed": false
+        }
+      ],
+      "passed": 0,
+      "total": 6
+    }
+  ]
+}

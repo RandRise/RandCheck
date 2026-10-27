@@ -35,7 +35,7 @@ BEGIN
         END IF;
         EXECUTE format('GRANT SELECT, INSERT ON TABLE public.%I TO %I', table_name, target);
     END LOOP;
-    EXECUTE format('GRANT UPDATE (role,can_manage_members,is_active,version,updated_at_utc) ON public.organization_memberships TO %I', target);
+    EXECUTE format('GRANT UPDATE (role,is_active,version,updated_at_utc) ON public.organization_memberships TO %I', target);
     EXECUTE format('GRANT UPDATE (document_days,quarantine_hours,version,updated_at_utc) ON public.organization_retention_policies TO %I', target);
     EXECUTE format('GRANT UPDATE (released_at_utc,version) ON public.retention_holds TO %I', target);
     EXECUTE format('GRANT UPDATE (completed_at_utc) ON public.document_deletions TO %I', target);

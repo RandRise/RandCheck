@@ -4,7 +4,8 @@ Each phase has one primary outcome. Detailed tasks can change, but the exit crit
 
 Phase 6 is [accepted for the local portfolio contract](../evidence/phase-6/P6-local-acceptance-20260916.md).
 The Phase 8 local demo and reconciliation walkthrough are verified. The next
-unfinished product work is Phase 7 Arabic/mixed-language support. The user has
+unfinished product work is Phase 7 Arabic/mixed-language support, now
+[in progress with measured OCR limitations](../evidence/phase-7/P7-language-foundation-20260921.md). The user has
 deferred commits, pushes and hosted verification until remaining local work is
 finished. Deployment remains optional.
 

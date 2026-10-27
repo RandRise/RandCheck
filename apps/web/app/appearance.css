@@ -1,0 +1,80 @@
+@import "./appearance-tokens.css";
+
+/* Shared appearance foundation. Legacy layout rules remain in their own files
+   until the frame/workflow tasks replace them. Explicit scope makes route CSS
+   order harmless and keeps the separate design proposal isolated. */
+.app-appearance[data-theme] {
+  --ink: var(--app-text); --green: var(--app-accent); --mint: var(--app-tint);
+  --cream: var(--app-bg); --line: var(--app-border); --orange: var(--app-accent);
+  min-height: 100vh; background: var(--app-bg); color: var(--app-text);
+  font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+}
+.app-appearance[data-theme] :is(h1,h2,h3,h4,.match-state strong,.q-refusal strong) {
+  font-family: inherit; font-weight: 600; font-style: normal; color: var(--app-text);
+  letter-spacing: -.02em; line-height: 1.3; text-transform: none;
+}
+.app-appearance[data-theme] h1 { font-size: clamp(28px, 3vw, 38px); }
+.app-appearance[data-theme] h2 { font-size: 23px; }
+.app-appearance[data-theme] h3 { font-size: 18px; }
+.app-appearance[data-theme] :is(h1,h2,h3) em { color: inherit; font-style: normal; font-weight: inherit; }
+.app-appearance[data-theme] :is(.machine-value p,.effective-value p,.comparison-values strong,.fields p,.security-overview strong,.enterprise-brand,.q-empty>span,.placeholder>div,.q-rank,.security-wordmark>span) { font-family: inherit; }
+.app-appearance[data-theme] :is(.phase-nav,.eyebrow,.step,.status,.locked,.history-link,.field-title span,.field-title i,.review-cues span,.machine-value small,.effective-value small,.field-controls label,.tolerance-panel label,.source-card>span,.finding-head span,.finding-head i,.finding-head b,.comparison-values small,.q-result-label,.security-table th,.security-wordmark,.security-eyebrow,.enterprise-brand span,.security-footnote>span) { text-transform: none; letter-spacing: normal; }
+.app-appearance[data-theme] :is(.eyebrow,.step,.security-eyebrow,.security-wordmark,.source-card>span,.q-result-label) { color: var(--app-muted); }
+.app-appearance[data-theme] a { color: var(--app-accent); text-underline-offset: 4px; }
+.app-appearance[data-theme] :is(button,.app-button) {
+  min-height: 40px; padding: 9px 15px; border: 1px solid var(--app-control-border); border-radius: 8px;
+  background: var(--app-surface); color: var(--app-text); font: 600 13px/1.4 Arial, "Segoe UI", sans-serif;
+  white-space: normal; cursor: pointer; transition: background .12s, border-color .12s;
+}
+.app-appearance[data-theme] button:hover:not(:disabled) { background: var(--app-raised); border-color: var(--app-muted); }
+.app-appearance[data-theme] button:active:not(:disabled) { background: var(--app-tint); }
+.app-appearance[data-theme] a.app-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+.app-appearance[data-theme] a.app-button:hover { background: var(--app-raised); border-color: var(--app-muted); }
+.app-appearance[data-theme] a.app-button:active { background: var(--app-tint); }
+.app-appearance[data-theme] button:disabled { opacity: .5; cursor: not-allowed; }
+.app-appearance[data-theme] :is(.upload-card form button,.case-create button,.source-card button:not(.secondary),.tolerance-panel button:not(.secondary),.q-primary,.microsoft-button,.security-button:not(.secondary),.app-button-primary) {
+  background: var(--app-primary); border-color: var(--app-primary-border); color: var(--app-on-primary);
+}
+.app-appearance[data-theme] :is(.upload-card form button,.case-create button,.source-card button:not(.secondary),.tolerance-panel button:not(.secondary),.q-primary,.microsoft-button,.security-button:not(.secondary),.app-button-primary):hover:not(:disabled) { background: var(--app-primary-hover); border-color: var(--app-primary-border); }
+.app-appearance[data-theme] :is(.secondary,.q-secondary,.security-text-button) { background: transparent; color: var(--app-text); }
+.app-appearance[data-theme] :is(button,a,input,select,textarea,summary):focus-visible { outline: 3px solid var(--app-accent); outline-offset: 3px; }
+.app-appearance[data-theme] :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  background: var(--app-surface); color: var(--app-text); border: 1px solid var(--app-control-border);
+  border-radius: 7px; padding: 10px 12px; font: inherit; min-width: 0; min-height: 40px;
+}
+.app-appearance[data-theme] input::placeholder,.app-appearance[data-theme] textarea::placeholder { color: var(--app-muted); opacity: 1; }
+.app-appearance[data-theme] input[type="file"] { max-width: 100%; }
+.app-appearance[data-theme] input::file-selector-button { background: var(--app-raised); color: var(--app-text); border: 1px solid var(--app-control-border); border-radius: 6px; cursor: pointer; }
+.app-appearance[data-theme] input[type="checkbox"] { accent-color: var(--app-accent); }
+.app-appearance[data-theme] :is(.workspace,.upload-card,.case-create,.case-summary,.tolerance-panel,.source-card,.finding,.questions-grid,.q-hit,.q-source-view,.signin-card,.security-panel,.enterprise-bar,.review-field,.fields article) { background: var(--app-surface); color: var(--app-text); border-color: var(--app-border); border-radius: 10px; }
+.app-appearance[data-theme] .enterprise-bar { border-radius: 0; }
+.app-appearance[data-theme] .upload-card { border: 1px solid var(--app-border); }
+.app-appearance[data-theme] :is(.machine-value,.comparison-values>div,.q-canonical,.audit-detail,.retention-confirm,.deletion-plan,.security-table th) { background: var(--app-raised); color: var(--app-text); }
+.app-appearance[data-theme] :is(.effective-value,.resolution-history,.match-state,.questions-notice,.q-pinned li,.q-reviewed,.locked,.provider,.file-icon,.security-badge,.field-title i,.finding-head span,.finding-head i,.finding-head b) { background: var(--app-tint); color: var(--app-text); border-color: var(--app-border); }
+.app-appearance[data-theme] .document { text-align: left; width: 100%; }
+.app-appearance[data-theme] :is(.document.active,.document:hover) { background: var(--app-tint); border-color: var(--app-accent); }
+.app-appearance[data-theme] :is(.warning,.review-cues span,.comparison-values .delta,.q-refusal,.signin-setup,.processing-panel) { background: var(--app-warning-bg); color: var(--app-warning); border-color: var(--app-warning); }
+.app-appearance[data-theme] :is(.error,.q-error,.terminal-state,.security-alert,.processing-panel.state-failed,.security-badge.denied,.security-badge.failed) { background: var(--app-error-bg); color: var(--app-error); border-color: var(--app-error); }
+.app-appearance[data-theme] :is(.security-success,.processing-panel.state-ready,.processing-panel.state-partial,.security-badge.active,.security-badge.succeeded) { background: var(--app-success-bg); color: var(--app-success); border-color: var(--app-success); }
+.app-appearance[data-theme] :is(.processing-panel.state-cancelled,.security-badge.revoked) { background: var(--app-raised); color: var(--app-muted); }
+.app-appearance[data-theme] :is(.review-field.needs-attention,.finding-warning) { border-left-color: var(--app-warning); }
+.app-appearance[data-theme] .finding-error { border-left-color: var(--app-error); }
+.app-appearance[data-theme] :is(.review-field.decision-confirmed,.source-card.linked) { border-color: var(--app-success); }
+.app-appearance[data-theme] :is(.review-field.decision-corrected,.review-field.decision-added) { border-left-color: var(--app-accent); }
+.app-appearance[data-theme] .status { color: var(--app-muted); }
+.app-appearance[data-theme] .status.ready { color: var(--app-success); }
+.app-appearance[data-theme] .status.failed { color: var(--app-error); }
+.app-appearance[data-theme] .status.processing { color: var(--app-warning); }
+.app-appearance[data-theme] :is(header>p,.upload-card p,.document small,.empty,.processing-panel small,.placeholder,.review-head p,.review-toolbar small,.machine-value small,.effective-value small,.effective-value em,.field-controls label,.add-field small,.add-field label,.case-summary p,.section-heading p,.source-card small,.tolerance-panel p,.tolerance-panel label,.comparison-values small,.comparison-values em,.source-download p,.q-muted,.q-pinned small,.q-question-meta,.q-empty,.q-run p,.q-hit-heading small,.signin-lead,.signin-principles span,.signin-card>p,.signin-help,.signin-card>small,.signin-footer,.enterprise-identity span,.security-tabs a,.security-heading p,.security-overview>p,.security-panel-heading>span,.security-table th,.security-table td code,.security-note,.member-object-id,.security-check small,.security-footnote,.audit-intro p,.audit-description small,.audit-event time,.audit-detail dt,.audit-pagination>span,.security-table-hint,.retention-form p,.retention-note,.retention-confirm p,.retention-row small) { color: var(--app-muted); }
+.app-appearance[data-theme] :is(.fields span,.fields small,.fields b,.q-rank,.signin-principles b) { color: var(--app-muted); }
+.app-appearance[data-theme] .q-canonical mark { background: var(--app-warning); color: var(--app-bg); }
+.app-appearance[data-theme] :is(.security-panel-heading,.security-table td,.audit-event,.retention-row,.signin-principles,.signin-principles>div,.signin-help,.signin-footer,.audit-intro,.add-field) { border-color: var(--app-border); }
+.app-appearance[data-theme] .message { color: var(--app-text) !important; border-color: var(--app-border); }
+.app-appearance[data-theme] .reconciliation-message { background: var(--app-tint); color: var(--app-text); border-radius: 8px; }
+.app-appearance[data-theme] .microsoft-mark i { background: var(--app-on-primary); }
+.app-appearance[data-theme] .security-wordmark>span { background: var(--app-accent); color: var(--app-on-accent); }
+.app-appearance[data-theme] .appearance-toolbar { display: flex; justify-content: flex-end; padding: 10px 36px; background: var(--app-surface); border-bottom: 1px solid var(--app-border); }
+.app-appearance[data-theme] .appearance-control { display: flex; align-items: center; gap: 10px; color: var(--app-muted); font-size: 12px; }
+.app-appearance[data-theme] .appearance-control select { font-size: 12px; min-height: 34px; padding: 5px 10px; }
+@media (max-width: 650px) { .app-appearance[data-theme] .appearance-toolbar { padding-inline: 18px; } }
+@media (prefers-reduced-motion: reduce) { .app-appearance[data-theme] button { transition: none; } }

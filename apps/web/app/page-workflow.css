@@ -1,0 +1,6 @@
+.page-workflow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 20px; margin: 0 0 24px; list-style: none; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: 12px; }
+.page-workflow li { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.page-workflow-number { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 8px; background: var(--app-tint); color: var(--app-accent); font-weight: 600; }
+.page-workflow strong { font-size: 15px; }
+.page-workflow p { margin: 6px 0 0; color: var(--app-muted); font-size: 13px; line-height: 1.6; }
+@media (max-width: 760px) { .page-workflow { grid-template-columns: 1fr; gap: 18px; padding: 18px; } }

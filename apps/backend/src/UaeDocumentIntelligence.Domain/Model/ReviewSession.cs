@@ -65,6 +65,24 @@ public sealed class ReviewSession
         ConcurrencyToken = Guid.NewGuid();
     }
 
+    public bool IsIdenticalLatestAction(Guid actorId, ReviewActionType action, string fieldKey,
+        int occurrenceIndex, Guid? machineFieldValueId, FieldValueType? valueType,
+        string? value, string? reason, DateTimeOffset now)
+    {
+        if (Status != ReviewStatus.InProgress) throw new InvalidOperationException("Review must be active.");
+        // Constructing the candidate applies every normal action/value/reason guard.
+        var candidate = new ReviewAction(Guid.NewGuid(), OrganizationId, Id, ExtractionRunId,
+            machineFieldValueId, actorId, fieldKey, occurrenceIndex,
+            _actions.Select(x => x.SequenceNumber).DefaultIfEmpty(0).Max() + 1,
+            action, valueType, value, reason, now);
+        var latest = _actions.Where(x => x.FieldKey == candidate.FieldKey &&
+            x.OccurrenceIndex == occurrenceIndex && x.MachineFieldValueId == machineFieldValueId)
+            .OrderByDescending(x => x.SequenceNumber).FirstOrDefault();
+        return latest is not null && latest.Action == candidate.Action &&
+            latest.CorrectedValueType == candidate.CorrectedValueType &&
+            latest.CorrectedValueText == candidate.CorrectedValueText && latest.Reason == candidate.Reason;
+    }
+
     public ReviewAction AddAction(Guid id, Guid actorId, int sequenceNumber, ReviewActionType action,
         string fieldKey, int occurrenceIndex, Guid? machineFieldValueId, FieldValueType? correctedValueType,
         string? correctedValueText, string? reason, DateTimeOffset now)

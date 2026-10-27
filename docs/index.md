@@ -7,20 +7,24 @@ hero:
   tagline: Extract, reconcile, and verify business documents with traceable evidence.
   actions:
     - theme: brand
-      text: Understand the product
-      link: /product-spec
+      text: Review the current workflow
+      link: /workflow-review
     - theme: alt
       text: Review delivery phases
       link: /phases/
 
 features:
   - title: The problem
-    details: Finance and procurement teams manually copy fields and compare invoices, purchase orders, and quotations.
+    details: Finance and procurement teams compare supplier invoices with purchase orders and check the source of each difference.
   - title: The differentiator
     details: The platform connects related documents, explains discrepancies, and links every finding to evidence.
   - title: The delivery strategy
     details: Begin with a narrow English invoice workflow, measure it, then add reconciliation, RAG, security, Arabic, and deployment.
 ---
+
+::: info Start with the current workflow
+The overview below records the earlier planning baseline. For the current invoice/PO process, illustrated explanations and proposals awaiting review, open the [Workflow review room](/workflow-review).
+:::
 
 ## Working product statement
 
@@ -28,14 +32,14 @@ features:
 
 The product does **not** have a final brand name yet. “Bayaan” has been retired as the working name because it is crowded in the regional AI market.
 
-## Current planning position
+## Earlier planning baseline
 
 | Decision | Current direction |
 | --- | --- |
 | First user | Accounts-payable or procurement reviewer |
 | First document | English UAE supplier invoice |
 | Core workflow | Invoice → extraction → human review |
-| Differentiating workflow | Quotation ↔ purchase order ↔ invoice reconciliation |
+| Earlier differentiating workflow | Quotation ↔ purchase order ↔ invoice reconciliation — retained for existing work; superseded for new reviews on October 12, 2026 |
 | UAE relevance | AED, UAE VAT, TRN, local procurement workflow |
 | Arabic | Planned after the English workflow is evaluated |
 | Product UI | Next.js |

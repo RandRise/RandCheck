@@ -2,18 +2,37 @@ using UaeDocumentIntelligence.Application.Reconciliation;
 
 namespace UaeDocumentIntelligence.Api;
 
-public static class ReconciliationEndpoints
+public static partial class ReconciliationEndpoints
 {
     public static IEndpointRouteBuilder MapReconciliationEndpoints(
         this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost("/api/reconciliation-cases", CreateAsync);
+        endpoints.MapGet("/api/reconciliation-cases", ListAsync);
         endpoints.MapGet("/api/reconciliation-cases/{caseId:guid}", GetAsync);
+        endpoints.MapGet("/api/reconciliation-cases/{caseId:guid}/runs/{runId:guid}/report", ReportAsync);
+        endpoints.MapPut("/api/reconciliation-cases/{caseId:guid}", UpdateMetadataAsync);
         endpoints.MapPut("/api/reconciliation-cases/{caseId:guid}/documents/{role}", LinkAsync);
+        endpoints.MapPut("/api/reconciliation-cases/{caseId:guid}/draft-documents/{role}", SetDraftAsync);
         endpoints.MapPost("/api/reconciliation-cases/{caseId:guid}/evaluations", EvaluateAsync);
         endpoints.MapPost("/api/reconciliation-cases/{caseId:guid}/runs/{runId:guid}/findings/{findingId:guid}/resolutions",
             ResolveAsync);
         return endpoints;
+    }
+
+    private static async Task<IResult> ListAsync(int? offset, string? q, string? category,
+        string? status, string? createdFrom, string? createdTo, string? workflowKind,
+        ListReconciliationCasesHandler handler, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Results.Ok(await handler.HandleAsync(offset ?? 0, cancellationToken,
+                new ReconciliationCaseQuery(q, category, status, createdFrom, createdTo, workflowKind)));
+        }
+        catch (ReconciliationWorkflowException exception)
+        {
+            return ToProblem(exception);
+        }
     }
 
     private static async Task<IResult> CreateAsync(CreateReconciliationCaseBody body,
@@ -22,7 +41,7 @@ public static class ReconciliationEndpoints
     {
         try
         {
-            var result = await handler.HandleAsync(body.Name, cancellationToken);
+            var result = await handler.HandleAsync(body.Name, cancellationToken, body.Category, body.RequestKey, body.WorkflowKind);
             SetEtag(context, result);
             return Results.Created($"/api/reconciliation-cases/{result.Id}", result);
         }
@@ -34,6 +53,19 @@ public static class ReconciliationEndpoints
         {
             return ToProblem(exception);
         }
+    }
+
+    private static async Task<IResult> UpdateMetadataAsync(Guid caseId, UpdateReconciliationCaseMetadataBody body,
+        HttpContext context, UpdateReconciliationCaseMetadataHandler handler, CancellationToken cancellationToken)
+    {
+        if (!TryReadEtag(context, out var expected, out var failure)) return failure!;
+        try
+        {
+            var result = await handler.HandleAsync(caseId, expected, body.Name, body.Category, cancellationToken);
+            SetEtag(context, result);
+            return Results.Ok(result);
+        }
+        catch (ReconciliationWorkflowException exception) { return ToProblem(exception); }
     }
 
     private static async Task<IResult> GetAsync(Guid caseId, HttpContext context,
@@ -70,6 +102,21 @@ public static class ReconciliationEndpoints
         }
     }
 
+    private static async Task<IResult> SetDraftAsync(Guid caseId, string role,
+        SetReconciliationDraftDocumentBody body, HttpContext context,
+        SetReconciliationDraftDocumentHandler handler, CancellationToken cancellationToken)
+    {
+        if (!TryReadEtag(context, out var expected, out var failure)) return failure!;
+        try
+        {
+            var result = await handler.HandleAsync(caseId, role, expected,
+                new SetReconciliationDraftDocumentCommand(body.DocumentId, body.RequestKey), cancellationToken);
+            SetEtag(context, result);
+            return Results.Ok(result);
+        }
+        catch (ReconciliationWorkflowException exception) { return ToProblem(exception); }
+    }
+
     private static async Task<IResult> EvaluateAsync(Guid caseId,
         EvaluateReconciliationCaseBody body, HttpContext context,
         EvaluateReconciliationCaseHandler handler, CancellationToken cancellationToken)
@@ -80,7 +127,7 @@ public static class ReconciliationEndpoints
             var result = await handler.HandleAsync(caseId, expected,
                 new EvaluateReconciliationCaseCommand(body.QuantityTolerance,
                     body.UnitPriceTolerance, body.TaxTolerance, body.LineTotalTolerance,
-                    body.DocumentTotalTolerance), cancellationToken);
+                    body.DocumentTotalTolerance, body.RuleSetVersion, body.OrderScope), cancellationToken);
             SetEtag(context, result);
             return Results.Ok(result);
         }
@@ -156,9 +203,11 @@ public static class ReconciliationEndpoints
             detail: detail, extensions: new Dictionary<string, object?> { ["code"] = code });
 }
 
-public sealed record CreateReconciliationCaseBody(string Name);
+public sealed record CreateReconciliationCaseBody(string Name, string? Category = null, string? RequestKey = null, string? WorkflowKind = null);
+public sealed record SetReconciliationDraftDocumentBody(Guid? DocumentId, string RequestKey);
+public sealed record UpdateReconciliationCaseMetadataBody(string Name, string? Category);
 public sealed record LinkReconciliationDocumentBody(Guid DocumentId, Guid ReviewSessionId);
 public sealed record EvaluateReconciliationCaseBody(decimal? QuantityTolerance,
     decimal? UnitPriceTolerance, decimal? TaxTolerance, decimal? LineTotalTolerance,
-    decimal? DocumentTotalTolerance);
+    decimal? DocumentTotalTolerance, string? RuleSetVersion = null, string? OrderScope = null);
 public sealed record ResolveFindingBody(string Action, string Reason);

@@ -57,7 +57,7 @@ public sealed partial class PostgresPersistenceTests
         using var stranger = SourceHttps(isolated, f);
         using (var request = SourceRequest(grant)) Assert.Equal(HttpStatusCode.NotFound, (await stranger.SendAsync(request)).StatusCode);
         Assert.Equal(1, f.Scanner.Calls);
-        Assert.Equal(HttpStatusCode.OK, (await SecurityChange(f.Admin, f.Member, "Viewer", false, false)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SecurityChange(f.Admin, f.Member, "Staff", false, false)).StatusCode);
         using (var request = SourceRequest(grant)) Assert.Equal(HttpStatusCode.Forbidden, (await user.SendAsync(request)).StatusCode);
         Assert.Equal(1, f.Scanner.Calls);
         await using var db = _database.CreateContext();

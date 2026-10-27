@@ -1,37 +1,7 @@
 using UaeDocumentIntelligence.Domain.Model;
+using UaeDocumentIntelligence.Application.Documents.Processing;
 
 namespace UaeDocumentIntelligence.Application.Abstractions;
-
-public interface IDocumentRepository
-{
-    Task AddAsync(Document document, CancellationToken cancellationToken);
-    Task<Document?> GetAsync(Guid organizationId, Guid documentId, CancellationToken cancellationToken);
-    Task<Document?> GetForReviewAsync(Guid organizationId, Guid documentId, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Document>> ListAsync(Guid organizationId, CancellationToken cancellationToken);
-    Task<int> NextRunNumberAsync(Guid organizationId, Guid documentId, CancellationToken cancellationToken);
-    Task<DocumentMetrics> GetMetricsAsync(Guid organizationId, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
-    Task<ReviewSaveOutcome> SaveReviewChangesAsync(CancellationToken cancellationToken);
-}
-
-public enum ReviewSaveOutcome { Saved, ConcurrencyConflict, ConstraintConflict }
-
-public interface IReconciliationRepository
-{
-    Task AddAsync(ReconciliationCase reconciliationCase, CancellationToken cancellationToken);
-    Task<ReconciliationCase?> GetAsync(Guid organizationId, Guid reconciliationCaseId,
-        CancellationToken cancellationToken);
-    Task<ReconciliationSaveOutcome> SaveChangesAsync(CancellationToken cancellationToken);
-}
-
-public enum ReconciliationSaveOutcome { Saved, ConcurrencyConflict, ConstraintConflict }
-
-public sealed record ReviewActionMetrics(int SessionCount, int CompletedSessionCount,
-    int ActionCount, int ConfirmedCount, int CorrectedCount, int AddedCount,
-    int ClearedCount, double? MachineChangeRate);
-
-public sealed record DocumentMetrics(int TotalDocuments, int ReadyDocuments, int FailedDocuments,
-    double? AverageProcessingMs, ReviewActionMetrics? Review = null);
 
 public interface IDocumentStorage
 {
@@ -41,13 +11,23 @@ public interface IDocumentStorage
 }
 
 public sealed record FileScanReceipt(string Sha256, long SizeBytes, string Policy);
+
 public sealed record StoredFile(string StorageKey, string AbsolutePath, long SizeBytes, string Sha256, FileScanReceipt? Scan = null);
 
 public interface IExtractionClient
 {
-    string ProviderName { get; }
-    string ProviderVersion { get; }
-    string SchemaVersion { get; }
+    string ProviderName
+    {
+        get;
+    }
+    string ProviderVersion
+    {
+        get;
+    }
+    string SchemaVersion
+    {
+        get;
+    }
     Task<ExtractionResult> ExtractAsync(WorkerExtractionRequest request, CancellationToken cancellationToken);
 }
 
@@ -67,6 +47,17 @@ public sealed class ExtractionProviderException(
 
 public interface IUploadQueueStore
 {
+    async Task<Document?> CheckCapacityForIntentAsync(Guid organizationId, long bytes, ProcessingIntent intent,
+        CancellationToken cancellationToken)
+    {
+        await CheckCapacityAsync(organizationId, bytes, cancellationToken);
+        return null;
+    }
+    Task<Document?> FindUploadAsync(Guid organizationId, ProcessingIntent intent, CancellationToken cancellationToken) =>
+        throw new InvalidOperationException("Durable upload intents are not configured.");
+    Task<Document> AddWithIntentAsync(Document document, Guid extractionRunId, Guid jobId,
+        FileScanReceipt? scan, ProcessingIntent intent, CancellationToken cancellationToken) =>
+        throw new InvalidOperationException("Durable upload intents are not configured.");
     Task CheckCapacityAsync(Guid organizationId, long bytes, CancellationToken cancellationToken) => Task.CompletedTask;
     Task<ExtractionJob> AddScannedAsync(Document document, Guid extractionRunId, Guid jobId,
         FileScanReceipt scan, CancellationToken cancellationToken) => throw new InvalidOperationException("Scanned upload admission is not configured.");
@@ -98,6 +89,10 @@ public interface IExtractionJobQueue
     Task<QueuedReprocess?> QueueReprocessAsync(Guid organizationId, Guid documentId,
         Guid runId, Guid jobId, string providerAlias, string providerVersion,
         string schemaVersion, string correlationId, CancellationToken cancellationToken);
+    Task<QueuedReprocess?> QueueReprocessWithIntentAsync(Guid organizationId, Guid documentId,
+        Guid runId, Guid jobId, string providerAlias, string providerVersion,
+        string schemaVersion, string correlationId, ProcessingIntent intent, CancellationToken cancellationToken) =>
+        throw new InvalidOperationException("Durable reprocessing intents are not configured.");
 }
 
 public sealed record ExtractionJobSnapshot(
@@ -106,9 +101,13 @@ public sealed record ExtractionJobSnapshot(
     DateTimeOffset AvailableAtUtc, DateTimeOffset? LeaseExpiresAtUtc,
     DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? CompletedAtUtc);
 
-public sealed record QueuedReprocess(Guid JobId, Guid ExtractionRunId, int RunNumber);
+public sealed record QueuedReprocess(Guid JobId, Guid ExtractionRunId, int RunNumber,
+    string Status = "Queued", bool Replayed = false);
 
-public enum ExtractionOutcome { Ready, Partial }
+public enum ExtractionOutcome
+{
+    Ready, Partial
+}
 
 public sealed record ExtractionProviderResult(
     string Alias, string AdapterVersion, string Model, string ModelVersion);
@@ -138,11 +137,20 @@ public sealed record ExtractionResult(
 
 public interface IExecutionContext
 {
-    Guid OrganizationId { get; }
-    Guid ActorId { get; }
+    Guid OrganizationId
+    {
+        get;
+    }
+    Guid ActorId
+    {
+        get;
+    }
 }
 
 public interface IClock
 {
-    DateTimeOffset UtcNow { get; }
+    DateTimeOffset UtcNow
+    {
+        get;
+    }
 }

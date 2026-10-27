@@ -1,5 +1,49 @@
 # Roadmap
 
+## October 27: delegated local completion
+
+**Closed current milestone:** Rand requested completion and GitHub upload after
+the local verification batches. Remaining checks are explicitly listed in the
+[acceptance map](testing/local-delivery-acceptance-20261027.md). Keep the project
+unlicensed; closure is not production certification. The earlier sequence below
+is retained for context and does not request further broad implementation.
+
+Rand asked the implementation agent to finish the remaining project and own
+hands-on browser, design and integration checks. Continue through reviewed batches
+without waiting for another user manual checkpoint. Record agent verification
+honestly; existing user acceptance and historical evidence remain distinct.
+
+The target is the supported local product and reproducible repository. Real Entra,
+cloud hosting and domains remain optional production-track work. Follow the
+[current completion ledger](tasks/local-completion-20261027.md): Document storage, coherent report/CSV,
+fresh real upload-to-export integration, bounded language/local security checks,
+then clean-source delivery and documentation. This supersedes older waiting-for-
+user pauses. N18, S5, S6 and bounded L1 are independently cleared. L2 full CI and
+restart/reset checks, then L3 repository delivery, are active. No retained-data
+reset, silent permission expansion or publication is authorized.
+
+## Historical priority checkpoints
+
+The dated priorities below describe their original checkpoints. The current
+completion ledger above governs the remaining local work. Optional paid model
+research, final branding and general OCR accuracy are not local release gates.
+
+**September 26 current priority:** Rand authorized the reviewer-experience recovery
+and requires testing, independent review, and integration-impact checks after each
+task before the next starts. Follow the [recovery task ledger](./tasks/reviewer-experience-recovery.md).
+The lightweight preview is implemented. Baseline audits and design previews come
+next; the palette is chosen after inspection. Earlier phase evidence remains historical.
+
+**Latest numeric-scope clarification:** Phase 7 uses Western digits and standard
+dates/amounts with Arabic labels/text. Arabic-Indic source numeral recognition is
+optional. The revised v0.2.0 text set passes 9/9; its OCR evaluation is pending.
+The earlier failed numeral-heavy baseline remains historical evidence.
+
+**September 21 Phase 7 implementation:** [Arabic language foundation](./evidence/phase-7/P7-language-foundation-20260921.md)
+is in progress: synthetic text parsing, RTL fields and bounded Arabic questions
+are implemented. The first Arabic/mixed OCR accuracy baseline fails. Visual,
+native/multipage and semantic retrieval acceptance remain open. Phase 7 is not complete.
+
 **September 21 direction:** finish remaining local product work before source
 delivery. The [local demo and reconciliation walkthrough](./evidence/phase-8/P8-reconciliation-demo-20260921.md)
 are verified. [Phase 7 Arabic/mixed-language support](./phases/phase-7-arabic-support.md)
@@ -35,19 +79,19 @@ The roadmap is outcome-based. Dates are intentionally omitted until Phase 0 is a
 - **In progress:** implementation and verification are active.
 - **Complete:** acceptance criteria and evidence are satisfied.
 
-## Delivery roadmap
+## Current delivery roadmap — October 27, 2026
 
 | Phase | Outcome | Status | Portfolio evidence |
 | --- | --- | --- | --- |
-| 0. Product definition | Agreed problem, persona, scope, naming direction, and success measures | In progress | Product brief and decision log |
+| 0. Product definition | Local supplier invoice/PO workflow and delivery scope | Supported scope agreed; branding and commercial validation remain separate | [Current scope](tasks/local-completion-20261027.md), decision log |
 | 1. Invoice foundation | One English invoice moves through upload, extraction, persistence, and review | Complete | [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md) |
 | 2. Real document processing | Native PDFs and scans produce page-aware fields through replaceable providers | Complete | [P2-T08 acceptance verification](./evidence/phase-2/P2-T08-acceptance-verification.md) |
 | 3. Review and evaluation | Corrections and versioned evaluation create honest accuracy measurements | Complete | [Development acceptance verification](./evidence/phase-3/P3-T07-development-acceptance-verification.md) |
-| 4. Reconciliation | Quotations, POs, and invoices are linked and compared with explainable rules | Complete — approved 2026-09-07 | [Phase 4 acceptance verification](./evidence/phase-4/P4-T06-T08-acceptance-verification.md) |
+| 4. Reconciliation | New invoice/PO checks; historical quotation compatibility; factual outcomes and coherent report/CSV | Local workflow implemented and independently checked | [Fresh journey](testing/local-journey-20261027.md), [export](testing/results-export-20261027.md); earlier Phase 4 acceptance remains historical |
 | 5. Cited questions | Users receive grounded answers with document/page evidence | Development complete (bounded reviewed answers and prepared-query search) | [Acceptance](./evidence/phase-5/P5-development-acceptance-20260911.md) |
-| 6. Enterprise security | Identity, tenant boundaries, roles, audit, and retention protect the workflow | In progress: audit operations and local acceptance remain | Threat model, security walkthrough and tests |
-| 7. Arabic support | Arabic and mixed-language documents are processed and evaluated separately | Proposed | Arabic evaluation report |
-| 8. Repository delivery and local operations | Reproducible local demo, CI, documentation and operational evidence support a finished GitHub project | Proposed; scope revised September 15 | Screenshots, architecture, CI and local runbooks; hosting optional |
+| 6. Enterprise security | Staff/Admin, tenant boundaries, audit, source access and storage protection | Supported local scope verified; production identity/infrastructure remain unverified | [Local security matrix](security/phase-6-local-acceptance.md), [real local Admin checks](testing/local-language-security-20261027.md) |
+| 7. Arabic support | Arabic/mixed text, English digits, bounded OCR and correction with original evidence | Bounded local checks independently cleared; general OCR accuracy remains experimental | [Current measurements and limits](testing/local-language-security-20261027.md); historical mismatches preserved |
+| 8. Repository delivery and local operations | Clean source, full declared CI, startup/restart/reset, notices and publication inventory | L2/L3 in progress; software deliberately unlicensed; publication not authorized | [Completion ledger](tasks/local-completion-20261027.md), [clean-source verification](testing/clean-source-delivery-20261027.md) |
 
 ## Tracked release gates — 2026-09-11
 

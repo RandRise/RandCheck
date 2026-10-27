@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="470" viewBox="0 0 1040 470" role="img" aria-labelledby="title desc">
+<title id="title">Each system part has a job</title><desc id="desc">The web screen sends requests to .NET. .NET enforces permissions, uses repository interfaces to save and load database records, and requests extraction from Python. Python suggestions need human review.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#8293a5" stroke-width="1.5"/></marker></defs>
+<style>text{font-family:Segoe UI,Arial,sans-serif}</style>
+<rect x="0" y="0" width="1040" height="470" rx="0" fill="#f6f8fb"/>
+<text x="40" y="38" font-size="13" fill="#176b5b" font-weight="700" letter-spacing="1.5">05 / HOW THE PARTS FIT</text>
+<text x="40" y="77" font-size="29" fill="#17283d" font-weight="700" >Clear jobs make the code easier to understand.</text>
+<rect x="40" y="122" width="240" height="146" rx="12" fill="white" stroke="#cdd6e2" stroke-width="1.5"/>
+<text x="60" y="154" font-size="23" fill="#17283d" font-weight="700" >Web screen</text>
+<text x="60" y="180" font-size="14" fill="#176b5b" font-weight="650" >Next.js</text>
+<text x="60" y="215" font-size="16" fill="#56667a" font-weight="400" >Show the work.</text>
+<text x="60" y="239" font-size="16" fill="#56667a" font-weight="400" >Collect your choices.</text>
+<rect x="400" y="122" width="240" height="146" rx="12" fill="white" stroke="#cdd6e2" stroke-width="1.5"/>
+<text x="420" y="154" font-size="23" fill="#17283d" font-weight="700" >.NET service</text>
+<text x="420" y="180" font-size="14" fill="#176b5b" font-weight="650" >Rules and permissions</text>
+<text x="420" y="215" font-size="16" fill="#56667a" font-weight="400" >Check what is allowed.</text>
+<text x="420" y="239" font-size="16" fill="#56667a" font-weight="400" >Keep saves safe.</text>
+<rect x="760" y="122" width="240" height="146" rx="12" fill="white" stroke="#cdd6e2" stroke-width="1.5"/>
+<text x="780" y="154" font-size="23" fill="#17283d" font-weight="700" >Stored records</text>
+<text x="780" y="180" font-size="14" fill="#176b5b" font-weight="650" >Database</text>
+<text x="780" y="215" font-size="16" fill="#56667a" font-weight="400" >Keep reviewed values.</text>
+<text x="780" y="239" font-size="16" fill="#56667a" font-weight="400" >Keep past results.</text>
+<path d="M290 202 H390" fill="none" stroke="#8293a5" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="340" y="184" font-size="13" fill="#56667a" font-weight="400" text-anchor="middle">requests</text>
+<path d="M650 202 H750" fill="none" stroke="#8293a5" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="700" y="165" font-size="13" fill="#56667a" font-weight="400" text-anchor="middle">repository</text>
+<text x="700" y="184" font-size="13" fill="#56667a" font-weight="400" text-anchor="middle">interfaces</text>
+<path d="M520 278 V320" fill="none" stroke="#8293a5" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="400" y="329" width="240" height="104" rx="12" fill="#e8f5ef" stroke="#9fcbbd" stroke-width="1.5"/>
+<text x="420" y="361" font-size="24" fill="#176b5b" font-weight="700" >Python</text>
+<text x="420" y="388" font-size="16" fill="#56667a" font-weight="400" >Read documents.</text>
+<text x="420" y="412" font-size="16" fill="#56667a" font-weight="400" >Suggest values + evidence.</text>
+<text x="669" y="361" font-size="16" fill="#56667a" font-weight="400" >.NET asks Python to read.</text>
+<text x="669" y="388" font-size="16" fill="#56667a" font-weight="400" >Python returns suggestions.</text>
+<text x="669" y="415" font-size="16" fill="#56667a" font-weight="400" >People still review the values.</text>
+</svg>

@@ -35,7 +35,7 @@ public sealed class DocumentSourceAccess(AppDbContext db, IExecutionContext iden
          join a in db.Actors.AsNoTracking() on new { m.OrganizationId, Id = m.ActorId } equals new { a.OrganizationId, a.Id }
          where m.OrganizationId == identity.OrganizationId && m.ActorId == identity.ActorId && m.IsActive &&
                a.IsActive && a.Kind == ActorKind.Human &&
-               (m.Role == OrganizationAccessRole.Viewer || m.Role == OrganizationAccessRole.Reviewer || m.Role == OrganizationAccessRole.Operator)
+               (m.Role == OrganizationAccessRole.Staff || m.Role == OrganizationAccessRole.Admin)
          select (Guid?)m.Version).SingleOrDefaultAsync(ct);
 
     private Task<DocumentSource?> SourceAsync(Guid id, CancellationToken ct) => db.Documents.AsNoTracking()

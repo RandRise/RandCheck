@@ -18,7 +18,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         PrivateAnswerPreparation? legacy = null;
         var client = new AnswerReply
         {

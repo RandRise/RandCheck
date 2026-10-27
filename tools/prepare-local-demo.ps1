@@ -23,6 +23,11 @@ $files += @('README.md', 'truth-set.json', 'generation-report.json',
     'synthetic-tax-invoice-SYN-STD-260801.pdf') | ForEach-Object {
     "samples/phase-4/procurement-v0.1.0/$_"
 }
+$files += @('README.md', 'source-truth.json', 'manifest.json',
+    'english-invoice.pdf', 'english-po.pdf', 'english-invoice.txt', 'english-po.txt',
+    'arabic-invoice.txt', 'arabic-po.txt') | ForEach-Object {
+    "samples/supplier-invoice/v0.1.0/$_"
+}
 foreach ($dir in @('apps/api/app', 'apps/backend/src', 'apps/web/app', 'apps/web/public', 'tools/demo')) {
     $path = Join-Path $root $dir
     if (!(Test-Path -LiteralPath $path)) { continue }

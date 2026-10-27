@@ -26,7 +26,7 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         await using var server = await PrivateCitedServer.StartAsync(openAiOutcome: mode);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, server.Url, openAi: true);
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, server.Url, openAi: true);
         var coordinator = services.GetRequiredService<CitedGenerationCoordinator>();
         if (mode is "completed" or "overrun" or "insufficient")
         {
@@ -52,7 +52,7 @@ public sealed partial class PostgresPersistenceTests
         Assert.NotNull(outcome.OpenAi.CountResponseUtf8);
         Assert.Equal("req_generation_fixture", outcome.OpenAi.ProviderRequestId);
         // Restart the whole .NET scope. The replacement private service must not be contacted.
-        await using var restarted = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1", openAi: true);
+        await using var restarted = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1", openAi: true);
         var replay = restarted.GetRequiredService<CitedGenerationCoordinator>();
         if (mode is "completed" or "overrun" or "insufficient") Assert.True((await replay.ProposeAsync(runId, default)).Replayed);
         else await SpendDenied(state == "Uncertain" ? "generation_already_dispatched" : "answer_proposal_not_accepted",
@@ -67,7 +67,7 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         await using var server = await PrivateCitedServer.StartAsync(openAiOutcome: "completed");
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, server.Url, openAi: true);
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, server.Url, openAi: true);
         await using (var clockDb = new UaeDocumentIntelligence.Infrastructure.Persistence.AppDbContext(
             services.GetRequiredService<DbContextOptions<UaeDocumentIntelligence.Infrastructure.Persistence.AppDbContext>>()))
         {
@@ -79,7 +79,7 @@ public sealed partial class PostgresPersistenceTests
             new(true, CitedOpenAiPilot.Rate)).ProposeAsync(runId, default));
         await SpendDenied("generation_live_not_ready", () => Coordinator(services, client,
             new(true, CitedOpenAiPilot.Rate with { ModelVersion = "unapproved-model" }, true)).ProposeAsync(runId, default));
-        await using var foreign = CitedServices(graph.Seed.OrganizationB, graph.Seed.ActorB, server.Url, openAi: true);
+        await using var foreign = CitedPilotServices(graph.Seed.OrganizationB, graph.Seed.ActorB, server.Url, openAi: true);
         await SpendDenied("retrieval_not_found", () => foreign.GetRequiredService<CitedGenerationCoordinator>().ProposeAsync(runId, default));
         await ExecuteAsync("UPDATE cited_document_indexes SET status='Quarantined' WHERE id=@id", ("id", graph.Index.Id));
         await SpendDenied("evidence_unavailable", () => services.GetRequiredService<CitedGenerationCoordinator>().ProposeAsync(runId, default));
@@ -96,7 +96,7 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         await using var server = await PrivateCitedServer.StartAsync(openAiOutcome: mode);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, server.Url, openAi: true);
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, server.Url, openAi: true);
         var settings = new CitedGenerationSettings(true, CitedOpenAiPilot.Rate, true, true, true);
         var coordinator = Coordinator(services, services.GetRequiredService<ICitedAnswerClient>(), settings);
         if (accepted)

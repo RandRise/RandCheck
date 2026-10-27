@@ -1,0 +1,13 @@
+.result-summary { margin-block: 1.25rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 12px; }
+.result-summary ul { display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding: 0; list-style: none; }
+.result-summary li { display: flex; gap: .5rem; align-items: baseline; }
+.result-check .finding-head { align-items: baseline; flex-wrap: wrap; gap: .75rem; }
+.result-check .finding-head h3 { margin: 0; }
+.result-next, .result-decision { margin-top: 1rem; display: grid; gap: .75rem; }
+.result-next p, .result-decision p { margin: 0; }
+.result-next button { justify-self: start; }
+.result-passed > summary { padding-block: 1rem; cursor: pointer; }
+.result-passed .result-check { margin-block: 1rem; }
+.result-decision .resolution-controls { flex-wrap: wrap; gap: .75rem; }
+.result-decision .review-reason { flex-basis: 100%; min-width: 0; }
+.result-check blockquote, .result-check strong { overflow-wrap: anywhere; }

@@ -16,6 +16,7 @@ public sealed partial class AppDbContext(DbContextOptions<AppDbContext> options,
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Actor> Actors => Set<Actor>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<DocumentProcessingRequest> DocumentProcessingRequests => Set<DocumentProcessingRequest>();
     public DbSet<ExtractionRun> ExtractionRuns => Set<ExtractionRun>();
     public DbSet<ExtractionJob> ExtractionJobs => Set<ExtractionJob>();
     public DbSet<ExtractionPage> ExtractionPages => Set<ExtractionPage>();
@@ -25,11 +26,13 @@ public sealed partial class AppDbContext(DbContextOptions<AppDbContext> options,
     public DbSet<ReviewSession> ReviewSessions => Set<ReviewSession>();
     public DbSet<ReviewAction> ReviewActions => Set<ReviewAction>();
     public DbSet<ReconciliationCase> ReconciliationCases => Set<ReconciliationCase>();
+    public DbSet<ReconciliationDraftRequest> ReconciliationDraftRequests => Set<ReconciliationDraftRequest>();
     public DbSet<ReconciliationDocumentLink> ReconciliationDocumentLinks => Set<ReconciliationDocumentLink>();
     public DbSet<ReconciliationRun> ReconciliationRuns => Set<ReconciliationRun>();
     public DbSet<ReconciliationDocumentSnapshot> ReconciliationDocumentSnapshots => Set<ReconciliationDocumentSnapshot>();
     public DbSet<ReconciliationFieldSnapshot> ReconciliationFieldSnapshots => Set<ReconciliationFieldSnapshot>();
     public DbSet<ReconciliationFinding> ReconciliationFindings => Set<ReconciliationFinding>();
+    public DbSet<ReconciliationCheck> ReconciliationChecks => Set<ReconciliationCheck>();
     public DbSet<FindingResolution> FindingResolutions => Set<FindingResolution>();
     public DbSet<CitedDocumentIndex> CitedDocumentIndexes => Set<CitedDocumentIndex>();
     public DbSet<DocumentChunk> DocumentChunks => Set<DocumentChunk>();
@@ -71,7 +74,22 @@ public sealed partial class AppDbContext(DbContextOptions<AppDbContext> options,
         foreach (var entry in ChangeTracker.Entries())
         {
             if (entry.State is not (EntityState.Modified or EntityState.Deleted)) continue;
-            if (entry.Entity is DocumentChunk or ChunkEvidenceSpan or RetrievalSource or RetrievalHit
+            if (entry.Entity is ReconciliationCheck ||
+                entry.Entity is ReconciliationFinding finding && (InvoicePurchaseOrderRuleEngine.IsPairPolicy(finding.RuleVersion) ||
+                    entry.Property(nameof(ReconciliationFinding.RuleVersion)).OriginalValue is InvoicePurchaseOrderRuleEngine.RuleSetVersion or InvoicePurchaseOrderRuleEngine.FactualRuleSetVersion) ||
+                entry.Entity is ReconciliationDocumentSnapshot source && (source.SourceOutcome is not null ||
+                    entry.Property(nameof(ReconciliationDocumentSnapshot.SourceOutcome)).OriginalValue is not null) ||
+                entry.Entity is ReconciliationFieldSnapshot field && (field.SourceKind is not null ||
+                    entry.Property(nameof(ReconciliationFieldSnapshot.SourceKind)).OriginalValue is not null))
+                throw new InvalidOperationException("Persisted pair checks and source evidence are immutable.");
+            if (entry.Entity is ReconciliationRun pairRun && (InvoicePurchaseOrderRuleEngine.IsPairPolicy(pairRun.RuleSetVersion) ||
+                    entry.Property(nameof(ReconciliationRun.RuleSetVersion)).OriginalValue is InvoicePurchaseOrderRuleEngine.RuleSetVersion or InvoicePurchaseOrderRuleEngine.FactualRuleSetVersion) &&
+                (entry.State == EntityState.Deleted ||
+                    entry.Property(nameof(ReconciliationRun.Status)).OriginalValue is ReconciliationRunStatus.Completed ||
+                    pairRun.Status != ReconciliationRunStatus.Completed || entry.Properties.Any(property => property.IsModified &&
+                    property.Metadata.Name is not (nameof(ReconciliationRun.Status) or nameof(ReconciliationRun.CompletedAtUtc)))))
+                throw new InvalidOperationException("Pair policy, scope, actor and tolerances are immutable.");
+            if (entry.Entity is ReconciliationDraftRequest or DocumentProcessingRequest or DocumentChunk or ChunkEvidenceSpan or RetrievalSource or RetrievalHit
                 or CitedAnswer or AnswerClaim or AnswerCitation or CitedSpendEvent or CitedRecoveryAudit
                 or CitedGenerationArtifact)
                 throw new InvalidOperationException("Persisted cited evidence and answers are immutable.");

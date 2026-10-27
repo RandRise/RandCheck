@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="740" viewBox="0 0 1040 740" role="img" aria-labelledby="title desc">
+  <title id="title">One workflow page, with optional details</title>
+  <desc id="desc">Start here on Home. Choose both files before Continue to review creates the check. The same workflow page shows Add documents, Check details, and See results. The current phase opens in place. Optional read-only details have a Return to workflow button. Opening a phase never confirms values.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10" fill="none" stroke="#285bd4" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="1040" height="740" fill="#f5f7fa"/>
+  <g font-family="Arial, sans-serif" fill="#202d3d">
+    <text x="42" y="52" font-size="28" font-weight="700">One place to finish the job</text>
+    <text x="42" y="85" font-size="18">Illustration of the flow. Your files and saved work stay in the system.</text>
+    <rect x="42" y="115" width="580" height="80" rx="10" fill="#285bd4"/>
+    <text x="64" y="147" fill="#fff" font-size="21" font-weight="700">Home: Start here</text>
+    <text x="64" y="176" fill="#fff" font-size="18">Choose Start with my files, or Continue saved work.</text>
+    <path d="M332 195v30" stroke="#285bd4" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="42" y="235" width="580" height="380" rx="12" fill="#fff" stroke="#8998aa"/>
+    <text x="64" y="271" font-size="22" font-weight="700">Your invoice check — the same page</text>
+    <text x="64" y="300" font-size="17">All 3 phases stay visible. The current phase opens here.</text>
+    <path d="M64 318h536M64 418h536M64 510h536" stroke="#d2d9e2"/>
+    <text x="64" y="353" font-size="21" font-weight="700">1. Add documents</text>
+    <text x="64" y="383" font-size="18">Choose files to upload, or use saved invoice + PO.</text>
+    <text x="64" y="405" font-size="16" fill="#596879">Continue to review creates the check and saves the pair.</text>
+    <text x="64" y="454" font-size="21" font-weight="700">2. Check details</text>
+    <text x="64" y="484" font-size="18">Check invoice, then PO. Save each review.</text>
+    <text x="64" y="546" font-size="21" font-weight="700">3. See results</text>
+    <text x="64" y="576" font-size="18">Read differences and evidence. Record a decision.</text>
+    <rect x="704" y="330" width="294" height="230" rx="12" fill="#edf2fd" stroke="#8998aa"/>
+    <text x="724" y="366" font-size="22" font-weight="700">Details, if needed</text>
+    <text x="724" y="399" font-size="18">A separate reading view.</text>
+    <text x="724" y="428" font-size="18">No edits. No new comparison.</text>
+    <text x="724" y="467" font-size="18" font-weight="700">Return to workflow</text>
+    <text x="724" y="498" font-size="18">Go back to your place.</text>
+    <path d="M622 359h72" stroke="#285bd4" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M704 535h-72" stroke="#285bd4" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="42" y="662" font-size="19" font-weight="700">Moving around does not confirm values.</text>
+    <text x="42" y="694" font-size="18">Missing facts stay visible. Earlier results keep their original evidence.</text>
+  </g>
+</svg>

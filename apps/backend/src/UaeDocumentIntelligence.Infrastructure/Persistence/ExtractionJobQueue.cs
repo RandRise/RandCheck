@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using UaeDocumentIntelligence.Application.Abstractions;
 using UaeDocumentIntelligence.Domain.Model;
 using UaeDocumentIntelligence.Infrastructure.Services;
+using UaeDocumentIntelligence.Application.Documents.Processing;
 
 namespace UaeDocumentIntelligence.Infrastructure.Persistence;
 
@@ -211,6 +212,18 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock, string? 
     public async Task<QueuedReprocess?> QueueReprocessAsync(Guid organizationId, Guid documentId,
         Guid runId, Guid jobId, string providerAlias, string providerVersion,
         string schemaVersion, string correlationId, CancellationToken cancellationToken)
+        => await QueueReprocessCoreAsync(organizationId, documentId, runId, jobId, providerAlias,
+            providerVersion, schemaVersion, correlationId, null, cancellationToken);
+
+    public Task<QueuedReprocess?> QueueReprocessWithIntentAsync(Guid organizationId, Guid documentId,
+        Guid runId, Guid jobId, string providerAlias, string providerVersion,
+        string schemaVersion, string correlationId, ProcessingIntent intent, CancellationToken cancellationToken)
+        => QueueReprocessCoreAsync(organizationId, documentId, runId, jobId, providerAlias,
+            providerVersion, schemaVersion, correlationId, intent, cancellationToken);
+
+    private async Task<QueuedReprocess?> QueueReprocessCoreAsync(Guid organizationId, Guid documentId,
+        Guid runId, Guid jobId, string providerAlias, string providerVersion,
+        string schemaVersion, string correlationId, ProcessingIntent? intent, CancellationToken cancellationToken)
     {
         if (workerSubject is not null) throw new InvalidOperationException("Worker identity cannot request reprocessing.");
         EnsurePostgres();
@@ -218,6 +231,16 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock, string? 
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted,
             cancellationToken);
         await OrganizationCapacity.LockAsync(db, organizationId, cancellationToken);
+        if (intent is not null && await DocumentProcessingRequests.FindAsync(db, organizationId, "Reprocess", intent,
+            cancellationToken) is { } replay)
+        {
+            var originalJob = await db.ExtractionJobs.AsNoTracking().SingleOrDefaultAsync(x => x.OrganizationId == organizationId &&
+                x.Id == replay.JobId, cancellationToken)
+                ?? throw new ProcessingIntentException("operation_source_unavailable", "The original processing job is unavailable.");
+            await transaction.CommitAsync(cancellationToken);
+            return new(replay.JobId, replay.ExtractionRunId, replay.RunNumber,
+                DocumentProcessingRequests.DisplayStatus(originalJob), true);
+        }
         var lockedDocumentId = await LockOneIdAsync("""
             SELECT id
             FROM documents
@@ -243,6 +266,9 @@ internal sealed class ExtractionJobQueue(AppDbContext db, IClock clock, string? 
         var databaseNow = await DatabaseNowAsync(cancellationToken);
         var job = new ExtractionJob(jobId, organizationId, documentId, runId, databaseNow);
         await db.ExtractionJobs.AddAsync(job, cancellationToken);
+        if (intent is not null)
+            db.DocumentProcessingRequests.Add(new(organizationId, intent.ActorId, "Reprocess", intent.Key,
+                intent.PayloadHash, documentId, runId, jobId, runNumber));
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new QueuedReprocess(jobId, runId, runNumber);

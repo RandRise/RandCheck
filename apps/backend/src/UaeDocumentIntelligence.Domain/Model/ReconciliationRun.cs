@@ -6,6 +6,7 @@ public sealed class ReconciliationRun
 {
     private readonly List<ReconciliationDocumentSnapshot> _documentSnapshots = [];
     private readonly List<ReconciliationFinding> _findings = [];
+    private readonly List<ReconciliationCheck> _checks = [];
     private ReconciliationRun() { }
 
     internal ReconciliationRun(Guid id, Guid organizationId, Guid reconciliationCaseId,
@@ -45,6 +46,51 @@ public sealed class ReconciliationRun
     public DateTimeOffset? CompletedAtUtc { get; private set; }
     public IReadOnlyCollection<ReconciliationDocumentSnapshot> DocumentSnapshots => _documentSnapshots.AsReadOnly();
     public IReadOnlyCollection<ReconciliationFinding> Findings => _findings.AsReadOnly();
+    public InvoiceOrderScope? OrderScope { get; private set; }
+    public Guid? EvaluationActorId { get; private set; }
+    public IReadOnlyCollection<ReconciliationCheck> Checks => _checks.AsReadOnly();
+
+    public void SetPairContext(Guid actorId, InvoiceOrderScope scope)
+    {
+        RequireRunning();
+        if (!InvoicePurchaseOrderRuleEngine.IsPairPolicy(RuleSetVersion) || OrderScope.HasValue)
+            throw new InvalidOperationException("Pair context is captured once for the pair policy.");
+        if (actorId == Guid.Empty || !Enum.IsDefined(scope)) throw new ArgumentException("Valid actor and scope are required.");
+        if (RuleSetVersion == InvoicePurchaseOrderRuleEngine.FactualRuleSetVersion && scope != InvoiceOrderScope.Unknown)
+            throw new ArgumentException("Factual checks do not accept an order-scope declaration.", nameof(scope));
+        OrderScope = scope;
+        EvaluationActorId = actorId;
+    }
+
+    public void CaptureSourceState(Guid documentSnapshotId, string outcome, string provider,
+        string adapter, string? modelName, string? modelVersion, string warningsJson,
+        int extractedRowCount, bool completeRowCoverage)
+    {
+        RequireRunning();
+        var source = _documentSnapshots.SingleOrDefault(item => item.Id == documentSnapshotId)
+            ?? throw new InvalidOperationException("Document snapshot does not belong to this run.");
+        source.CaptureSourceState(outcome, provider, adapter, modelName, modelVersion,
+            warningsJson, extractedRowCount, completeRowCoverage);
+    }
+
+    public ReconciliationCheck AddCheck(Guid id, string code, string fieldKey, int? occurrence,
+        string? lineIdentity, ReconciliationCheckStatus status, string reasonCode, string explanation,
+        Guid? leftFieldId, Guid? rightFieldId, string? leftValue, string? rightValue,
+        decimal? signedDifference, decimal? tolerance, string? unit, string? currency,
+        string? basis, Guid? findingId, DateTimeOffset now)
+    {
+        RequireRunning();
+        if (leftFieldId.HasValue && !ContainsField(leftFieldId.Value) ||
+            rightFieldId.HasValue && !ContainsField(rightFieldId.Value))
+            throw new InvalidOperationException("Check field does not belong to this run.");
+        if (findingId.HasValue && !_findings.Any(item => item.Id == findingId.Value))
+            throw new InvalidOperationException("Check finding does not belong to this run.");
+        var check = new ReconciliationCheck(id, OrganizationId, Id, code, fieldKey,
+            occurrence, lineIdentity, status, reasonCode, explanation, leftFieldId, rightFieldId,
+            leftValue, rightValue, signedDifference, tolerance, unit, currency, basis, findingId, now);
+        _checks.Add(check);
+        return check;
+    }
 
     internal ReconciliationDocumentSnapshot AddDocumentSnapshot(Guid id,
         ReconciliationDocumentLink link, DateTimeOffset now)
@@ -62,13 +108,13 @@ public sealed class ReconciliationRun
     public ReconciliationFieldSnapshot AddFieldSnapshot(Guid id, Guid documentSnapshotId,
         string fieldKey, int occurrenceIndex, FieldValueType valueType, string valueText,
         Guid? machineFieldValueId, Guid? reviewActionId, int? pageNumber,
-        string? quotedText, DateTimeOffset now)
+        string? quotedText, DateTimeOffset now, ReviewedFieldSourceKind? sourceKind = null)
     {
         RequireRunning();
         var document = _documentSnapshots.SingleOrDefault(item => item.Id == documentSnapshotId)
             ?? throw new InvalidOperationException("Document snapshot does not belong to this run.");
         return document.AddField(id, fieldKey, occurrenceIndex, valueType, valueText,
-            machineFieldValueId, reviewActionId, pageNumber, quotedText, now);
+            machineFieldValueId, reviewActionId, pageNumber, quotedText, now, sourceKind);
     }
 
     public ReconciliationFinding AddFinding(Guid id, string ruleCode, string ruleVersion,
@@ -149,18 +195,41 @@ public sealed class ReconciliationDocumentSnapshot
     public string Sha256 { get; private set; } = string.Empty;
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyCollection<ReconciliationFieldSnapshot> Fields => _fields.AsReadOnly();
+    public string? SourceOutcome { get; private set; }
+    public string? SourceProvider { get; private set; }
+    public string? SourceAdapterVersion { get; private set; }
+    public string? SourceModelName { get; private set; }
+    public string? SourceModelVersion { get; private set; }
+    public string? SourceWarningsJson { get; private set; }
+    public int? ExtractedRowCount { get; private set; }
+    public string? RowCoverageStatus { get; private set; }
+
+    internal void CaptureSourceState(string outcome, string provider, string adapter,
+        string? modelName, string? modelVersion, string warningsJson, int rowCount, bool completeRows)
+    {
+        if (SourceOutcome is not null) throw new InvalidOperationException("Source state is captured once.");
+        if (rowCount < 0 || completeRows && rowCount == 0) throw new ArgumentOutOfRangeException(nameof(rowCount));
+        SourceOutcome = Guard.Required(outcome, nameof(outcome), 32);
+        SourceProvider = Guard.Required(provider, nameof(provider), 100);
+        SourceAdapterVersion = Guard.Required(adapter, nameof(adapter), 100);
+        SourceModelName = modelName;
+        SourceModelVersion = modelVersion;
+        SourceWarningsJson = Guard.Required(warningsJson, nameof(warningsJson), 400000);
+        ExtractedRowCount = rowCount;
+        RowCoverageStatus = completeRows ? "Complete" : "Unverified";
+    }
 
     internal ReconciliationFieldSnapshot AddField(Guid id, string fieldKey,
         int occurrenceIndex, FieldValueType valueType, string valueText,
         Guid? machineFieldValueId, Guid? reviewActionId, int? pageNumber,
-        string? quotedText, DateTimeOffset now)
+        string? quotedText, DateTimeOffset now, ReviewedFieldSourceKind? sourceKind = null)
     {
         if (_fields.Any(field => field.FieldKey == fieldKey &&
             field.OccurrenceIndex == occurrenceIndex))
             throw new InvalidOperationException("Field snapshot identity already exists.");
         var field = new ReconciliationFieldSnapshot(id, OrganizationId,
             ReconciliationRunId, Id, fieldKey, occurrenceIndex, valueType, valueText,
-            machineFieldValueId, reviewActionId, pageNumber, quotedText, now);
+            machineFieldValueId, reviewActionId, pageNumber, quotedText, now, sourceKind);
         _fields.Add(field);
         return field;
     }
@@ -174,7 +243,7 @@ public sealed class ReconciliationFieldSnapshot
         Guid reconciliationRunId, Guid documentSnapshotId, string fieldKey,
         int occurrenceIndex, FieldValueType valueType, string valueText,
         Guid? machineFieldValueId, Guid? reviewActionId, int? pageNumber,
-        string? quotedText, DateTimeOffset createdAtUtc)
+        string? quotedText, DateTimeOffset createdAtUtc, ReviewedFieldSourceKind? sourceKind = null)
     {
         if (id == Guid.Empty) throw new ArgumentException("Field snapshot ID is required.", nameof(id));
         if (occurrenceIndex < 0) throw new ArgumentOutOfRangeException(nameof(occurrenceIndex));
@@ -196,6 +265,8 @@ public sealed class ReconciliationFieldSnapshot
         PageNumber = pageNumber;
         QuotedText = quotedText;
         CreatedAtUtc = createdAtUtc;
+        if (sourceKind.HasValue && !Enum.IsDefined(sourceKind.Value)) throw new ArgumentOutOfRangeException(nameof(sourceKind));
+        SourceKind = sourceKind;
     }
 
     public Guid Id { get; private set; }
@@ -211,4 +282,5 @@ public sealed class ReconciliationFieldSnapshot
     public int? PageNumber { get; private set; }
     public string? QuotedText { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
+    public ReviewedFieldSourceKind? SourceKind { get; private set; }
 }

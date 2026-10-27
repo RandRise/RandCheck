@@ -1,5 +1,23 @@
 # Decision log
 
+## Current delivery decisions — October 27, 2026
+
+- Rand delegated remaining local implementation, browser/design checks,
+  integration tests and independent review to the implementation agent. This
+  removes per-batch manual-review pauses; it does not authorize publication,
+  paid services, retained-data resets or silent permission expansion.
+- Rand explicitly chose to **keep the software unlicensed until he decides**.
+  No project-wide reuse license is added. Sample-specific and third-party
+  licenses remain in force. This is a deliberate delivery decision, not an
+  inferred MIT or CC0 license for the application.
+- The approved current workflow uses invoice + PO, AED only, Staff/Admin and
+  one main workflow page. Earlier quotation records and comparisons remain.
+  General OCR accuracy, live Entra and cloud deployment stay separate from
+  bounded local verification. See the [completion ledger](tasks/local-completion-20261027.md).
+
+The earlier numbered decisions below remain historical records; proposed model,
+branding and expansion choices are not newly approved by this completion work.
+
 This page records product decisions separately from implementation details. A decision should include its reason and the consequence for the roadmap.
 
 | ID | Date | Decision | Reason | Status |

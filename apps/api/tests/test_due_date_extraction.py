@@ -34,7 +34,7 @@ class DueDateExtractionTests(unittest.TestCase):
                 fields = LocalInvoiceExtractor._fields(pages)
                 self.assertNotIn("due_date", {f.key for f in fields})
                 warning = next(w for w in LocalInvoiceExtractor._warnings(pages, fields) if w.code == "due_date_conflicting")
-                self.assertEqual(("due_date", 0, "degraded"), (warning.field_key, warning.occurrence, warning.severity))
+                self.assertEqual((None, None, "degraded"), (warning.field_key, warning.occurrence, warning.severity))
 
     def test_duplicate_consistent_dates_keep_both_source_references(self):
         pages = [page(1, "Due Date: 2026-08-31"), page(2, "Due Date: 2026-08-31")]

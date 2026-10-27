@@ -7,7 +7,16 @@ below are historical; the default Compose file is not the Phase 8 demo profile.
 For host .NET/Node work use the [reviewed runtimes](design/phase-6-runtime-baseline.md)
 through `tools/use-project-runtimes.ps1` in every shell.
 
-The verified local stack uses PostgreSQL, ASP.NET, the private Python mock/local providers, and Next.js without paid credentials. P2-T06 completes the durable queue/worker path for covered synthetic native/scanned invoices.
+For everyday screen work, use the [Docker-free UI preview](ui-preview.md).
+The supported integration walkthrough uses the disposable demo above. The legacy
+root Compose/host path below is advanced developer reference; it does not provide
+the demo launcher's migration, isolation, ownership or reset guarantees.
+Its English local provider configuration now agrees with adapter `local-1.3.0`.
+The root Compose profile has not been freshly exercised as a complete journey.
+
+The local stack uses PostgreSQL, ASP.NET, the private Python providers, and Next.js
+without paid credentials. P2-T06 historical evidence covers synthetic native/scanned
+invoices; it is not current startup acceptance.
 
 ## Prerequisites
 
@@ -111,7 +120,9 @@ After the database migration has been applied:
 docker compose up --build
 ```
 
-`docker compose config --quiet`, the current AI/backend image builds, and synthetic native/scanned Compose workflows pass. See [P2-T06 verification](./evidence/phase-2/P2-T06-queue-worker-verification.md) for exact image identities and results.
+See [P2-T06 verification](./evidence/phase-2/P2-T06-queue-worker-verification.md)
+for the historical image identities and results. Validate current configuration
+with `docker compose config --quiet`; a configuration check does not prove startup.
 
 ## Verification commands
 

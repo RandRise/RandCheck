@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" role="img" aria-labelledby="title desc">
+  <title id="title">Read an activity record</title>
+  <desc id="desc">Read what happened, who, when in UAE time and the result of the action. Open Details for the original saved record. This is a read-only history, not an invoice match result.</desc>
+  <rect width="960" height="300" rx="16" fill="#1d1e22"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#f5f5f7">
+    <text x="480" y="38" font-size="22" font-weight="600">Read a saved activity record</text>
+    <g fill="#27282e" stroke="#777984">
+      <rect x="24" y="66" width="213" height="88" rx="9"/>
+      <rect x="257" y="66" width="213" height="88" rx="9"/>
+      <rect x="490" y="66" width="213" height="88" rx="9"/>
+      <rect x="723" y="66" width="213" height="88" rx="9"/>
+    </g>
+    <text x="130" y="99" font-size="18" font-weight="600">What happened</text>
+    <text x="130" y="127" font-size="13" fill="#c1c2cb">The recorded action</text>
+    <text x="363" y="99" font-size="18" font-weight="600">Who</text>
+    <text x="363" y="127" font-size="13" fill="#c1c2cb">Actor type and saved ID</text>
+    <text x="596" y="99" font-size="18" font-weight="600">When</text>
+    <text x="596" y="127" font-size="13" fill="#c1c2cb">UAE time · UTC+4</text>
+    <text x="829" y="99" font-size="18" font-weight="600">Result</text>
+    <text x="829" y="127" font-size="13" fill="#c1c2cb">The action's outcome</text>
+    <path d="M480 166V186M475 179L480 186L485 179" fill="none" stroke="#b7b8c3" stroke-width="2"/>
+    <rect x="155" y="196" width="650" height="48" rx="9" fill="#39344f" stroke="#beb2ee"/>
+    <text x="480" y="226" font-size="16">Open Details for original codes, IDs, timestamps and saved values.</text>
+    <text x="480" y="277" font-size="13" fill="#c1c2cb">Read-only history. A successful action does not mean the invoice matched.</text>
+  </g>
+</svg>

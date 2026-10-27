@@ -1,0 +1,8 @@
+{
+  "kind": "Additional table coverage assessment of the existing unchanged fictional PDFs",
+  "scope": "Description, quantity and unit price. Net row amounts are not treated as gross line totals.",
+  "rows": [
+    {"occurrence": 1, "line_description": "Document review training", "line_quantity": "2", "line_unit_price": "400.00"},
+    {"occurrence": 2, "line_description": "Workflow configuration session", "line_quantity": "1", "line_unit_price": "400.00"}
+  ]
+}

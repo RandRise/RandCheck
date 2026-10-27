@@ -4,173 +4,26 @@ import hashlib
 from pathlib import Path
 import re
 import time
-from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from .cited_answer_routes import router as cited_answer_router
+from .cited_routes import router as cited_router
 from .config import get_settings
-from .service_security import authorize, PrivateServiceBoundary
 from .extraction import ExtractionError, get_extractor
+from .extraction_http_errors import extraction_error_handler, request_validation_error_handler
+from .extraction_models import ExtractRequest, ExtractResponse, WorkerExtractRequest
 from .fixture_contract import ContractValidationError, validate_normalized_result
+from .service_security import authorize, PrivateServiceBoundary
+
 
 app = FastAPI(title="UAE Document Intelligence Private AI Service", version="0.1.0")
 app.add_middleware(PrivateServiceBoundary, settings=lambda: get_settings())
-
-from .cited_routes import router as cited_router
 app.include_router(cited_router)
-from .cited_answer_routes import router as cited_answer_router
 app.include_router(cited_answer_router)
-
-
-@app.exception_handler(ExtractionError)
-def extraction_error_handler(request: Request, error: ExtractionError) -> JSONResponse:
-    supplied_request_id = request.headers.get("x-request-id", "")
-    request_id = (
-        supplied_request_id
-        if re.fullmatch(r"[A-Za-z0-9._:-]{1,100}", supplied_request_id)
-        else "local-request"
-    )
-    status = {
-        "unsupported_media_type": 415,
-        "provider_timeout": 504,
-        "ocr_unavailable": 503,
-        "provider_timeout": 504,
-        "provider_unavailable": 503,
-        "provider_network_error": 503,
-        "provider_throttled": 429,
-    }.get(error.code, 422)
-    return JSONResponse(
-        status_code=status,
-        headers={"X-Request-ID": request_id},
-        content={
-            "schema_version": "2.0",
-            "error": {
-                "code": error.code,
-                "correlation_id": request_id,
-                "retryable": error.retryable,
-                "summary": error.summary,
-            },
-        },
-    )
-
-
-@app.exception_handler(RequestValidationError)
-def request_validation_error_handler(
-    request: Request, error: RequestValidationError
-) -> JSONResponse:
-    del error
-    supplied_request_id = request.headers.get("x-request-id", "")
-    request_id = (
-        supplied_request_id
-        if re.fullmatch(r"[A-Za-z0-9._:-]{1,100}", supplied_request_id)
-        else "local-request"
-    )
-    return JSONResponse(
-        status_code=422,
-        headers={"X-Request-ID": request_id},
-        content={
-            "schema_version": "2.0",
-            "error": {
-                "code": "provider_rejected",
-                "correlation_id": request_id,
-                "retryable": False,
-                "summary": "The extraction request is invalid.",
-            },
-        },
-    )
-
-
-class ExtractRequest(BaseModel):
-    file_path: str = Field(alias="filePath", description="Path in the volume shared with the API")
-    content_type: str = Field(alias="contentType")
-
-
-class PageResponse(BaseModel):
-    page_number: int
-    canonical_text: str
-    rotation_degrees: int
-
-
-class EvidenceResponse(BaseModel):
-    page_number: int
-    quote: str | None
-    start_utf8: int | None
-    end_utf8: int | None
-    polygon: list[list[float]] | None
-    coordinate_unit: str | None
-
-
-class FieldResponse(BaseModel):
-    key: str
-    occurrence: int
-    value_type: str
-    value: str
-    normalized_value: str | None
-    confidence: float | None
-    evidence: list[EvidenceResponse]
-
-
-class ProviderResponse(BaseModel):
-    alias: str
-    adapter_version: str
-    model: str
-    model_version: str
-
-
-class MetricsResponse(BaseModel):
-    provider_duration_ms: int
-    page_count: int
-    estimated_cost: float | None
-    cost_currency: str | None
-    price_basis: str | None
-
-
-class WarningResponse(BaseModel):
-    code: str
-    severity: str
-    safe_summary: str
-    page_number: int | None
-    field_key: str | None
-    occurrence: int | None
-
-
-class ExtractResponse(BaseModel):
-    schema_version: str
-    outcome: str
-    document_type: str
-    language: str
-    provider: ProviderResponse
-    metrics: MetricsResponse
-    pages: list[PageResponse]
-    fields: list[FieldResponse]
-    warnings: list[WarningResponse]
-
-
-class WorkerExtractRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    schema_version: str
-    job_id: UUID
-    document_id: UUID
-    extraction_run_id: UUID
-    storage_key: str = Field(min_length=1, max_length=255)
-    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    bytes: int = Field(gt=0, le=10 * 1024 * 1024)
-    declared_content_type: str = Field(min_length=1, max_length=100)
-    provider_alias: str = Field(pattern=r"^[a-z][a-z0-9_-]{0,99}$")
-    attempt: int = Field(ge=1, le=3)
-    deadline_utc: datetime
-    correlation_id: str = Field(pattern=r"^[A-Za-z0-9._:-]{1,100}$")
-
-    @field_validator("deadline_utc")
-    @classmethod
-    def require_utc_deadline(cls, value: datetime) -> datetime:
-        if value.tzinfo is None or value.utcoffset() != timezone.utc.utcoffset(value):
-            raise ValueError("deadline_utc must be an explicit UTC timestamp")
-        return value
+app.add_exception_handler(ExtractionError, extraction_error_handler)
+app.add_exception_handler(RequestValidationError, request_validation_error_handler)
 
 
 @app.get("/health")

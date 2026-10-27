@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home design proposal — example data</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #1c1d21;
+      --surface: #26272d;
+      --raised: #313239;
+      --text: #f3f3f7;
+      --muted: #bfc0cd;
+      --line: #42434d;
+      --control-line: #858692;
+      --accent: #7060df;
+      --on-accent: #ffffff;
+      --tint: #39334f;
+      --lavender: #d5ccff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 "Segoe UI", Arial, sans-serif; }
+    ::selection { color: var(--on-accent); background: var(--accent); }
+    h1, h2, p { margin: 0; }
+    .proposal { padding: 10px 24px; background: var(--raised); color: var(--muted); font-size: 13px; text-align: center; }
+    .shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: calc(100vh - 40px); }
+    aside { padding: 30px 18px; background: var(--surface); border-right: 1px solid var(--line); }
+    .brand { display: flex; gap: 10px; align-items: center; font-weight: 700; margin-bottom: 34px; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: var(--on-accent); }
+    .organization { padding-inline: 10px; margin-bottom: 34px; }
+    .organization span { display: block; font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .nav-label { color: var(--muted); font-size: 13px; margin: 0 10px 12px; }
+    .nav-item { display: block; padding: 12px; margin-block: 5px; border-radius: 7px; font-size: 15px; }
+    .nav-item.active { background: var(--tint); color: var(--lavender); font-weight: 700; box-shadow: inset 3px 0 var(--lavender); }
+    .other-tools { margin: 30px 12px 0; color: var(--muted); font-size: 14px; }
+    .account { min-height: 76px; display: flex; justify-content: flex-end; align-items: center; gap: 24px; padding: 18px 40px; border-bottom: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+    .account span { color: var(--muted); }
+    main { max-width: 1180px; padding: 44px 48px 64px; margin-inline: auto; }
+    h1 { font-size: 34px; letter-spacing: -.025em; line-height: 1.2; }
+    .intro { color: var(--muted); margin-top: 12px; max-width: 65ch; }
+    .start { margin-top: 32px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .start-heading { display: flex; justify-content: space-between; gap: 28px; align-items: center; padding: 30px; background: #333044; border-bottom: 1px solid #5d557d; }
+    .start-copy { display: flex; gap: 18px; align-items: center; }
+    .pair-icon { width: 52px; height: 58px; flex-shrink: 0; color: var(--lavender); }
+    h2 { font-size: 22px; line-height: 1.35; }
+    .start p { margin-top: 8px; color: var(--muted); }
+    .primary { display: inline-block; flex-shrink: 0; padding: 13px 20px; background: var(--accent); color: var(--on-accent); border: 1px solid var(--lavender); font-weight: 600; border-radius: 8px; text-align: center; box-shadow: 0 3px 8px #17141f55; }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 24px; margin: 0; gap: 14px; }
+    .steps li { display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 10px; padding: 16px 12px; border-radius: 10px; background: var(--raised); align-content: start; }
+    .number { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--lavender); background: #443b63; font-size: 14px; font-weight: 600; }
+    .steps li:nth-child(2) .number { background: #304758; color: #b2defb; }
+    .steps li:nth-child(3) .number { background: #344b46; color: #bce2d5; }
+    .steps strong { font-size: 15px; font-weight: 600; padding-top: 2px; }
+    .steps small { display: block; grid-column: 2; color: var(--muted); font-size: 13px; margin-top: 5px; }
+    .saved { margin-top: 42px; }
+    .saved-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+    .saved-header span { color: var(--muted); font-size: 14px; }
+    .saved-list { padding: 0 24px; margin: 0; list-style: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+    .saved-list li { display: grid; grid-template-columns: minmax(0, 1fr) 140px 108px; gap: 24px; align-items: center; border-bottom: 1px solid var(--line); padding: 22px 0; }
+    .saved-list li:last-child { border-bottom: 0; }
+    .saved-list strong { display: block; font-size: 16px; font-weight: 600; }
+    .reference { display: block; margin-top: 5px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .state { font-size: 13px; color: var(--muted); border-left: 3px solid #858692; padding-left: 10px; }
+    .action { display: inline-block; padding: 10px 12px; border: 1px solid var(--control-line); border-radius: 7px; background: var(--raised); color: var(--text); font-size: 14px; font-weight: 600; text-align: center; }
+    .footnote { color: var(--muted); margin-top: 20px; font-size: 13px; }
+    @media (max-width: 1000px) {
+      .shell { grid-template-columns: 180px minmax(0, 1fr); }
+      main { padding: 32px 24px; }
+      .start-heading { display: block; }
+      .primary { margin-top: 20px; }
+      .steps { gap: 10px; padding: 18px; }
+      .steps li { grid-template-columns: 1fr; gap: 8px; }
+      .steps small { grid-column: 1; margin-top: 0; }
+    }
+    @media (max-width: 650px) {
+      .shell { display: block; }
+      aside { border-right: 0; border-bottom: 1px solid var(--line); padding: 18px 20px; }
+      .brand { margin-bottom: 16px; }
+      .organization { margin-bottom: 18px; }
+      .organization span, .nav-label { display: none; }
+      .menu { display: flex; gap: 8px; }
+      .nav-item { margin: 0; }
+      .other-tools { margin: 14px 12px 0; }
+      .account { min-height: auto; padding: 14px 20px; gap: 18px; flex-wrap: wrap; justify-content: flex-start; }
+      main { padding: 28px 20px 40px; }
+      h1 { font-size: 28px; }
+      .intro { font-size: 15px; }
+      .start { margin-top: 26px; }
+      .start-heading { padding: 22px; }
+      .start-copy { gap: 12px; }
+      .pair-icon { width: 38px; height: 46px; }
+      .primary { display: block; }
+      .steps { grid-template-columns: 1fr; gap: 12px; }
+      .steps li { grid-template-columns: 30px minmax(0, 1fr); gap: 4px 10px; }
+      .steps small { grid-column: 2; }
+      .saved { margin-top: 32px; }
+      .saved-header { align-items: flex-start; gap: 14px; }
+      .saved-header span { text-align: right; }
+      .saved-list { padding-inline: 16px; }
+      .saved-list li { grid-template-columns: minmax(0, 1fr) 104px; gap: 8px 12px; padding: 20px 0; }
+      .state { grid-column: 1; }
+      .action { grid-column: 2; grid-row: 1 / 3; }
+    }
+  </style>
+</head>
+<body>
+  <div class="proposal">Design proposal · Example data · Static preview, not connected to your files</div>
+  <div class="shell">
+    <aside aria-label="Illustrated side menu">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">d.</span>Document review</div>
+      <div class="organization"><strong>Example organization</strong><span>Workspace</span></div>
+      <p class="nav-label">Work</p>
+      <div class="menu"><span class="nav-item active">Home</span><span class="nav-item">Document library</span></div>
+      <p class="other-tools">Other tools</p>
+    </aside>
+    <div>
+      <div class="account"><strong>Example user <span>· Staff</span></strong><span>Appearance: Dark</span><span>Help</span></div>
+      <main>
+        <header><h1>Invoice checks</h1><p class="intro">Check what your supplier charged against your purchase order.</p></header>
+        <section class="start" aria-labelledby="start-title">
+          <div class="start-heading">
+            <div class="start-copy">
+              <svg class="pair-icon" viewBox="0 0 52 58" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="33" height="43" rx="5" fill="#443b63" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="15" y="13" width="33" height="43" rx="5" fill="#333044" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M23 25h17M23 32h17M23 39h10M23 46h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <div><h2 id="start-title">Start here</h2><p>Have your invoice and purchase order ready.</p></div>
+            </div>
+            <span class="primary">Start with my files</span>
+          </div>
+          <ol class="steps">
+            <li><span class="number" aria-hidden="true">1</span><strong>Add documents</strong><small>Upload or use saved files.</small></li>
+            <li><span class="number" aria-hidden="true">2</span><strong>Check details</strong><small>Check values against the source.</small></li>
+            <li><span class="number" aria-hidden="true">3</span><strong>See results</strong><small>Read differences and decide.</small></li>
+          </ol>
+        </section>
+        <section class="saved" aria-labelledby="saved-title">
+          <div class="saved-header"><h2 id="saved-title">Continue your work</h2><span>Refresh checks</span></div>
+          <ul class="saved-list">
+            <li><div><strong>Invoice check</strong><span class="reference">REC-2026-000028</span></div><span class="state">Saved work</span><span class="action">Continue</span></li>
+            <li><div><strong>Invoice check</strong><span class="reference">REC-2026-000027</span></div><span class="state">Saved work</span><span class="action">Continue</span></li>
+            <li><div><strong><bdi>فحص فاتورة</bdi></strong><span class="reference">REC-2026-000026</span></div><span class="state">Closed · saved history</span><span class="action">View results</span></li>
+          </ul>
+          <p class="footnote">Illustrative rows. Saved work does not mean the documents match.</p>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

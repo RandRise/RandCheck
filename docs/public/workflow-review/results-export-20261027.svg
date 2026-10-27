@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430" role="img" aria-labelledby="title desc">
+<title id="title">Download both formats from the same saved results</title><desc id="desc">Add an invoice and PO, check their details and see results on one page. Download a readable HTML report or a CSV spreadsheet from the same version. A changed result requires refresh. Decisions never turn missing checks into passes.</desc>
+<rect width="1100" height="430" rx="20" fill="#202126"/><g fill="#f5f4f8" font-family="Arial,sans-serif">
+<text x="32" y="44" font-size="25" font-weight="700">One workflow. One saved version for both downloads.</text>
+<g fill="#34313f" stroke="#aaa0df"><rect x="32" y="80" width="300" height="82" rx="12"/><rect x="400" y="80" width="300" height="82" rx="12"/><rect x="768" y="80" width="300" height="82" rx="12"/></g>
+<g font-size="20" font-weight="700"><text x="50" y="127">1  Add invoice + PO</text><text x="422" y="127">2  Check details</text><text x="790" y="127">3  See results</text></g>
+<g fill="none" stroke="#b8aedf" stroke-width="3"><path d="M338 121h53m-12-9 12 9-12 9M706 121h53m-12-9 12 9-12 9M918 165v30H550v27"/></g>
+<rect x="250" y="225" width="600" height="72" rx="12" fill="#48405c"/>
+<text x="275" y="255" font-size="20" font-weight="700">Backend reads saved results and decisions together</text><text x="275" y="280" font-size="16">Check access and the saved version before every download.</text>
+<path d="M550 300v22H285v23m265-23h265v23" fill="none" stroke="#b8aedf" stroke-width="3"/>
+<g fill="#2d2e34" stroke="#777384"><rect x="50" y="345" width="470" height="58" rx="10"/><rect x="580" y="345" width="470" height="58" rx="10"/></g>
+<text x="74" y="381" font-size="19">Readable HTML report: open, read or print</text><text x="604" y="381" font-size="19">CSV spreadsheet: rows for analysis</text></g></svg>

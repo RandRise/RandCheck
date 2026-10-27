@@ -30,7 +30,9 @@
     "**/*.tsx",
     ".next/dev/types/**/*.ts",
     ".next-phase6-acceptance-20260916/types/**/*.ts",
-    ".next-phase6-acceptance-20260916/dev/types/**/*.ts"
+    ".next-phase6-acceptance-20260916/dev/types/**/*.ts",
+    ".next-validation-20261023/types/**/*.ts",
+    ".next-validation-20261023/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

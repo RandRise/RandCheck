@@ -2,6 +2,9 @@ using UaeDocumentIntelligence.Domain.Common;
 
 namespace UaeDocumentIntelligence.Domain.Model;
 
+public enum ReconciliationCaseCategory { Uncategorized, OfficeSupplies, Services, Equipment }
+public enum ReconciliationWorkflowKind { Legacy, InvoicePurchaseOrder }
+
 public sealed class ReconciliationCase
 {
     private readonly List<ReconciliationDocumentLink> _documentLinks = [];
@@ -9,7 +12,9 @@ public sealed class ReconciliationCase
     private ReconciliationCase() { }
 
     public ReconciliationCase(Guid id, Guid organizationId, Guid createdByActorId,
-        string name, DateTimeOffset now)
+        string name, DateTimeOffset now, ReconciliationCaseCategory category = ReconciliationCaseCategory.Uncategorized,
+        string? creationRequestKey = null, string? creationPayloadHash = null,
+        ReconciliationWorkflowKind workflowKind = ReconciliationWorkflowKind.Legacy)
     {
         if (id == Guid.Empty || organizationId == Guid.Empty || createdByActorId == Guid.Empty)
             throw new ArgumentException("Case, organization, and actor IDs are required.");
@@ -17,6 +22,14 @@ public sealed class ReconciliationCase
         OrganizationId = organizationId;
         CreatedByActorId = createdByActorId;
         Name = Guard.Required(name, nameof(name), 200);
+        if (!Enum.IsDefined(category)) throw new ArgumentOutOfRangeException(nameof(category));
+        Category = category;
+        if (!Enum.IsDefined(workflowKind)) throw new ArgumentOutOfRangeException(nameof(workflowKind));
+        WorkflowKind = workflowKind;
+        if ((creationRequestKey is null) != (creationPayloadHash is null))
+            throw new ArgumentException("Creation request identity must include its payload hash.");
+        CreationRequestKey = creationRequestKey is null ? null : Guard.Required(creationRequestKey, nameof(creationRequestKey), 100);
+        CreationPayloadHash = creationPayloadHash is null ? null : Guard.Required(creationPayloadHash, nameof(creationPayloadHash), 64);
         Status = ReconciliationCaseStatus.Draft;
         ConcurrencyToken = Guid.NewGuid();
         CreatedAtUtc = UpdatedAtUtc = now;
@@ -26,6 +39,15 @@ public sealed class ReconciliationCase
     public Guid OrganizationId { get; private set; }
     public Guid CreatedByActorId { get; private set; }
     public string Name { get; private set; } = string.Empty;
+    public string Reference { get; private set; } = string.Empty;
+    public ReconciliationCaseCategory Category { get; private set; }
+    public ReconciliationWorkflowKind WorkflowKind { get; private set; }
+    public Guid? DraftInvoiceDocumentId { get; private set; }
+    public Guid? DraftPurchaseOrderDocumentId { get; private set; }
+    public Guid? DraftInvoiceVersion { get; private set; }
+    public Guid? DraftPurchaseOrderVersion { get; private set; }
+    public string? CreationRequestKey { get; private set; }
+    public string? CreationPayloadHash { get; private set; }
     public ReconciliationCaseStatus Status { get; private set; }
     public Guid ConcurrencyToken { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
@@ -34,12 +56,69 @@ public sealed class ReconciliationCase
     public IReadOnlyCollection<ReconciliationDocumentLink> DocumentLinks => _documentLinks.AsReadOnly();
     public IReadOnlyCollection<ReconciliationRun> Runs => _runs.AsReadOnly();
 
+    public Guid? GetDraftDocumentId(ReconciliationDocumentRole role) => role switch
+    {
+        ReconciliationDocumentRole.Invoice => DraftInvoiceDocumentId,
+        ReconciliationDocumentRole.PurchaseOrder => DraftPurchaseOrderDocumentId,
+        _ => throw new ArgumentOutOfRangeException(nameof(role))
+    };
+
+    public Guid? GetDraftVersion(ReconciliationDocumentRole role) => role switch
+    {
+        ReconciliationDocumentRole.Invoice => DraftInvoiceVersion,
+        ReconciliationDocumentRole.PurchaseOrder => DraftPurchaseOrderVersion,
+        _ => throw new ArgumentOutOfRangeException(nameof(role))
+    };
+
+    public void SetDraftDocument(ReconciliationDocumentRole role, Guid? documentId, DateTimeOffset now)
+    {
+        RequireMutable();
+        if (WorkflowKind != ReconciliationWorkflowKind.InvoicePurchaseOrder)
+            throw new InvalidOperationException("Draft documents require the invoice and PO workflow.");
+        var current = GetDraftDocumentId(role);
+        if (documentId == Guid.Empty) throw new ArgumentException("Document ID cannot be empty.");
+        var other = role == ReconciliationDocumentRole.Invoice ? DraftPurchaseOrderDocumentId : DraftInvoiceDocumentId;
+        if (documentId is not null && documentId == other)
+            throw new InvalidOperationException("Invoice and PO must be different documents.");
+        if (current == documentId) return;
+        if (role == ReconciliationDocumentRole.Invoice)
+        { DraftInvoiceDocumentId = documentId; DraftInvoiceVersion = Guid.NewGuid(); }
+        else
+        { DraftPurchaseOrderDocumentId = documentId; DraftPurchaseOrderVersion = Guid.NewGuid(); }
+        _documentLinks.RemoveAll(link => link.Role == role);
+        Touch(now);
+    }
+
+    public void RecordDraftIntent(DateTimeOffset now)
+    {
+        RequireMutable();
+        if (WorkflowKind != ReconciliationWorkflowKind.InvoicePurchaseOrder)
+            throw new InvalidOperationException("Draft intents require the invoice and PO workflow.");
+        // Even a new no-op intent participates in the case's optimistic concurrency check.
+        Touch(now);
+    }
+
+    public void UpdateMetadata(string name, ReconciliationCaseCategory category, DateTimeOffset now)
+    {
+        RequireMutable();
+        var title = Guard.Required(name, nameof(name), 200);
+        if (!Enum.IsDefined(category)) throw new ArgumentOutOfRangeException(nameof(category));
+        if (Name == title && Category == category) return;
+        Name = title;
+        Category = category;
+        Touch(now);
+    }
+
     public ReconciliationDocumentLink LinkReviewedDocument(Guid linkId,
         ReconciliationDocumentRole role, Guid documentId, Guid reviewSessionId,
         Guid extractionRunId, string sha256, DateTimeOffset now)
     {
         RequireMutable();
         if (!Enum.IsDefined(role)) throw new ArgumentOutOfRangeException(nameof(role));
+        if (WorkflowKind == ReconciliationWorkflowKind.InvoicePurchaseOrder &&
+            (role is not (ReconciliationDocumentRole.Invoice or ReconciliationDocumentRole.PurchaseOrder) ||
+             GetDraftDocumentId(role) != documentId))
+            throw new InvalidOperationException("Choose the draft document before pinning its completed review.");
         if (linkId == Guid.Empty || documentId == Guid.Empty || reviewSessionId == Guid.Empty ||
             extractionRunId == Guid.Empty)
             throw new ArgumentException("Link, document, review, and extraction IDs are required.");
@@ -62,8 +141,17 @@ public sealed class ReconciliationCase
         var existing = _documentLinks.SingleOrDefault(link => link.Role == role)
             ?? throw new InvalidOperationException("The document role is not linked.");
         _documentLinks.Remove(existing);
-        return LinkReviewedDocument(linkId, role, documentId, reviewSessionId,
-            extractionRunId, sha256, now);
+        try
+        {
+            return LinkReviewedDocument(linkId, role, documentId, reviewSessionId,
+                extractionRunId, sha256, now);
+        }
+        catch
+        {
+            _documentLinks.Add(existing);
+            _documentLinks.Sort((left, right) => left.Role.CompareTo(right.Role));
+            throw;
+        }
     }
 
     public ReconciliationRun BeginEvaluation(Guid runId,
@@ -72,6 +160,11 @@ public sealed class ReconciliationCase
         DateTimeOffset now)
     {
         RequireMutable();
+        if (WorkflowKind == ReconciliationWorkflowKind.InvoicePurchaseOrder &&
+            (!InvoicePurchaseOrderRuleEngine.IsPairPolicy(ruleSetVersion) || _documentLinks.Count != 2 ||
+             new[] { ReconciliationDocumentRole.Invoice, ReconciliationDocumentRole.PurchaseOrder }.Any(role =>
+                 GetDraftDocumentId(role) is not { } documentId || !_documentLinks.Any(link => link.Role == role && link.DocumentId == documentId))))
+            throw new InvalidOperationException("Invoice pairs require their pair policy and both exact draft review pins.");
         if (_documentLinks.Count == 0)
             throw new InvalidOperationException("At least one reviewed document is required.");
         if (_runs.Any(run => run.Status == ReconciliationRunStatus.Running))

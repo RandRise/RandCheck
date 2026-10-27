@@ -25,7 +25,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         var bytes = PreparationArtifact();
         var command = EmbeddingSpendCommand(bytes) with { OperationId = runId };
         await services.GetRequiredService<ICitedGenerationJournal>().ReservePreparedAsync(command, bytes, true, default);
@@ -44,7 +44,7 @@ public sealed partial class PostgresPersistenceTests
         var outcome = "{\"status\":\"invalid_vectors\",\"prompt_tokens\":100}"u8.ToArray();
         var command = EmbeddingSpendCommand(bytes);
         CitedSpendView embedding;
-        await using (var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1"))
+        await using (var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1"))
         {
             var ledger = services.GetRequiredService<ICitedGenerationLedger>();
             var journal = services.GetRequiredService<ICitedGenerationJournal>();
@@ -59,7 +59,7 @@ public sealed partial class PostgresPersistenceTests
             // Vector usability is separate from trusted usage settlement.
             await journal.RecordOutcomeAsync(embedding.Id, outcome, .000002m, "test-embedding-usage", false, default);
         }
-        await using var restarted = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var restarted = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var replayJournal = restarted.GetRequiredService<ICitedGenerationJournal>();
         var replayLedger = restarted.GetRequiredService<ICitedGenerationLedger>();
         var replay = await replayJournal.ReservePreparedAsync(command, bytes, true, default);
@@ -86,7 +86,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ledger_unknown_or_overrun_usage_blocks_both_workloads(bool overrun)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var bytes = PreparationArtifact();
@@ -108,8 +108,8 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ledger_and_generation_concurrently_share_one_slot_across_organizations()
     {
         var seed = await SeedGraphAsync();
-        await using var a = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
         async Task<bool> Attempt(IServiceProvider services, ReserveCitedGeneration command)
         {
             try { await services.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(command, true, default); return true; }
@@ -124,7 +124,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ledger_rejects_wrong_token_shape_unknown_workload_and_SQL_workload_changes()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         await SpendDenied("invalid_reservation_request", () => ledger.ReserveAsync(EmbeddingSpendCommand() with
             { Workload = (CitedSpendWorkload)99 }, true, default));
@@ -155,8 +155,8 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ledger_scope_and_rate_expiry_remain_enforced()
     {
         var seed = await SeedGraphAsync();
-        await using var a = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
         var ledger = a.GetRequiredService<ICitedGenerationLedger>();
         var bytes = PreparationArtifact();
         var command = EmbeddingSpendCommand(bytes);
@@ -195,7 +195,7 @@ public sealed partial class PostgresPersistenceTests
         await migrator.MigrateAsync();
         Assert.Equal(fingerprint, await ScalarAsync<string>("SELECT fingerprint FROM cited_spend_reservations"));
         Assert.Equal("Generation", await ScalarAsync<string>("SELECT workload FROM cited_spend_reservations"));
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var replay = await services.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(command, true, default);
         Assert.True(replay.Replayed);
         Assert.Equal(id, replay.Id);

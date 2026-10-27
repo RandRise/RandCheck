@@ -32,8 +32,9 @@ public sealed partial class PostgresPersistenceTests
     private static readonly RsaSecurityKey SecurityKey = new(SecurityRsa) { KeyId = "phase6-postgres-offline" };
     private static string SecurityIssuer => $"https://login.microsoftonline.com/{SecurityTenant:D}/v2.0";
 
-    private WebApplicationFactory<global::Program> SecurityHost(string? python = null) =>
-        new WebApplicationFactory<global::Program>().WithWebHostBuilder(builder =>
+    private WebApplicationFactory<global::Program> SecurityHost(string? python = null,
+        WebApplicationFactory<global::Program>? factory = null) =>
+        (factory ?? new WebApplicationFactory<global::Program>()).WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Testing").UseSetting("Security:Mode", "Entra")
                 .UseSetting("Security:TenantId", SecurityTenant.ToString()).UseSetting("Security:Audience", SecurityAudience.ToString())
@@ -90,17 +91,17 @@ public sealed partial class PostgresPersistenceTests
         return (result, subject);
     }
 
-    private static async Task<MembershipView> SecurityAdd(HttpClient admin, Guid subject, string role = "Viewer", bool manage = false)
+    private static async Task<MembershipView> SecurityAdd(HttpClient admin, Guid subject, string role = "Staff", bool manage = false)
     {
         var response = await admin.PostAsJsonAsync("/api/organization/memberships",
-            new MembershipEndpoints.AddMember(SecurityTenant, subject, "Sensitive display name", role, manage));
+            new MembershipEndpoints.AddMember(SecurityTenant, subject, "Sensitive display name", manage ? "Admin" : role));
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<MembershipView>())!;
     }
 
     private static Task<HttpResponseMessage> SecurityChange(HttpClient admin, MembershipView member, string role, bool manage, bool active) =>
         admin.PutAsJsonAsync($"/api/organization/memberships/{member.Id}",
-            new MembershipEndpoints.ChangeMember(member.Version, role, manage, active));
+            new MembershipEndpoints.ChangeMember(member.Version, role, active));
 
     [Fact]
     public async Task Phase6_browser_session_returns_database_access_and_rechecks_revocation()
@@ -111,21 +112,21 @@ public sealed partial class PostgresPersistenceTests
         var initial = await admin.GetFromJsonAsync<SessionEndpoints.SessionView>("/api/session");
         Assert.Equal(a.Organization.OrganizationId, initial!.OrganizationId);
         Assert.Equal("Fictional enterprise", initial.OrganizationName);
-        Assert.Equal("None", initial.Role);
-        Assert.True(initial.CanManageMembers);
+        Assert.Equal("Admin", initial.Role);
+        Assert.Equal("Admin", initial.Role);
         Assert.Equal(SecurityTenant, initial.TenantId);
         var subject = Guid.NewGuid();
         var member = await SecurityAdd(admin, subject);
         using var viewer = SecurityHttp(host, subject);
         var view = await viewer.GetFromJsonAsync<SessionEndpoints.SessionView>("/api/session");
         Assert.Equal(member.ActorId, view!.ActorId);
-        Assert.Equal("Viewer", view.Role); // the signed token's Operator role is ignored
-        Assert.False(view.CanManageMembers);
-        var changed = await SecurityChange(admin, member, "Reviewer", false, true);
+        Assert.Equal("Staff", view.Role); // the signed token's Operator role is ignored
+        Assert.Equal("Staff", view.Role);
+        var changed = await SecurityChange(admin, member, "Admin", false, true);
         changed.EnsureSuccessStatusCode();
         member = (await changed.Content.ReadFromJsonAsync<MembershipView>())!;
-        Assert.Equal("Reviewer", (await viewer.GetFromJsonAsync<SessionEndpoints.SessionView>("/api/session"))!.Role);
-        (await SecurityChange(admin, member, "Reviewer", false, false)).EnsureSuccessStatusCode();
+        Assert.Equal("Admin", (await viewer.GetFromJsonAsync<SessionEndpoints.SessionView>("/api/session"))!.Role);
+        (await SecurityChange(admin, member, "Admin", false, false)).EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.GetAsync("/api/session")).StatusCode);
         using var stranger = SecurityHttp(host, Guid.NewGuid());
         Assert.Equal(HttpStatusCode.Forbidden, (await stranger.GetAsync("/api/session")).StatusCode);
@@ -139,28 +140,28 @@ public sealed partial class PostgresPersistenceTests
         using var host = SecurityHost();
         using var admin = SecurityHttp(host, a.Subject);
         using var otherAdmin = SecurityHttp(host, b.Subject);
-        Assert.Equal(HttpStatusCode.Forbidden, (await admin.GetAsync("/api/documents")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync("/api/documents")).StatusCode);
         var subject = Guid.NewGuid();
         var viewer = await SecurityAdd(admin, subject);
         using var user = SecurityHttp(host, subject);
         Assert.Equal(HttpStatusCode.OK, (await user.GetAsync("/api/documents")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await user.GetAsync("/api/organization/audit")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await user.GetAsync("/api/organization/memberships")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await SecurityChange(user, viewer, "Operator", true, true)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await SecurityChange(otherAdmin, viewer, "Operator", true, true)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await SecurityChange(user, viewer, "Staff", true, true)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SecurityChange(otherAdmin, viewer, "Staff", true, true)).StatusCode);
         var duplicate = await otherAdmin.PostAsJsonAsync("/api/organization/memberships",
-            new MembershipEndpoints.AddMember(SecurityTenant, subject, "Sensitive name", "Viewer", false));
+            new MembershipEndpoints.AddMember(SecurityTenant, subject, "Sensitive name", "Staff"));
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
-        var revokedResponse = await SecurityChange(admin, viewer, "Viewer", false, false);
+        var revokedResponse = await SecurityChange(admin, viewer, "Staff", false, false);
         Assert.Equal(HttpStatusCode.OK, revokedResponse.StatusCode);
         var revoked = (await revokedResponse.Content.ReadFromJsonAsync<MembershipView>())!;
         Assert.Equal(viewer.ActorId, revoked.ActorId);
         Assert.NotEqual(viewer.Version, revoked.Version);
         Assert.Equal(HttpStatusCode.Forbidden, (await user.GetAsync("/api/documents")).StatusCode); // same valid JWT
-        Assert.Equal(HttpStatusCode.Conflict, (await SecurityChange(admin, viewer, "Operator", false, true)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await SecurityChange(admin, viewer, "Staff", false, true)).StatusCode);
         var moved = await SecurityAdd(otherAdmin, subject);
         Assert.NotEqual(viewer.ActorId, moved.ActorId);
-        Assert.Equal(HttpStatusCode.Conflict, (await SecurityChange(admin, revoked, "Viewer", false, true)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await SecurityChange(admin, revoked, "Staff", false, true)).StatusCode);
         var auditResponse = await admin.GetAsync("/api/organization/audit");
         Assert.Equal(HttpStatusCode.OK, auditResponse.StatusCode);
         var body = await auditResponse.Content.ReadAsStringAsync();
@@ -187,14 +188,14 @@ public sealed partial class PostgresPersistenceTests
         using var admin = SecurityHttp(host, a.Subject);
         var first = Assert.Single((await admin.GetFromJsonAsync<MembershipView[]>("/api/organization/memberships"))!);
         var secondSubject = Guid.NewGuid();
-        var second = await SecurityAdd(admin, secondSubject, "None", true);
+        var second = await SecurityAdd(admin, secondSubject, "Admin", true);
         using var secondAdmin = SecurityHttp(host, secondSubject);
-        var responses = await Task.WhenAll(SecurityChange(admin, first, "None", false, false),
-            SecurityChange(secondAdmin, second, "None", false, false));
+        var responses = await Task.WhenAll(SecurityChange(admin, first, "Staff", false, false),
+            SecurityChange(secondAdmin, second, "Staff", false, false));
         Assert.Single(responses, r => r.StatusCode == HttpStatusCode.OK);
         Assert.Single(responses, r => r.StatusCode == HttpStatusCode.Conflict);
         await using var db = _database.CreateContext();
-        Assert.Equal(1, await db.OrganizationMemberships.CountAsync(m => m.OrganizationId == a.Organization.OrganizationId && m.IsActive && m.CanManageMembers));
+        Assert.Equal(1, await db.OrganizationMemberships.CountAsync(m => m.OrganizationId == a.Organization.OrganizationId && m.IsActive && m.Role == OrganizationAccessRole.Admin));
         Assert.Equal(1, await db.SecurityAuditEvents.CountAsync(e => e.Action == "membership.changed"));
     }
 
@@ -216,7 +217,7 @@ public sealed partial class PostgresPersistenceTests
         try
         {
             var response = await admin.PostAsJsonAsync("/api/organization/memberships",
-                new MembershipEndpoints.AddMember(SecurityTenant, subject, "Never committed", "Viewer", false));
+                new MembershipEndpoints.AddMember(SecurityTenant, subject, "Never committed", "Staff"));
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             await using var db = _database.CreateContext();
             Assert.False(await db.EnterpriseIdentities.AnyAsync(i => i.ObjectId == subject));
@@ -327,7 +328,7 @@ public sealed partial class PostgresPersistenceTests
         var identity = new EnterpriseIdentity(Guid.NewGuid(), SecurityTenant, subject, now);
         var actor = new Actor(Guid.NewGuid(), organization, ActorKind.Human, "New fixture human", now, $"entra:{SecurityTenant:D}:{subject:D}");
         db.EnterpriseIdentities.Add(identity); db.Actors.Add(actor);
-        db.OrganizationMemberships.Add(new OrganizationMembership(Guid.NewGuid(), organization, identity.Id, actor.Id, OrganizationAccessRole.Operator, false, now));
+        db.OrganizationMemberships.Add(new OrganizationMembership(Guid.NewGuid(), organization, identity.Id, actor.Id, OrganizationAccessRole.Staff, now));
         await db.SaveChangesAsync();
         return subject;
     }
@@ -374,7 +375,7 @@ public sealed partial class PostgresPersistenceTests
         using var host = SecurityHost().WithWebHostBuilder(b => b.UseSetting("Storage:UploadDirectory", storage));
         using var admin = SecurityHttp(host, a.Subject);
         var subject = Guid.NewGuid();
-        var member = await SecurityAdd(admin, subject, "Operator");
+        var member = await SecurityAdd(admin, subject, "Staff");
         using var user = SecurityHttp(host, subject);
         static MultipartFormDataContent Upload()
         {

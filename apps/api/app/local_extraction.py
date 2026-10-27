@@ -7,7 +7,7 @@ import statistics
 import time
 import unicodedata
 import hashlib
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from dataclasses import dataclass
 from datetime import date
 from importlib.metadata import PackageNotFoundError, version
@@ -25,6 +25,7 @@ from .extraction import (
     WarningResult,
 )
 from .fixture_contract import ContractValidationError, validate_normalized_result
+from .arabic_text import has_arabic, matching_view, normalize_value, normalize_supplier_number, script_language
 
 
 ADAPTER_VERSION = "local-1.3.0"
@@ -32,9 +33,13 @@ PDFPLUMBER_VERSION = "0.11.10"
 PDFMINER_VERSION = "20260107"
 PYPDFIUM_VERSION = "5.12.1"
 PYTESSERACT_VERSION = "0.3.13"
+# Pillow 13 fixes decoder vulnerabilities; reject older runtimes before reading a source.
+PILLOW_VERSION = "13.0.0"
 TESSERACT_VERSION = "5.3.0"
 ENG_MODEL_VERSION = "4.1.0"
 ENG_MODEL_SHA256 = "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+ARA_MODEL_SHA256 = "e3206d3dc87fd50c24a0fb9f01838615911d25168f4e64415244b67d2bb3e729"
+ARA_BEST_MODEL_SHA256 = "ab9d157d8e38ca00e7e39c7d5363a5239e053f5b0dbdb3167dde9d8124335896"
 OSD_MODEL_SHA256 = "9cf5d576fcc47564f11265841e5ca839001e7e6f38ff7f7aacf46d15a96b00ff"
 MAX_PAGES = 50
 
@@ -47,26 +52,26 @@ class _Label:
 
 
 LABELS = (
-    _Label("invoice_number", ("Invoice Number",), "String"),
+    _Label("invoice_number", ("Invoice Number", "رقم الفاتورة"), "String"),
     _Label("quotation_number", ("Quotation Number",), "String"),
     _Label("purchase_order_number", ("Purchase Order Number", "PO Number"), "String"),
-    _Label("invoice_date", ("Invoice Date",), "Date"),
-    _Label("due_date", ("Payment Due Date", "Due Date"), "Date"),
-    _Label("supplier_trn", ("Supplier TRN", "TRN"), "Identifier"),
-    _Label("currency", ("Currency",), "Currency"),
-    _Label("subtotal", ("Subtotal",), "Decimal"),
-    _Label("vat", ("VAT charged", "VAT 5%", "VAT"), "Decimal"),
-    _Label("total", ("Gross payable", "Total"), "Decimal"),
-    _Label("payment_terms", ("Payment Terms", "Terms"), "String"),
+    _Label("invoice_date", ("Invoice Date", "تاريخ الفاتورة"), "Date"),
+    _Label("due_date", ("Payment Due Date", "Due Date", "تاريخ الاستحقاق"), "Date"),
+    _Label("supplier_trn", ("Supplier TRN", "TRN", "الرقم الضريبي للمورد", "الرقم الضريبي"), "Identifier"),
+    _Label("currency", ("Currency", "العملة"), "Currency"),
+    _Label("subtotal", ("Subtotal", "المجموع الفرعي"), "Decimal"),
+    _Label("vat", ("VAT charged", "VAT 5%", "VAT", "ضريبة القيمة المضافة"), "Decimal"),
+    _Label("total", ("Gross payable", "Total", "الإجمالي", "المجموع الكلي"), "Decimal"),
+    _Label("payment_terms", ("Payment Terms", "Terms", "شروط الدفع"), "String"),
 )
 
 LINE_LABELS = (
-    _Label("line_item_code", ("Item Code",), "String"),
-    _Label("line_description", ("Description",), "String"),
-    _Label("line_quantity", ("Quantity",), "Decimal"),
-    _Label("line_unit_price", ("Unit Price",), "Decimal"),
-    _Label("line_tax", ("Tax",), "Decimal"),
-    _Label("line_total", ("Total",), "Decimal"),
+    _Label("line_item_code", ("Item Code", "رمز الصنف"), "String"),
+    _Label("line_description", ("Description", "الوصف", "وصف الصنف"), "String"),
+    _Label("line_quantity", ("Quantity", "الكمية"), "Decimal"),
+    _Label("line_unit_price", ("Unit Price", "سعر الوحدة"), "Decimal"),
+    _Label("line_tax", ("Tax", "الضريبة", "ضريبة القيمة المضافة"), "Decimal"),
+    _Label("line_total", ("Total", "الإجمالي"), "Decimal"),
 )
 
 
@@ -90,7 +95,7 @@ class _ExtractedPage:
 
 
 class LocalInvoiceExtractor:
-    """Credential-free English procurement-document adapter for native PDFs and OCR."""
+    """Local procurement-document adapter with opt-in Arabic OCR."""
 
     name = "local-procurement-v1"
 
@@ -100,9 +105,12 @@ class LocalInvoiceExtractor:
         language: str = "eng",
         timeout_seconds: float = 30.0,
         render_dpi: int = 300,
+        arabic_model: str = "fast",
+        layout_profile: str = "block",
+        input_profile: str = "legacy",
     ) -> None:
-        if language != "eng":
-            raise ValueError("The Phase 2 local provider supports OCR_LANGUAGE=eng only")
+        if language not in {"eng", "ara", "ara+eng", "eng+ara"}:
+            raise ValueError("OCR_LANGUAGE must be eng, ara, ara+eng or eng+ara")
         if not 1 <= timeout_seconds <= 120:
             raise ValueError("OCR_TIMEOUT_SECONDS must be between 1 and 120")
         if not 150 <= render_dpi <= 400:
@@ -110,6 +118,17 @@ class LocalInvoiceExtractor:
         self.language = language
         self.timeout_seconds = timeout_seconds
         self.render_dpi = render_dpi
+        if arabic_model not in {"fast", "best"}:
+            raise ValueError("OCR_ARABIC_MODEL must be fast or best")
+        if layout_profile not in {"block", "lines-v1"}:
+            raise ValueError("OCR_LAYOUT_PROFILE must be block or lines-v1")
+        if layout_profile == "lines-v1" and language not in {"eng+ara", "ara+eng"}:
+            raise ValueError("lines-v1 requires explicit mixed Arabic/English OCR")
+        self.arabic_model = arabic_model
+        self.layout_profile = layout_profile
+        if input_profile not in {"legacy", "supplier-invoice-v1"}:
+            raise ValueError("LOCAL_INPUT_PROFILE must be legacy or supplier-invoice-v1")
+        self.input_profile = input_profile
 
     @classmethod
     def from_environment(cls) -> LocalInvoiceExtractor:
@@ -122,6 +141,9 @@ class LocalInvoiceExtractor:
             language=os.getenv("OCR_LANGUAGE", "eng"),
             timeout_seconds=timeout,
             render_dpi=dpi,
+            arabic_model=os.getenv("OCR_ARABIC_MODEL", "fast"),
+            layout_profile=os.getenv("OCR_LAYOUT_PROFILE", "block"),
+            input_profile=os.getenv("LOCAL_INPUT_PROFILE", "legacy"),
         )
 
     def extract(
@@ -147,8 +169,13 @@ class LocalInvoiceExtractor:
             used_ocr = True
 
         self._remaining(deadline_monotonic)
-        document_type = self._document_type(pages)
-        fields = self._fields(pages)
+        supplier = self.input_profile == "supplier-invoice-v1"
+        document_type = self._supplier_document_type(pages) if supplier else self._document_type(pages)
+        if supplier:
+            fields, profile_warnings = self._supplier_fields(pages)
+        else:
+            fields = self._fields(pages)
+            profile_warnings = []
         if not any(page.canonical_text.strip() for page in pages):
             raise ExtractionError(
                 "document_unreadable",
@@ -157,41 +184,63 @@ class LocalInvoiceExtractor:
         if not fields:
             raise ExtractionError(
                 "unsupported_document",
-                "The readable document is not a supported English procurement document.",
+                "The readable document is not a supported procurement document.",
             )
-        warnings = self._warnings(pages, fields, document_type)
+        warnings = self._warnings(pages, fields, document_type, check_due_date=not supplier)
+        warnings.extend(profile_warnings)
+        if supplier:
+            warnings.extend(self._supplier_coverage(fields, document_type))
+            unique = {(warning.code, warning.severity, warning.page_number,
+                       warning.field_key, warning.occurrence): warning for warning in warnings}
+            warnings = sorted(unique.values(), key=lambda warning: (
+                0 if warning.severity == "info" else 1, warning.page_number or 0,
+                warning.field_key or "", warning.occurrence if warning.occurrence is not None else -1,
+                warning.code,
+            ))
         outcome = "Partial" if warnings else "Ready"
         duration_ms = max(0, round((time.perf_counter() - started) * 1000))
         used_native = any(page.source == "native" for page in pages)
+        adapter_version = ADAPTER_VERSION if self.language == "eng" else "local-1.4.0"
+        if self.layout_profile != "block" or ("ara" in self.language and self.arabic_model == "best"):
+            adapter_version = "local-1.5.0"
+        if supplier:
+            adapter_version = "local-1.6.0"
         if used_ocr and used_native:
             provider = ProviderResult(
                 "local",
-                ADAPTER_VERSION,
-                "pdfplumber-tesseract-eng-osd",
+                adapter_version,
+                f"pdfplumber-tesseract-{self.language}-osd",
                 (
                     f"pdfplumber-{PDFPLUMBER_VERSION}/pdfminer-{PDFMINER_VERSION}"
-                    f"+tesseract-{TESSERACT_VERSION}/eng-osd-{ENG_MODEL_VERSION}"
+                    f"+tesseract-{TESSERACT_VERSION}/{self.language}-osd-{ENG_MODEL_VERSION}"
                 ),
             )
         elif used_ocr:
             provider = ProviderResult(
                 "local",
-                ADAPTER_VERSION,
-                "tesseract-eng-osd",
-                f"{TESSERACT_VERSION}/eng-osd-{ENG_MODEL_VERSION}",
+                adapter_version,
+                f"tesseract-{self.language}-osd",
+                f"{TESSERACT_VERSION}/{self.language}-osd-{ENG_MODEL_VERSION}",
             )
         else:
             provider = ProviderResult(
                 "local",
-                ADAPTER_VERSION,
+                adapter_version,
                 "pdfplumber",
                 f"{PDFPLUMBER_VERSION}/pdfminer-{PDFMINER_VERSION}",
             )
+        if used_ocr and adapter_version == "local-1.5.0":
+            provider = replace(provider, model_version=provider.model_version +
+                               f"/ara-{self.arabic_model}/layout-{self.layout_profile}")
+        elif used_ocr and supplier:
+            arabic_suffix = f"/ara-{self.arabic_model}" if "ara" in self.language else ""
+            provider = replace(provider, model_version=provider.model_version + arabic_suffix +
+                               f"/layout-{self.layout_profile}")
         result = ExtractionResult(
             schema_version="2.0",
             outcome=outcome,
             document_type=document_type,
-            language="en",
+            language=script_language("\n".join(page.canonical_text for page in pages)),
             provider=provider,
             metrics=MetricsResult(duration_ms, len(pages)),
             pages=[
@@ -302,9 +351,11 @@ class LocalInvoiceExtractor:
                 "The PDF could not be parsed safely.",
             ) from error
 
-        blank_page_numbers = [
-            page.page_number for page in native_pages if not page.canonical_text.strip()
-        ]
+        arabic_pages = {page.page_number for page in native_pages if has_arabic(page.canonical_text)}
+        if arabic_pages and "ara" not in self.language.split("+"):
+            raise ExtractionError("unsupported_document", "Arabic pages require Arabic OCR configuration.")
+        blank_page_numbers = [page.page_number for page in native_pages
+                              if not page.canonical_text.strip() or page.page_number in arabic_pages]
         if not blank_page_numbers:
             return native_pages, False
         ocr_results = (
@@ -464,7 +515,18 @@ class LocalInvoiceExtractor:
         self._check_pixel_budget(corrected)
         prepared = ImageOps.autocontrast(corrected.convert("L")).filter(ImageFilter.SHARPEN)
         self._remaining(deadline_monotonic)
-        data = self._ocr_data(prepared, deadline_monotonic)
+        if self.layout_profile == "lines-v1":
+            from .arabic_ocr_layout import refine_lines
+            # Refinement shares one page budget; retries cannot reset it.
+            deadline = min(deadline_monotonic or float("inf"), time.monotonic() + self.timeout_seconds)
+            data = self._ocr_data(prepared, deadline)
+            data = refine_lines(
+                prepared, data,
+                lambda crop, arabic: self._ocr_data(crop, deadline, language="ara" if arabic else self.language, psm=7),
+                lambda: self._remaining(deadline),
+            )
+        else:
+            data = self._ocr_data(prepared, deadline_monotonic)
         self._remaining(deadline_monotonic)
         orientation_uncertain = detected_rotation is None and self._label_score(data) < 2
         image_size = prepared.size
@@ -518,7 +580,8 @@ class LocalInvoiceExtractor:
             return None
 
     def _ocr_data(
-        self, image: Any, deadline_monotonic: float | None = None
+        self, image: Any, deadline_monotonic: float | None = None,
+        *, language: str | None = None, psm: int = 6,
     ) -> dict[str, list[Any]]:
         try:
             import pytesseract
@@ -527,8 +590,8 @@ class LocalInvoiceExtractor:
             self._verify_ocr_engine(pytesseract)
             return pytesseract.image_to_data(
                 image,
-                lang=self.language,
-                config="--oem 1 --psm 6",
+                lang=language or self.language,
+                config=f"--oem 1 --psm {psm}",
                 output_type=Output.DICT,
                 timeout=min(self.timeout_seconds, self._remaining(deadline_monotonic)),
             )
@@ -569,14 +632,14 @@ class LocalInvoiceExtractor:
             raise self._runtime_unavailable(
                 "The OCR engine version does not match the approved runtime."
             )
-        if not {self.language, "osd"}.issubset(languages):
+        if not {*self.language.split("+"), "osd"}.issubset(languages):
             raise self._runtime_unavailable(
-                "The configured English and orientation OCR models are unavailable."
+                "The configured language and orientation OCR models are unavailable."
             )
-        self._verify_model_hashes()
+        self._verify_model_hashes(self.language, self.arabic_model)
 
     @staticmethod
-    def _verify_model_hashes() -> None:
+    def _verify_model_hashes(language: str = "eng", arabic_model: str = "fast") -> None:
         tessdata = Path(
             os.getenv("OCR_TESSDATA_DIR", "/usr/share/tesseract-ocr/5/tessdata")
         )
@@ -584,6 +647,8 @@ class LocalInvoiceExtractor:
             "eng.traineddata": ENG_MODEL_SHA256,
             "osd.traineddata": OSD_MODEL_SHA256,
         }
+        if "ara" in language.split("+"):
+            expected["ara.traineddata"] = ARA_BEST_MODEL_SHA256 if arabic_model == "best" else ARA_MODEL_SHA256
         try:
             actual = {
                 name: hashlib.sha256((tessdata / name).read_bytes()).hexdigest()
@@ -620,7 +685,9 @@ class LocalInvoiceExtractor:
         all_confidences: list[float] = []
         for key in sorted(grouped):
             indices = grouped[key]
-            indices.sort(key=lambda index: int(data["left"][index]))
+            # Tesseract emits logical token order. Sorting x reverses RTL words.
+            if not any(has_arabic(str(data["text"][index])) for index in indices):
+                indices.sort(key=lambda index: int(data["left"][index]))
             text_parts: list[str] = []
             boxes: list[tuple[float, float, float, float] | None] = []
             confidences: list[float | None] = []
@@ -642,7 +709,7 @@ class LocalInvoiceExtractor:
                 confidences.extend([confidence] * len(token))
                 all_confidences.extend([confidence] * len(token))
             lines.append(_TextLine("".join(text_parts), boxes, confidences))
-        canonical = unicodedata.normalize("NFC", "\n".join(line.text for line in lines))
+        canonical = "\n".join(line.text for line in lines)
         if canonical:
             canonical += "\n"
         mean = statistics.fmean(all_confidences) if all_confidences else 0.0
@@ -668,11 +735,16 @@ class LocalInvoiceExtractor:
         return statistics.fmean(values) if values else 0.0
 
     @classmethod
-    def _fields(cls, pages: list[_ExtractedPage]) -> list[FieldResult]:
+    def _fields(cls, pages: list[_ExtractedPage], input_profile: str = "legacy", *,
+                excluded_lines: set[tuple[int, int]] | None = None,
+                labels: tuple[_Label, ...] = LABELS,
+                include_lines: bool = True) -> list[FieldResult]:
+        if input_profile == "supplier-invoice-v1":
+            return cls._supplier_fields(pages)[0]
         results: list[FieldResult] = []
-        for label in LABELS:
+        for label in labels:
             if label.key == "due_date":
-                due_date, _ = cls._due_date(pages)
+                due_date, _ = cls._due_date(pages, excluded_lines=excluded_lines)
                 if due_date is not None:
                     results.append(due_date)
                 continue
@@ -683,7 +755,16 @@ class LocalInvoiceExtractor:
             for prefix in label.prefixes:
                 for page in pages:
                     character_offset = 0
-                    for line in page.lines:
+                    for line_index, line in enumerate(page.lines):
+                        if excluded_lines and (page.page_number, line_index) in excluded_lines:
+                            character_offset += len(line.text) + 1
+                            continue
+                        if excluded_lines is not None and not re.match(
+                            rf"^\s*{re.escape(matching_view(prefix).text)}\s*(?:\([^:\n]*\))?\s*:",
+                            matching_view(line.text).text, re.I,
+                        ):
+                            character_offset += len(line.text) + 1
+                            continue
                         found = cls._match_line(line.text, (prefix,))
                         if found is None:
                             character_offset += len(line.text) + 1
@@ -727,7 +808,8 @@ class LocalInvoiceExtractor:
                 results.append(result)
         order = {label.key: index for index, label in enumerate(LABELS)}
         line_order = {label.key: index for index, label in enumerate(LINE_LABELS)}
-        results.extend(cls._line_fields(pages))
+        if include_lines:
+            results.extend(cls._line_fields(pages))
         return sorted(
             results,
             key=lambda field: (
@@ -738,26 +820,38 @@ class LocalInvoiceExtractor:
         )
 
     @classmethod
-    def _due_date(cls, pages: list[_ExtractedPage]) -> tuple[FieldResult | None, str | None]:
+    def _due_date(cls, pages: list[_ExtractedPage], *,
+                  excluded_lines: set[tuple[int, int]] | None = None) -> tuple[FieldResult | None, str | None]:
         """Only explicit, valid ISO dates; inspect every label before choosing a value."""
         candidates: list[tuple[str, EvidenceResult, list[float]]] = []
         invalid = False
-        pattern = re.compile(r"(?<!\w)(?:Payment Due Date|Due Date)\s*:", re.I)
+        prefixes = next(label.prefixes for label in LABELS if label.key == "due_date")
+        pattern = re.compile(r"(?<!\w)(?:" + "|".join(re.escape(p) for p in prefixes) + r")\s*:", re.I)
         for page in pages:
             offset = 0
-            for line in page.lines:
-                for match in pattern.finditer(line.text):
-                    found = cls._match_line(line.text[match.start():], ("Payment Due Date", "Due Date"))
+            for line_index, line in enumerate(page.lines):
+                if excluded_lines is not None and (
+                    (page.page_number, line_index) in excluded_lines or not re.match(
+                        r"^\s*(?:" + "|".join(re.escape(matching_view(prefix).text) for prefix in prefixes) + r")\s*:",
+                        matching_view(line.text).text, re.I)
+                ):
+                    offset += len(line.text) + 1
+                    continue
+                view = matching_view(line.text)
+                for match in pattern.finditer(view.text):
+                    source_start = view.starts[match.start()]
+                    found = cls._match_line(line.text[source_start:], prefixes)
                     if found is None:
                         invalid = True
                         continue
                     value, start, end = found
-                    start += match.start()
-                    end += match.start()
+                    start += source_start
+                    end += source_start
                     try:
-                        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                        date_value = normalize_value(value, "Date")
+                        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", date_value):
                             raise ValueError()
-                        normalized = date.fromisoformat(value).isoformat()
+                        normalized = date.fromisoformat(date_value).isoformat()
                     except ValueError:
                         invalid = True
                         continue
@@ -775,23 +869,25 @@ class LocalInvoiceExtractor:
         if not candidates:
             return None, None
         confidences = [c for _, _, values in candidates for c in values]
-        return FieldResult("due_date", 0, "Date", candidates[0][0], candidates[0][0],
+        return FieldResult("due_date", 0, "Date", candidates[0][1].quote, candidates[0][0],
             statistics.fmean(confidences) if confidences else None,
             [evidence for _, evidence, _ in candidates[:10]]), None
 
     @classmethod
     def _line_fields(cls, pages: list[_ExtractedPage]) -> list[FieldResult]:
         results: list[FieldResult] = []
-        labels = {prefix.lower(): label for label in LINE_LABELS for prefix in label.prefixes}
+        labels = {matching_view(prefix).text.lower(): label
+                  for label in LINE_LABELS for prefix in label.prefixes}
         names = "|".join(re.escape(prefix) for prefix in labels)
         pattern = re.compile(
-            rf"^\s*Line\s+(\d+)\s+({names})\s*:\s*(.+?)\s*$",
+            rf"^\s*(?:Line|البند|السطر)\s+(\d+)\s+({names})\s*:\s*(.+?)\s*$",
             re.I,
         )
         for page in pages:
             character_offset = 0
             for line in page.lines:
-                match = pattern.match(line.text)
+                view = matching_view(line.text) if has_arabic(line.text) else None
+                match = pattern.match(view.text if view else line.text)
                 if match is None:
                     character_offset += len(line.text) + 1
                     continue
@@ -803,6 +899,9 @@ class LocalInvoiceExtractor:
                 value = match.group(3).strip()
                 start = match.start(3)
                 end = start + len(value)
+                if view is not None:
+                    start, end = view.source_span(start, end)
+                    value = line.text[start:end]
                 quote_start = character_offset + start
                 start_utf8 = len(page.canonical_text[:quote_start].encode("utf-8"))
                 end_utf8 = start_utf8 + len(value.encode("utf-8"))
@@ -831,7 +930,9 @@ class LocalInvoiceExtractor:
         return results
 
     @staticmethod
-    def _document_type(pages: list[_ExtractedPage]) -> str:
+    def _document_type(pages: list[_ExtractedPage], input_profile: str = "legacy") -> str:
+        if input_profile == "supplier-invoice-v1":
+            return LocalInvoiceExtractor._supplier_document_type(pages)
         text = "\n".join(page.canonical_text for page in pages)
         if re.search(r"\bPURCHASE\s+ORDER\b", text, re.I):
             return "purchase_order"
@@ -840,7 +941,241 @@ class LocalInvoiceExtractor:
         return "invoice"
 
     @staticmethod
+    def _supplier_document_type(pages: list[_ExtractedPage]) -> str:
+        titles = {
+            "invoice": ("invoice", "tax invoice", "فاتورة", "فاتورة ضريبية"),
+            "purchase_order": ("purchase order", "امر شراء", "طلب شراء"),
+            "quotation": ("quotation", "quote", "عرض سعر", "عرض اسعار"),
+        }
+        found = set()
+        for page in pages:
+            for line in page.canonical_text.splitlines():
+                text = matching_view(line).text.strip().casefold()
+                if any(text == title for title in titles["invoice"]):
+                    found.add("invoice")
+                for role in ("purchase_order", "quotation"):
+                    if text in titles[role]:
+                        found.add(role)
+        return next(iter(found)) if len(found) == 1 else "unknown"
+
+    @staticmethod
+    def _supplier_normalize(value: str, value_type: str) -> str | None:
+        if value_type == "Decimal":
+            return normalize_supplier_number(value)
+        if value_type in {"Identifier", "Date"}:
+            if any(char.isdecimal() and char not in "0123456789" for char in value):
+                return None
+            if value_type == "Date":
+                try:
+                    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                        return None
+                    return date.fromisoformat(value).isoformat()
+                except ValueError:
+                    return None
+            return value
+        return normalize_value(value, value_type)
+
+    @classmethod
+    def _supplier_fields(cls, pages: list[_ExtractedPage]) -> tuple[list[FieldResult], list[WarningResult]]:
+        tables, warnings, excluded = cls._table_fields(pages)
+        for page in pages:
+            for index, line in enumerate(page.lines):
+                if re.match(r"^\s*(?:Line|البند|السطر)\s+\d+\s+", matching_view(line.text).text, re.I):
+                    excluded.add((page.page_number, index))
+        labels = tuple(replace(label, prefixes=label.prefixes + (
+            ("رقم امر الشراء", "رقم أمر الشراء", "رقم طلب الشراء") if label.key == "purchase_order_number"
+            else ("رقم عرض السعر", "رقم عرض الاسعار") if label.key == "quotation_number" else ()
+        )) for label in LABELS)
+        fields = cls._fields(pages, excluded_lines=excluded, labels=labels, include_lines=False)
+        _, due_issue = cls._due_date(pages, excluded_lines=excluded)
+        if due_issue:
+            warnings.append(WarningResult(due_issue, "degraded",
+                "Explicit due dates conflict; review the source before adding a due date."
+                if due_issue == "due_date_conflicting" else
+                "The explicit due date is invalid or outside the supported ISO format; review the source."))
+        labeled = cls._line_fields(pages)
+        if tables and labeled:
+            warnings.append(WarningResult("line_table_requires_review", "degraded",
+                "Numbered fields and ordinary tables cannot be combined into inferred row identities.",
+                tables[0].evidence[0].page_number))
+        else:
+            fields.extend(labeled)
+            fields.extend(tables)
+        grouped: dict[tuple[str, int], list[FieldResult]] = {}
+        for field in fields:
+            grouped.setdefault((field.key, field.occurrence), []).append(field)
+        result = []
+        for (key, occurrence), candidates in grouped.items():
+            if len(candidates) != 1:
+                warnings.append(WarningResult("field_identity_ambiguous", "degraded",
+                    "Repeated field identity requires review; no value was selected.",
+                    candidates[0].evidence[0].page_number))
+                continue
+            field = candidates[0]
+            normalized = cls._supplier_normalize(field.value, field.value_type)
+            if field.key in {"invoice_number", "purchase_order_number", "quotation_number", "line_item_code"}:
+                if any(char.isdecimal() and char not in "0123456789" for char in field.value):
+                    normalized = None
+            result.append(replace(field, normalized_value=normalized))
+            if normalized is None:
+                warnings.append(WarningResult("numeric_requires_review", "degraded",
+                    "The source value is outside the English-digit numeric/date profile; correct it explicitly.",
+                    field.evidence[0].page_number, key, occurrence))
+        return sorted(result, key=lambda field: (field.occurrence, field.key)), warnings
+
+    @staticmethod
+    def _supplier_coverage(fields: list[FieldResult], document_type: str) -> list[WarningResult]:
+        warnings = []
+        if document_type == "unknown":
+            warnings.append(WarningResult("document_role_requires_review", "degraded",
+                "An unambiguous supported document title could not be established."))
+        required = {"supplier_trn", "currency", "total"}
+        required.add({"invoice": "invoice_number", "purchase_order": "purchase_order_number",
+                      "quotation": "quotation_number"}.get(document_type, "document_number"))
+        present = {field.key for field in fields if field.occurrence == 0 and field.normalized_value is not None}
+        if required - present:
+            warnings.append(WarningResult("supplier_required_fields_missing", "degraded",
+                "Required supplier, currency, document identity or total coverage is missing or invalid."))
+        rows = {field.occurrence for field in fields if field.occurrence > 0}
+        if not rows:
+            warnings.append(WarningResult("line_coverage_missing", "degraded",
+                "No supported line rows were extracted; complete line agreement cannot be established."))
+        else:
+            for occurrence in sorted(rows):
+                available = {field.key for field in fields if field.occurrence == occurrence
+                             and field.normalized_value is not None}
+                if not ({"line_item_code", "line_description"} & available) or not {
+                    "line_quantity", "line_unit_price", "line_unit", "line_price_basis", "line_total"
+                } <= available:
+                    warnings.append(WarningResult("line_coverage_incomplete", "degraded",
+                        "A line lacks supported values, unit, price basis or explicit gross total; affected checks remain unavailable."))
+                    break
+        return warnings
+
+    @classmethod
+    def _table_fields(cls, pages: list[_ExtractedPage]) -> tuple[
+            list[FieldResult], list[WarningResult], set[tuple[int, int]]]:
+        """Read a small, explicitly headed table using original character geometry."""
+        aliases = {
+            "line_item_code": ("Item code", "رمز الصنف"),
+            "line_description": ("Description", "الوصف", "وصف الصنف"),
+            "line_quantity": ("Quantity", "Qty", "الكمية"),
+            "line_unit_price": ("Unit price", "سعر الوحدة"),
+            "line_unit": ("Unit", "الوحدة"),
+            "line_price_basis": ("Price basis", "اساس السعر"),
+            "line_tax": ("Tax", "VAT", "الضريبة"),
+            "line_total": ("Gross total", "Gross AED", "اجمالي شامل الضريبة"),
+            # Net amounts and ambiguous Total columns delimit cells but never become gross totals.
+            None: ("Net AED", "Net amount", "Total", "المبلغ الصافي", "الاجمالي"),
+        }
+        lookup = {matching_view(alias).text.casefold(): key for key, names in aliases.items() for alias in names}
+        pattern = re.compile("|".join(re.escape(name) for name in sorted(lookup, key=len, reverse=True)), re.I)
+        fields, warnings, excluded = [], [], set()
+        occurrence = 0
+        for page in pages:
+            columns = None
+            blocked_table = False
+            character_offset = 0
+            for line_index, line in enumerate(page.lines):
+                view = matching_view(line.text)
+                matches = list(pattern.finditer(view.text))
+                remainder = pattern.sub("", view.text)
+                keys = [lookup[match.group().casefold()] for match in matches]
+                is_header = ("line_description" in keys and "line_quantity" in keys
+                    and "line_unit_price" in keys and not remainder.strip(" |\t"))
+                if is_header:
+                    blocked_table = False
+                    excluded.add((page.page_number, line_index))
+                    headers = []
+                    for match, key in zip(matches, keys, strict=True):
+                        start, end = view.source_span(match.start(), match.end())
+                        if len(line.character_boxes) != len(line.text) or any(
+                            not line.text[index].isspace() and line.character_boxes[index] is None
+                            for index in range(start, end)
+                        ):
+                            break
+                        boxes = [box for box in line.character_boxes[start:end] if box is not None]
+                        if not boxes:
+                            break
+                        headers.append((min(box[0] for box in boxes), key))
+                    columns = sorted(headers, key=lambda item: item[0]) if len(headers) == len(matches) and len(set(keys)) == len(keys) else None
+                    if columns is None or any(b[0] - a[0] < .015 for a, b in zip(columns, columns[1:])):
+                        columns = None
+                        blocked_table = True
+                        warnings.append(WarningResult("line_table_requires_review", "degraded",
+                            "Table columns lack distinct reliable geometry; no row values were inferred.", page.page_number))
+                elif columns is not None and line.text.strip():
+                    # Explicit totals/notes end the table. A description-only continuation is unsupported.
+                    if re.match(r"^(?:Amounts are|Invoice totals|Row amounts are|Unit and price basis require|"
+                                r"(?:Subtotal|Total|VAT|Tax|Currency|الإجمالي|المجموع|الضريبة)\s*:)",
+                                line.text.strip(), re.I):
+                        columns = None
+                    else:
+                        excluded.add((page.page_number, line_index))
+                        cells = []
+                        reliable = len(line.character_boxes) == len(line.text)
+                        accounted: set[int] = set()
+                        for column_index, (anchor, key) in enumerate(columns):
+                            left = anchor - .015
+                            right = columns[column_index + 1][0] - .015 if column_index + 1 < len(columns) else 1.0
+                            positions = [index for index, (char, box) in enumerate(zip(line.text, line.character_boxes))
+                                if not char.isspace() and box is not None and left <= (box[0] + box[2]) / 2 < right]
+                            if not positions:
+                                reliable = False
+                                break
+                            start, end = min(positions), max(positions) + 1
+                            if any(not line.text[index].isspace() and index not in positions for index in range(start, end)):
+                                reliable = False
+                                break
+                            accounted.update(positions)
+                            boxes = [box for box in line.character_boxes[start:end] if box is not None]
+                            if any(box[0] < left or box[2] > right for box in boxes):
+                                reliable = False
+                                break
+                            if key is not None:
+                                value = line.text[start:end]
+                                confidence = [c for c in line.confidences[start:end] if c is not None]
+                                start_utf8 = len(page.canonical_text[:character_offset + start].encode("utf-8"))
+                                cells.append((key, value, start_utf8, boxes, confidence))
+                        if accounted != {index for index, char in enumerate(line.text) if not char.isspace()}:
+                            reliable = False
+                        if not reliable or not cells:
+                            warnings.append(WarningResult("line_table_requires_review", "degraded",
+                                "A table row is blank, wrapped or crosses column boundaries; no row values were inferred.", page.page_number))
+                            columns = None
+                            blocked_table = True
+                        else:
+                            occurrence += 1
+                            for key, value, start_utf8, boxes, confidence in cells:
+                                kind = "Decimal" if key in {"line_quantity", "line_unit_price", "line_tax", "line_total"} else "String"
+                                fields.append(FieldResult(key, occurrence, kind, value,
+                                    cls._supplier_normalize(value, kind),
+                                    statistics.fmean(confidence) if confidence else None,
+                                    [EvidenceResult(page.page_number, value, start_utf8,
+                                        start_utf8 + len(value.encode("utf-8")), cls._polygon(boxes), "normalized")]))
+                elif blocked_table:
+                    # A refused table cannot donate amounts from its descriptions to document headers.
+                    excluded.add((page.page_number, line_index))
+                character_offset += len(line.text) + 1
+        return fields, warnings, excluded
+
+    @staticmethod
     def _match_line(text: str, prefixes: Iterable[str]) -> tuple[str, int, int] | None:
+        # Match a derived view, then map its value span to the original text.
+        # Keep the existing English path byte-for-byte stable.
+        if has_arabic(text):
+            view = matching_view(text)
+            found = LocalInvoiceExtractor._match_view(
+                view.text, (matching_view(prefix).text for prefix in prefixes))
+            if found is None:
+                return None
+            _, start, end = found
+            start, end = view.source_span(start, end)
+            return text[start:end], start, end
+        return LocalInvoiceExtractor._match_view(text, prefixes)
+
+    @staticmethod
+    def _match_view(text: str, prefixes: Iterable[str]) -> tuple[str, int, int] | None:
         for prefix in prefixes:
             start_boundary = r"(?<![A-Za-z])" if prefix == "Total" else ""
             match = re.search(
@@ -863,7 +1198,7 @@ class LocalInvoiceExtractor:
                 "TIN",
             ]
             boundary_names = "|".join(
-                re.escape(name) for name in sorted(boundary_labels, key=len, reverse=True)
+                re.escape(matching_view(name).text) for name in sorted(boundary_labels, key=len, reverse=True)
             )
             boundary = re.search(
                 rf"\s*\||\s*(?=(?:{boundary_names})"
@@ -872,7 +1207,11 @@ class LocalInvoiceExtractor:
                 re.I,
             )
             end = start + (boundary.start() if boundary else len(remainder))
-            while end > start and text[end - 1].isspace():
+            # OCR may emit direction marks beside Latin/numeric values. Exclude
+            # only boundary marks from the selected span; keep page bytes intact.
+            while start < end and (text[start].isspace() or text[start] in "\u061c\u200e\u200f"):
+                start += 1
+            while end > start and (text[end - 1].isspace() or text[end - 1] in "\u061c\u200e\u200f"):
                 end -= 1
             if end > start:
                 return text[start:end], start, end
@@ -880,11 +1219,7 @@ class LocalInvoiceExtractor:
 
     @staticmethod
     def _normalize(value: str, value_type: str) -> str:
-        if value_type == "Decimal":
-            return value.replace(",", "")
-        if value_type == "Currency":
-            return value.upper()
-        return value
+        return normalize_value(value, value_type)
 
     @staticmethod
     def _polygon(boxes: list[tuple[float, float, float, float]]) -> list[list[float]] | None:
@@ -903,7 +1238,8 @@ class LocalInvoiceExtractor:
 
     @classmethod
     def _warnings(
-        cls, pages: list[_ExtractedPage], fields: list[FieldResult], document_type: str = "invoice"
+        cls, pages: list[_ExtractedPage], fields: list[FieldResult], document_type: str = "invoice", *,
+        check_due_date: bool = True,
     ) -> list[WarningResult]:
         warnings = [
             WarningResult(
@@ -953,13 +1289,15 @@ class LocalInvoiceExtractor:
                     "A review field could not be extracted from this document.",
                 )
             )
-        _, due_issue = cls._due_date(pages)
+        if any(page.source == "ocr" and has_arabic(page.canonical_text) for page in pages):
+            warnings.append(WarningResult("arabic_ocr_requires_review", "degraded",
+                "Arabic OCR is experimental. Verify values against the original source."))
+        _, due_issue = cls._due_date(pages) if check_due_date else (None, None)
         if due_issue:
             warnings.append(WarningResult(due_issue, "degraded",
                 "Explicit due dates conflict; review the source before adding a due date."
                 if due_issue == "due_date_conflicting" else
-                "The explicit due date is empty, invalid or not in supported YYYY-MM-DD format; review the source.",
-                field_key="due_date", occurrence=0))
+                "The explicit due date is empty, invalid or not in supported YYYY-MM-DD format; review the source."))
         return sorted(
             warnings,
             key=lambda warning: (
@@ -990,7 +1328,7 @@ class LocalInvoiceExtractor:
             "pdfminer.six": PDFMINER_VERSION,
             "pypdfium2": PYPDFIUM_VERSION,
             "pytesseract": PYTESSERACT_VERSION,
-            "Pillow": "12.3.0",
+            "Pillow": PILLOW_VERSION,
         }
         try:
             actual = {package: version(package) for package in expected}

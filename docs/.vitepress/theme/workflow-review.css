@@ -1,0 +1,52 @@
+﻿/* Presentation styling is limited to the workflow review page. */
+.workflow-review .review-hero { margin: 8px 0 32px; padding: 36px; border: 1px solid var(--vp-c-divider); border-radius: 20px; background: linear-gradient(135deg, var(--vp-c-brand-soft), var(--vp-c-bg-soft)); }
+.workflow-review .review-kicker { font-size: 11px; line-height: 1.6; font-weight: 750; letter-spacing: .12em; color: var(--vp-c-brand-1); }
+.workflow-review .review-hero h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.08; letter-spacing: -.04em; margin: 20px 0; }
+.workflow-review .review-lead { font-size: 18px; line-height: 1.7; max-width: 610px; }
+.workflow-review .review-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
+.workflow-review .review-badges span { font-size: 12px; border: 1px solid var(--vp-c-divider); border-radius: 20px; padding: 4px 11px; background: var(--vp-c-bg); }
+.workflow-review .review-start { display: inline-block; color: white; background: #176b5b; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 650; }
+.workflow-review .review-start:hover { background: #0f5146; }
+.workflow-review .review-route { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 28px 0; }
+.workflow-review .review-route a { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--vp-c-divider); border-radius: 10px; text-decoration: none; font-size: 14px; }
+.workflow-review .review-route strong { display: grid; place-items: center; background: var(--vp-c-brand-soft); border-radius: 50%; width: 28px; height: 28px; flex: 0 0 28px; }
+.workflow-review .review-picture { margin: 28px 0; }
+.workflow-review .review-picture img { display: block; width: 100%; height: auto; border: 1px solid var(--vp-c-divider); border-radius: 12px; background: #f6f8fb; }
+.workflow-review .review-picture figcaption { color: var(--vp-c-text-2); font-size: 13px; line-height: 1.6; margin-top: 10px; }
+.workflow-review .review-status { display: inline-block; font-size: 10px; font-weight: 750; letter-spacing: .06em; line-height: 1.6; border: 1px solid; border-radius: 5px; padding: 4px 8px; }
+.workflow-review .review-status.built, .workflow-review .review-status.checked { color: #135b4e; background: #e8f5ef; border-color: #97c9b9; }
+.workflow-review .review-status.proposed { color: #663b94; background: #f2ecfc; border-color: #c5a9e2; }
+.workflow-review .review-status.attention { color: #8a3d18; background: #fff0e4; border-color: #e4b591; }
+.workflow-review .review-status.pending { color: #555c6b; background: #f1f3f6; border-color: #b9c0cd; }
+.workflow-review .review-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 26px 0; }
+.workflow-review .review-card { padding: 18px; border: 1px solid var(--vp-c-divider); border-radius: 12px; background: var(--vp-c-bg-soft); }
+.workflow-review .review-card h3 { margin-top: 16px; font-size: 18px; line-height: 1.45; }
+.workflow-review .review-card p { font-size: 14px; line-height: 1.7; margin-bottom: 0; }
+.workflow-review .review-three-stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 28px 0; }
+.workflow-review .review-three-stages article { border-top: 3px solid var(--vp-c-brand-1); background: var(--vp-c-bg-soft); border-radius: 0 0 10px 10px; padding: 20px; }
+.workflow-review .review-three-stages span { font-size: 26px; font-weight: 750; color: var(--vp-c-brand-1); }
+.workflow-review .review-three-stages h3 { font-size: 19px; margin-top: 10px; }
+.workflow-review .review-three-stages p { font-size: 14px; margin-bottom: 0; }
+.workflow-review .review-cycle { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 24px 0; font-weight: 650; }
+.workflow-review .review-cycle span:not([aria-hidden]) { background: var(--vp-c-bg-soft); border: 1px solid var(--vp-c-divider); border-radius: 6px; padding: 7px 10px; font-size: 13px; }
+.workflow-review .review-first { border: 2px solid var(--vp-c-brand-1); border-radius: 14px; padding: 24px; margin: 28px 0; }
+.workflow-review .review-first h3 { margin-top: 12px; }
+.workflow-review .vp-doc h2 { margin-top: 56px; }
+.workflow-review .vp-doc a:focus-visible, .workflow-review .vp-doc summary:focus-visible { outline: 3px solid var(--vp-c-brand-1); outline-offset: 4px; border-radius: 3px; }
+@media (max-width: 700px) {
+  .workflow-review .review-hero { padding: 24px 20px; }
+  .workflow-review .review-card-grid, .workflow-review .review-three-stages { grid-template-columns: 1fr; }
+  .workflow-review .review-route { grid-template-columns: 1fr; }
+  .workflow-review .review-lead { font-size: 16px; }
+}
+@media print {
+  .workflow-review .review-hero, .workflow-review .review-picture, .workflow-review .review-card, .workflow-review .review-first { break-inside: avoid; }
+  .workflow-review .review-route { display: none; }
+}
+/* Keep links and small labels readable when the reader uses dark mode. */
+.dark .workflow-review {
+  --vp-c-brand-1: #63cbb0;
+  --vp-c-brand-2: #8bddc7;
+  --vp-c-brand-3: #3ea58c;
+  --vp-c-brand-soft: rgba(99, 203, 176, .14);
+}

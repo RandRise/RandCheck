@@ -1,0 +1,36 @@
+{
+  "scenario": "Real browser + API + disposable PostgreSQL; frozen native extraction; no upload/worker replay",
+  "documentId": "1cbcfe82-c02f-4a46-8562-0cf8827963d2",
+  "reviewId": "c4c10d3d-376a-4b11-b935-d2bc31d7ad53",
+  "priceResultId": "b9682860-cac8-4b63-8bc9-7f6707ed6c6d",
+  "paymentResultId": "f0706bb5-525b-44f1-9cac-c9dd12694acb",
+  "historyHttpStatus": 200,
+  "reviewStatus": "Completed",
+  "prices": [
+    {
+      "fieldKey": "line_unit_price",
+      "occurrenceIndex": 1,
+      "action": "Added",
+      "valueType": "Decimal",
+      "value": "400.00",
+      "reason": "سعر الوحدة من الصفحة 1 — AED 400.00"
+    },
+    {
+      "fieldKey": "line_unit_price",
+      "occurrenceIndex": 2,
+      "action": "Added",
+      "valueType": "Decimal",
+      "value": "400.00",
+      "reason": "سعر السطر الثاني من الصفحة 1 — AED 400.00"
+    }
+  ],
+  "correctedPayment": "خلال 30 يوماً",
+  "priceAnswer": "Invoice line unit price: 400.00 AED.",
+  "pricePageQuotes": 0,
+  "priceCitationAction": "Added",
+  "paymentAnswer": "Invoice payment terms: خلال 30 يوماً.",
+  "originalPaymentQuote": "خلال 30 يوما",
+  "originalPaymentPage": 2,
+  "exactUtf8Evidence": true,
+  "paidAnswerGenerationEnabled": false
+}

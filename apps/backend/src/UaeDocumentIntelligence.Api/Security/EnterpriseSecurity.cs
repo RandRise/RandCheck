@@ -102,7 +102,7 @@ public sealed class RequestIdentity : IExecutionContext
 }
 
 public sealed record EnterpriseActor(Guid OrganizationId, Guid ActorId,
-    OrganizationAccessRole Role = OrganizationAccessRole.None, bool CanManageMembers = false);
+    OrganizationAccessRole Role = (OrganizationAccessRole)0);
 public interface IEnterpriseActorStore
 {
     Task<EnterpriseActor?> ResolveAsync(string externalSubject, CancellationToken cancellationToken);
@@ -119,10 +119,10 @@ public sealed class EnterpriseActorStore(AppDbContext db) : IEnterpriseActorStor
             join m in db.OrganizationMemberships.AsNoTracking() on i.Id equals m.IdentityId
             join a in db.Actors.AsNoTracking() on new { m.OrganizationId, Id = m.ActorId } equals new { a.OrganizationId, a.Id }
             where i.TenantId == tenant && i.ObjectId == subject && m.IsActive
-            select new { m.OrganizationId, m.ActorId, m.Role, m.CanManageMembers, a.IsActive, a.Kind })
+            select new { m.OrganizationId, m.ActorId, m.Role, a.IsActive, a.Kind })
             .Take(2).ToArrayAsync(cancellationToken);
         return memberships.Length == 1 && memberships[0].IsActive && memberships[0].Kind == ActorKind.Human
-            ? new(memberships[0].OrganizationId, memberships[0].ActorId, memberships[0].Role, memberships[0].CanManageMembers) : null;
+            ? new(memberships[0].OrganizationId, memberships[0].ActorId, memberships[0].Role) : null;
     }
 }
 
@@ -160,7 +160,7 @@ public sealed class EnterpriseAccessHandler(EnterpriseSecurityOptions settings, 
         var actor = await actors.ResolveAsync($"entra:{tenant:D}:{subject:D}", http.RequestAborted);
         if (actor is null) return;
         audit.Bind(actor.OrganizationId, actor.ActorId, "Human", http.TraceIdentifier);
-        if (!EnterprisePermissions.Allows(http, actor.Role, actor.CanManageMembers)) return;
+        if (!EnterprisePermissions.Allows(http, actor.Role)) return;
         identity.Bind(actor.OrganizationId, actor.ActorId);
         context.Succeed(requirement);
     }

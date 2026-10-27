@@ -245,7 +245,8 @@ public sealed partial class CitedTypedFactsTests
 
     private static (CitedDocumentIndex Index, Document Doc, ReviewSession Review, ExtractionRun Extraction) Fixture(
         CitedFactRole role, (string Key, int Occurrence, string Value)[] facts,
-        (string Key, string Value)? correction = null, string? clear = null)
+        (string Key, string Value)? correction = null, string? clear = null,
+        IReadOnlyDictionary<string, string>? normalized = null)
     {
         var now = DateTimeOffset.UtcNow;
         var doc = new Document(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "misleading-other-kind.pdf",
@@ -259,7 +260,8 @@ public sealed partial class CitedTypedFactsTests
         var cursor = Encoding.UTF8.GetByteCount(injection);
         foreach (var fact in all)
         {
-            var field = run.AddField(Guid.NewGuid(), fact.Key, fact.Occurrence, FieldValueType.String, fact.Value, 1, now);
+            var field = run.AddField(Guid.NewGuid(), fact.Key, fact.Occurrence, FieldValueType.String, fact.Value, 1, now,
+                normalized is not null && normalized.TryGetValue(fact.Key, out var value) ? value : null);
             var start = cursor + Encoding.UTF8.GetByteCount(fact.Key + ": ");
             run.AddEvidence(field, Guid.NewGuid(), 1, fact.Value, start, start + Encoding.UTF8.GetByteCount(fact.Value));
             cursor += Encoding.UTF8.GetByteCount(fact.Key + ": " + fact.Value + "\n");

@@ -1,7 +1,8 @@
 """Run each declared Python test group in its required dependency environment.
 
 No test is silently skipped: a skipped selected case makes this command fail.
-Use all four groups for the full regression; see docs/testing/python-runtimes.md.
+Run all four unittest groups and tools/run_pytest_regression.py for the full
+regression; see docs/testing/python-runtimes.md.
 """
 import argparse
 import json

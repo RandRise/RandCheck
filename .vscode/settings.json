@@ -1,0 +1,19 @@
+{
+  "files.associations": {
+    "**/outputs/**/before/**": "plaintext"
+  },
+  "typescript.tsdk": "apps/web/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "dotnet.defaultSolution": "apps/backend/UaeDocumentIntelligence.sln",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.analysis.exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv",
+    ".dotnet",
+    ".node",
+    "outputs",
+    "tmp/fixture-tests",
+    "tmp/phase2-fixture-runtime-20260910"
+  ]
+}

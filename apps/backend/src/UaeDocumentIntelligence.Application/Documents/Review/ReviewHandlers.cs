@@ -106,16 +106,6 @@ public sealed class RecordReviewActionHandler(
             if (run.Fields.Any(x => x.FieldKey == fieldKey && x.OccurrenceIndex == occurrenceIndex))
                 throw new ReviewValidationException("machine_field_identity_exists",
                     "Use the machine field identifier for an extracted field.");
-            if (action == ReviewActionType.Cleared)
-            {
-                var latest = session.Actions
-                    .Where(x => !x.MachineFieldValueId.HasValue && x.FieldKey == fieldKey &&
-                        x.OccurrenceIndex == occurrenceIndex)
-                    .OrderByDescending(x => x.SequenceNumber).FirstOrDefault();
-                if (latest?.Action != ReviewActionType.Added)
-                    throw new ReviewValidationException("added_field_not_active",
-                        "Only an active reviewer-added field can be cleared without a machine value.");
-            }
         }
 
         FieldValueType? valueType = null;
@@ -132,6 +122,14 @@ public sealed class RecordReviewActionHandler(
         var sequence = session.Actions.Select(x => x.SequenceNumber).DefaultIfEmpty(0).Max() + 1;
         try
         {
+            if (session.IsIdenticalLatestAction(execution.ActorId, action, fieldKey, occurrenceIndex,
+                target?.Id, valueType, command.Value, command.Reason, clock.UtcNow))
+                return ReviewWorkspaceView.From(document);
+            if (action == ReviewActionType.Cleared && target is null && session.Actions
+                .Where(x => !x.MachineFieldValueId.HasValue && x.FieldKey == fieldKey && x.OccurrenceIndex == occurrenceIndex)
+                .OrderByDescending(x => x.SequenceNumber).FirstOrDefault()?.Action != ReviewActionType.Added)
+                throw new ReviewValidationException("added_field_not_active",
+                    "Only an active reviewer-added field can be cleared without a machine value.");
             session.AddAction(Guid.NewGuid(), execution.ActorId, sequence, action, fieldKey,
                 occurrenceIndex, target?.Id, valueType, command.Value, command.Reason, clock.UtcNow);
         }

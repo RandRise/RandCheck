@@ -33,7 +33,7 @@ public sealed partial class PostgresPersistenceTests
                 .UseSetting("Storage:QuarantineDirectory", quarantine)
                 .ConfigureServices(s => { s.RemoveAll<IMalwareScanner>(); s.AddSingleton<IMalwareScanner>(scanner); }));
             using var admin = SecurityHttp(host, a.Subject);
-            var subject = Guid.NewGuid(); var member = await SecurityAdd(admin, subject, "Operator");
+            var subject = Guid.NewGuid(); var member = await SecurityAdd(admin, subject, "Staff");
             using var user = SecurityHttp(host, subject);
             if (outcome == "audit-outage") await ExecuteAsync("""
                 CREATE FUNCTION phase6_reject_scan_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN

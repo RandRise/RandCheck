@@ -1,0 +1,28 @@
+.review-progress { margin: 20px 0; }
+.review-progress progress { display: block; width: 100%; height: 8px; accent-color: var(--app-accent); }
+.review-progress p,.field-action-help { color: var(--app-muted); font-size: 13px; line-height: 1.6; }
+.review-navigation { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 24px 0; }
+.review-navigation label { display: grid; gap: 8px; min-width: 180px; }
+.review-field-context { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; margin: 16px 0; }
+.review-field-context>div { min-width: 0; }
+.app-appearance[data-theme] .source-evidence { padding: 16px; background: var(--app-raised); border: 1px solid var(--app-border); border-radius: 8px; overflow-wrap: anywhere; }
+.app-appearance[data-theme] .source-evidence h3 { font-size: 14px; margin: 0 0 12px; }
+.source-evidence small,.source-evidence p { color: var(--app-muted); font-size: 13px; }
+.source-evidence blockquote { margin: 10px 0 16px; padding-inline-start: 12px; border-inline-start: 2px solid var(--app-accent); white-space: pre-wrap; }
+.draft-state,.addition-draft { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.addition-draft,.field-action-help { grid-column: 1 / -1; }
+.app-appearance[data-theme] .review-field:focus { outline: 2px solid var(--app-accent); outline-offset: 4px; }
+.review-field { scroll-margin-top: 24px; }
+.review-feedback { margin: 20px 0; }
+.processing-details { margin: 16px 0; }
+.processing-details summary { cursor: pointer; color: var(--app-muted); }
+.workspace-next-action { color: var(--app-muted); line-height: 1.6; }
+.review-reason { display: grid; gap: 8px; min-width: 0; }
+.field-controls > .review-reason { display: grid; grid-column: auto; }
+.add-field > .review-reason { grid-column: 1 / -1; }
+.review-reason select { display: block; width: 100%; min-width: 0; margin-top: 5px; padding: 10px;
+  border: 1px solid var(--app-border); border-radius: 6px; background: var(--app-raised); color: var(--app-text); font: inherit; }
+@media (max-width: 800px) {
+  .review-field-context { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .review-navigation { align-items: stretch; flex-direction: column; }
+}

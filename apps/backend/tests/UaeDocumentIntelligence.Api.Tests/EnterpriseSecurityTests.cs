@@ -236,50 +236,34 @@ public sealed partial class EnterpriseSecurityTests
     }
 
     [Theory]
-    [InlineData("DocumentIntelligence.Viewer", "/api/documents/11111111-1111-1111-1111-111111111111/reviews")]
-    [InlineData("DocumentIntelligence.Viewer", "/api/cited-indexes")]
-    [InlineData("DocumentIntelligence.Reviewer", "/api/documents")]
-    public async Task Insufficient_role_is_denied_before_body_binding(string role, string route)
+    [InlineData("/api/organization/memberships")]
+    [InlineData("/api/organization/retention/holds")]
+    public async Task Staff_is_denied_administration_before_body_binding(string route)
     {
-        var store = new ActorStore();
-        store.Actor = store.Actor! with { Role = Enum.Parse<OrganizationAccessRole>(role.Split('.').Last()) };
-        using var factory = Host(store);
+        using var factory = Host(new ActorStore());
         using var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new("Bearer", Token(role: "DocumentIntelligence.Operator"));
+        client.DefaultRequestHeaders.Authorization = new("Bearer", Token());
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsync(route, null)).StatusCode);
     }
 
     [Theory]
-    [InlineData("DocumentIntelligence.Viewer", "Read", true)]
-    [InlineData("DocumentIntelligence.Viewer", "Ask", true)]
-    [InlineData("DocumentIntelligence.Viewer", "Review", false)]
-    [InlineData("DocumentIntelligence.Viewer", "Operate", false)]
-    [InlineData("DocumentIntelligence.Reviewer", "Read", true)]
-    [InlineData("DocumentIntelligence.Reviewer", "Ask", true)]
-    [InlineData("DocumentIntelligence.Reviewer", "Review", true)]
-    [InlineData("DocumentIntelligence.Reviewer", "Operate", false)]
-    [InlineData("DocumentIntelligence.Operator", "Read", true)]
-    [InlineData("DocumentIntelligence.Operator", "Ask", true)]
-    [InlineData("DocumentIntelligence.Operator", "Review", true)]
-    [InlineData("DocumentIntelligence.Operator", "Operate", true)]
-    [InlineData("DocumentIntelligence.Viewer", "SourceRead", true)]
-    [InlineData("DocumentIntelligence.Reviewer", "SourceRead", true)]
-    [InlineData("DocumentIntelligence.Operator", "SourceRead", true)]
-    [InlineData("DocumentIntelligence.None", "SourceRead", false)]
-    [InlineData("DocumentIntelligence.None", "Retention", false)]
-    [InlineData("DocumentIntelligence.Viewer", "Retention", false)]
-    [InlineData("DocumentIntelligence.Reviewer", "Retention", false)]
-    [InlineData("DocumentIntelligence.Operator", "Retention", false)]
-    public void Role_matrix_is_enforced_for_every_route(string role, string permission, bool allowed)
+    [InlineData(OrganizationAccessRole.Staff)]
+    [InlineData(OrganizationAccessRole.Admin)]
+    [InlineData((OrganizationAccessRole)0)]
+    [InlineData((OrganizationAccessRole)1)]
+    [InlineData((OrganizationAccessRole)999)]
+    public void Role_matrix_is_enforced_for_every_route(OrganizationAccessRole role)
     {
-        foreach (var route in EnterprisePermissions.Routes.Where(x => x.Value == permission))
+        foreach (var route in EnterprisePermissions.Routes)
         {
             var parts = route.Key.Split(' ', 2);
             var http = new Microsoft.AspNetCore.Http.DefaultHttpContext();
             http.Request.Method = parts[0];
             http.SetEndpoint(new RouteEndpoint(_ => Task.CompletedTask,
                 Microsoft.AspNetCore.Routing.Patterns.RoutePatternFactory.Parse(parts[1]), 0, new([]), "test"));
-            Assert.Equal(allowed, EnterprisePermissions.Allows(http, Enum.Parse<OrganizationAccessRole>(role.Split('.').Last()), false));
+            var valid = role is OrganizationAccessRole.Staff or OrganizationAccessRole.Admin;
+            var administrative = route.Value is "ManageMembers" or "Audit" or "Retention";
+            Assert.Equal(valid && (!administrative || role == OrganizationAccessRole.Admin), EnterprisePermissions.Allows(http, role));
         }
     }
 
@@ -334,7 +318,7 @@ public sealed partial class EnterpriseSecurityTests
         // Minimal relational actor table; the existing PostgreSQL suite owns full schema validation.
         await db.Database.ExecuteSqlRawAsync("CREATE TABLE actors (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, kind TEXT NOT NULL, external_subject TEXT, display_name TEXT, is_active INTEGER NOT NULL DEFAULT 1, created_at_utc TEXT NOT NULL)");
         await db.Database.ExecuteSqlRawAsync("CREATE TABLE enterprise_identities (id TEXT PRIMARY KEY, tenant_id TEXT, object_id TEXT, created_at_utc TEXT)");
-        await db.Database.ExecuteSqlRawAsync("CREATE TABLE organization_memberships (id TEXT PRIMARY KEY, organization_id TEXT, identity_id TEXT, actor_id TEXT, role TEXT, can_manage_members INTEGER, is_active INTEGER, version TEXT, created_at_utc TEXT, updated_at_utc TEXT)");
+        await db.Database.ExecuteSqlRawAsync("CREATE TABLE organization_memberships (id TEXT PRIMARY KEY, organization_id TEXT, identity_id TEXT, actor_id TEXT, role TEXT, is_active INTEGER, version TEXT, created_at_utc TEXT, updated_at_utc TEXT)");
         var subject = $"entra:{Tenant:D}:{Subject:D}";
         var organization = Guid.NewGuid();
         var actorId = Guid.NewGuid();
@@ -344,26 +328,26 @@ public sealed partial class EnterpriseSecurityTests
         {
             var identity = new EnterpriseIdentity(Guid.NewGuid(), Tenant, scenario == "missing" ? Guid.NewGuid() : Subject, DateTimeOffset.UtcNow);
             db.EnterpriseIdentities.Add(identity);
-            var membership = new OrganizationMembership(Guid.NewGuid(), organization, identity.Id, actorId, OrganizationAccessRole.Viewer, false, DateTimeOffset.UtcNow);
-            if (scenario == "revoked") membership.ChangeAccess(OrganizationAccessRole.Viewer, false, false, DateTimeOffset.UtcNow);
+            var membership = new OrganizationMembership(Guid.NewGuid(), organization, identity.Id, actorId, OrganizationAccessRole.Staff, DateTimeOffset.UtcNow);
+            if (scenario == "revoked") membership.ChangeAccess(OrganizationAccessRole.Staff, false, DateTimeOffset.UtcNow);
             db.OrganizationMemberships.Add(membership);
             if (scenario == "ambiguous")
             {
                 var other = new Actor(Guid.NewGuid(), Guid.NewGuid(), ActorKind.Human, "Other", DateTimeOffset.UtcNow, subject);
                 db.Actors.Add(other);
-                db.OrganizationMemberships.Add(new OrganizationMembership(Guid.NewGuid(), other.OrganizationId, identity.Id, other.Id, OrganizationAccessRole.Viewer, false, DateTimeOffset.UtcNow));
+                db.OrganizationMemberships.Add(new OrganizationMembership(Guid.NewGuid(), other.OrganizationId, identity.Id, other.Id, OrganizationAccessRole.Staff, DateTimeOffset.UtcNow));
             }
         }
         await db.SaveChangesAsync();
         if (scenario == "inactive") await db.Database.ExecuteSqlRawAsync("UPDATE actors SET is_active = 0");
         var result = await new EnterpriseActorStore(db).ResolveAsync(subject, CancellationToken.None);
         Assert.Equal(allowed, result is not null);
-        if (allowed) Assert.Equal(new EnterpriseActor(organization, actorId, OrganizationAccessRole.Viewer), result);
+        if (allowed) Assert.Equal(new EnterpriseActor(organization, actorId, OrganizationAccessRole.Staff), result);
     }
 
     private sealed class ActorStore : IEnterpriseActorStore
     {
-        public EnterpriseActor? Actor { get; set; } = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.Viewer);
+        public EnterpriseActor? Actor { get; set; } = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.Staff);
         public int Calls { get; private set; }
         public string? LastSubject { get; private set; }
         public Task<EnterpriseActor?> ResolveAsync(string externalSubject, CancellationToken cancellationToken)
@@ -384,7 +368,7 @@ public sealed partial class EnterpriseSecurityTests
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(scenario));
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/documents")).StatusCode);
-        store.Actor = store.Actor! with { Role = OrganizationAccessRole.None };
+        store.Actor = store.Actor! with { Role = (OrganizationAccessRole)0 };
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(role: "DocumentIntelligence.Operator"));
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/api/documents")).StatusCode);
     }

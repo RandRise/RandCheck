@@ -28,7 +28,7 @@ public sealed partial class EnterpriseSecurityTests
     [InlineData("null", "application/json", 400)]
     public async Task Admitted_mutation_is_audited_before_binding_failure(string body, string mediaType, int status)
     {
-        var store = new ActorStore { Actor = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.None, true) };
+        var store = new ActorStore { Actor = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.Admin) };
         var audit = new AdmissionAudit();
         using var host = Host(store).WithWebHostBuilder(b => b.ConfigureServices(s =>
             s.Replace(ServiceDescriptor.Singleton<ISecurityAuditSink>(audit))));
@@ -75,7 +75,7 @@ public sealed partial class EnterpriseSecurityTests
     [Fact]
     public async Task Router_rejection_is_denied_without_an_admission_event()
     {
-        var store = new ActorStore { Actor = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.None, true) };
+        var store = new ActorStore { Actor = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.Admin) };
         var audit = new AdmissionAudit();
         using var host = Host(store).WithWebHostBuilder(b => b.ConfigureServices(s =>
             s.Replace(ServiceDescriptor.Singleton<ISecurityAuditSink>(audit))));

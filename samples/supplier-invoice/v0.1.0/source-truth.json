@@ -1,0 +1,64 @@
+{
+  "dataset": "supplier-invoice-v0.1.0",
+  "license": "CC0-1.0",
+  "kind": "self-authored fictional development fixtures; not supplier accuracy evidence",
+  "inputProfile": "supplier-invoice-v1",
+  "truthAuthoredBeforeScoring": true,
+  "geometry": {
+    "coordinateSystem": "ReportLab A4 points, bottom-left origin",
+    "headerY": 475,
+    "headerX": [42, 320, 378, 485],
+    "headers": ["Description", "Qty", "Unit price", "Net AED"],
+    "rowY": [435, 395],
+    "cellX": [42, 325, 390, 486],
+    "rowAmountBasis": "net; must not yield gross line_total"
+  },
+  "rows": [
+    {"occurrence": 1, "description": "Document review training", "quantity": "2", "unitPrice": "400.00", "netAmount": "800.00"},
+    {"occurrence": 2, "description": "Workflow configuration session", "quantity": "1", "unitPrice": "400.00", "netAmount": "400.00"}
+  ],
+  "documents": [
+    {"id": "english-invoice", "role": "invoice", "language": "en", "representation": ["text-helper", "native-pdf"], "title": "INVOICE", "headers": ["Invoice Number: SINV-0001", "Purchase Order Number: SPO-0001", "Supplier TRN: 000000000000701", "Invoice Date: 2026-10-06", "Due Date: 2026-11-05", "Currency: AED", "Subtotal: 1200.00", "VAT: 60.00", "Total: 1,260.00"], "expected": {"invoice_number": "SINV-0001", "purchase_order_number": "SPO-0001", "supplier_trn": "000000000000701", "invoice_date": "2026-10-06", "due_date": "2026-11-05", "currency": "AED", "subtotal": "1200.00", "vat": "60.00", "total": "1260.00"}},
+    {"id": "english-po", "role": "purchase_order", "language": "en", "representation": ["text-helper", "native-pdf"], "title": "PURCHASE ORDER", "headers": ["Purchase Order Number: SPO-0001", "Supplier TRN: 000000000000701", "Currency: AED", "Subtotal: 1200.00", "VAT: 60.00", "Total: 1,260.00"], "expected": {"purchase_order_number": "SPO-0001", "supplier_trn": "000000000000701", "currency": "AED", "subtotal": "1200.00", "vat": "60.00", "total": "1260.00"}},
+    {"id": "arabic-invoice", "role": "invoice", "language": "ar-en", "representation": ["text-helper"], "title": "فاتورة ضريبية", "headers": ["رقم الفاتورة: SINV-0002", "مرجع أمر الشراء: SPO-0002", "الرقم الضريبي للمورد: 000000000000701", "تاريخ الفاتورة: 2026-10-06", "تاريخ الاستحقاق: 2026-11-05", "العملة: AED", "المجموع الفرعي: 1200.00", "ضريبة القيمة المضافة: 60.00", "الإجمالي: 1,260.00"], "expected": {"invoice_number": "SINV-0002", "supplier_trn": "000000000000701", "invoice_date": "2026-10-06", "due_date": "2026-11-05", "currency": "AED", "subtotal": "1200.00", "vat": "60.00", "total": "1260.00"}},
+    {"id": "arabic-po", "role": "purchase_order", "language": "ar-en", "representation": ["text-helper"], "title": "أمر شراء", "headers": ["رقم أمر الشراء: SPO-0002", "الرقم الضريبي للمورد: 000000000000701", "العملة: AED", "المجموع الفرعي: 1200.00", "ضريبة القيمة المضافة: 60.00", "الإجمالي: 1,260.00"], "expected": {"purchase_order_number": "SPO-0002", "supplier_trn": "000000000000701", "currency": "AED", "subtotal": "1200.00", "vat": "60.00", "total": "1260.00"}}
+  ],
+  "numericCases": [
+    {"raw": "0", "normalized": "0"},
+    {"raw": "1050.50", "normalized": "1050.50"},
+    {"raw": "1,050.50", "normalized": "1050.50"},
+    {"raw": "1,234,567.000001", "normalized": "1234567.000001"},
+    {"raw": "0.000001", "normalized": "0.000001"},
+    {"raw": "999999999999999999.123456", "normalized": "999999999999999999.123456"},
+    {"raw": "1,23", "normalized": null},
+    {"raw": "12,34,567", "normalized": null},
+    {"raw": "1234,567", "normalized": null},
+    {"raw": "1.234,56", "normalized": null},
+    {"raw": "1,234٬567", "normalized": null},
+    {"raw": "١٬٠٥٠٫٥٠", "normalized": null},
+    {"raw": "۱٬۰۵۰٫۵۰", "normalized": null},
+    {"raw": "١050.50", "normalized": null},
+    {"raw": "1٬050٫50", "normalized": null},
+    {"raw": "1 050.50", "normalized": null},
+    {"raw": "1.2345678", "normalized": null},
+    {"raw": "1000000000000000000", "normalized": null},
+    {"raw": "-10.00", "normalized": null},
+    {"raw": "+10", "normalized": null},
+    {"raw": "1e3", "normalized": null},
+    {"raw": "AED 10", "normalized": null},
+    {"raw": "10 EA", "normalized": null},
+    {"raw": ".50", "normalized": null},
+    {"raw": "1.", "normalized": null},
+    {"raw": "1.2.3", "normalized": null},
+    {"raw": "(10)", "normalized": null},
+    {"raw": "", "normalized": null}
+  ],
+  "legacyNative": {
+    "path": "output/pdf/phase-7-language-v0.1.0/mixed-native-two-page.pdf",
+    "sha256": "e6dc0255c374659712e66b04da33bc6333712148fab1aef1ec63e62bee60a990",
+    "pages": 2,
+    "historicalLineCoverage": "0/6; unchanged historical receipt",
+    "newCheckBoundary": "real native geometry to parser; not full Arabic PDF/OCR extraction"
+  },
+  "limits": ["Units and price/amount bases are not fully represented in schema2.0; outcome must remain Partial", "Arabic native/scanned public OCR integration unverified", "Backend reviewed corrections and raw fallback remain S2 dependencies", "No source admission, real review, pair policy or customer-demand acceptance"]
+}

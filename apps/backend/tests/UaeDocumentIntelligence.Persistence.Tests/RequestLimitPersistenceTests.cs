@@ -46,14 +46,14 @@ public sealed partial class PostgresPersistenceTests
         await using var db = _database.CreateContext();
         var member = await (from m in db.OrganizationMemberships join i in db.EnterpriseIdentities on m.IdentityId equals i.Id
             where i.ObjectId == first select m).SingleAsync();
-        member.ChangeAccess(member.Role, false, false, DateTimeOffset.UtcNow); await db.SaveChangesAsync();
+        member.ChangeAccess(member.Role, false, DateTimeOffset.UtcNow); await db.SaveChangesAsync();
         Assert.Equal(HttpStatusCode.Forbidden, (await user.GetAsync("/api/session")).StatusCode);
     }
 
     [Fact]
     public async Task Phase6_request_limits_prevent_upload_side_effects_and_allow_retry_after_window()
     {
-        using var source = await SourceFixtureAsync("Operator"); var clock = new RequestLimitClock();
+        using var source = await SourceFixtureAsync("Staff"); var clock = new RequestLimitClock();
         await using var role = await ApiRoleAsync(); using var restricted = role.Host(source.Host);
         using var host = restricted.WithWebHostBuilder(builder =>
         {

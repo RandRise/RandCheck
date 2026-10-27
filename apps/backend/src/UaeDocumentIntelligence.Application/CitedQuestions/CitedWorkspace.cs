@@ -7,6 +7,8 @@ namespace UaeDocumentIntelligence.Application.CitedQuestions;
 public sealed record ReviewedSourceView(Guid DocumentId, string Filename, Guid ReviewSessionId,
     Guid ExtractionRunId, int RevisionNumber, DateTimeOffset? CompletedAtUtc);
 public sealed record ReviewedSourcesView(IReadOnlyList<ReviewedSourceView> Sources, int? NextOffset);
+public sealed record RecentQuestionView(Guid Id, string Question, DateTimeOffset CreatedAt, int SourceCount, string Mode);
+public sealed record RecentQuestionsView(IReadOnlyList<RecentQuestionView> Questions);
 public sealed record EvidencePageView(int PageNumber, int ByteStart, int ByteEnd,
     string Before, string Quote, string After);
 public sealed record EvidenceReviewView(Guid ActionId, string Action, string FieldKey, int Occurrence,
@@ -17,7 +19,9 @@ public sealed record EvidenceLocationView(Guid RetrievalRunId, Guid HitId, Guid 
 
 public interface ICitedWorkspaceStore
 {
-    Task<ReviewedSourcesView> ListSourcesAsync(Guid organizationId, int offset, CancellationToken ct);
+    Task<ReviewedSourcesView> ListSourcesAsync(Guid organizationId, int offset, CancellationToken ct, string? search = null);
+    Task<ReviewedSourceView?> GetReviewedSourceAsync(Guid organizationId, Guid documentId, Guid reviewId, CancellationToken ct);
+    Task<RecentQuestionsView> ListRecentQuestionsAsync(Guid organizationId, Guid actorId, CancellationToken ct);
     Task<ExtractionPage?> GetPageAsync(Guid organizationId, Guid extractionRunId, int pageNumber, CancellationToken ct);
     Task<ReviewAction?> GetActionAsync(Guid organizationId, Guid reviewSessionId, Guid actionId, CancellationToken ct);
 }
@@ -25,12 +29,30 @@ public interface ICitedWorkspaceStore
 public sealed class CitedWorkspaceHandler(ICitedWorkspaceStore workspace, ICitedRetrievalStore retrieval,
     ICitedQuestionRepository repository, IExecutionContext execution, ICitedReviewedQuestionStore? reviewed = null)
 {
-    public async Task<ReviewedSourcesView> SourcesAsync(int offset, CancellationToken ct)
+    public async Task<ReviewedSourceView> SourceAsync(Guid documentId, Guid reviewId, CancellationToken ct)
     {
-        if (offset is < 0 or > 10000) throw new ArgumentException("Invalid source offset.");
+        if (documentId == Guid.Empty || reviewId == Guid.Empty) throw new ArgumentException("Invalid source identity.");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         deadline.CancelAfter(TimeSpan.FromSeconds(15));
-        return await workspace.ListSourcesAsync(execution.OrganizationId, offset, deadline.Token);
+        return await workspace.GetReviewedSourceAsync(execution.OrganizationId, documentId, reviewId, deadline.Token)
+            ?? throw new CitedWorkflowException("reviewed_source_not_found", "The completed review was not found or is unavailable.", 404);
+    }
+
+    public async Task<RecentQuestionsView> RecentQuestionsAsync(CancellationToken ct)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(TimeSpan.FromSeconds(15));
+        return await workspace.ListRecentQuestionsAsync(execution.OrganizationId, execution.ActorId, deadline.Token);
+    }
+
+    public async Task<ReviewedSourcesView> SourcesAsync(int offset, CancellationToken ct, string? search = null)
+    {
+        if (offset is < 0 or > CitedSourceLimits.MaximumOffset) throw new ArgumentException("Invalid source offset.");
+        search = search?.Trim();
+        if (search?.Length > CitedSourceLimits.MaximumSearchLength) throw new ArgumentException("Source search is too long.");
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(TimeSpan.FromSeconds(15));
+        return await workspace.ListSourcesAsync(execution.OrganizationId, offset, deadline.Token, search);
     }
 
     public async Task<EvidenceLocationView> EvidenceAsync(Guid runId, Guid hitId, Guid? spanId, CancellationToken ct)

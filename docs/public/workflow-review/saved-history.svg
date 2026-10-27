@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="450" viewBox="0 0 1040 450" role="img" aria-labelledby="title desc">
+<title id="title">Saved comparisons keep their history</title><desc id="desc">Illustrative snapshot values. Comparison 1 keeps the original reviewed invoice price of AED 110. Later correction to AED 100 creates a new comparison. Earlier values and separate decision history remain.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#8293a5" stroke-width="1.5"/></marker></defs>
+<style>text{font-family:Segoe UI,Arial,sans-serif}</style>
+<rect x="0" y="0" width="1040" height="450" rx="0" fill="#f6f8fb"/>
+<text x="40" y="38" font-size="13" fill="#176b5b" font-weight="700" letter-spacing="1.5">03 / KEEP THE HISTORY</text>
+<text x="40" y="77" font-size="29" fill="#17283d" font-weight="700" >A later correction creates a new result.</text>
+<rect x="40" y="114" width="416" height="229" rx="12" fill="white" stroke="#d4dce5" stroke-width="1.5"/>
+<text x="65" y="151" font-size="25" fill="#17283d" font-weight="700" >Comparison 1</text>
+<text x="65" y="192" font-size="18" fill="#56667a" font-weight="400" >Invoice unit price</text>
+<text x="300" y="192" font-size="22" fill="#934514" font-weight="700" >AED 110</text>
+<text x="65" y="232" font-size="18" fill="#56667a" font-weight="400" >PO unit price</text>
+<text x="300" y="232" font-size="22" fill="#17283d" font-weight="700" >AED 100</text>
+<rect x="60" y="264" width="376" height="54" rx="12" fill="#f4f7fa"/>
+<text x="74" y="297" font-size="18" fill="#934514" font-weight="650" >Original result stays saved.</text>
+<rect x="584" y="114" width="416" height="229" rx="12" fill="white" stroke="#d4dce5" stroke-width="1.5"/>
+<text x="609" y="151" font-size="25" fill="#17283d" font-weight="700" >Comparison 2</text>
+<text x="609" y="192" font-size="18" fill="#56667a" font-weight="400" >Invoice unit price</text>
+<text x="844" y="192" font-size="22" fill="#176b5b" font-weight="700" >AED 100</text>
+<text x="609" y="232" font-size="18" fill="#56667a" font-weight="400" >PO unit price</text>
+<text x="844" y="232" font-size="22" fill="#17283d" font-weight="700" >AED 100</text>
+<rect x="604" y="264" width="376" height="54" rx="12" fill="#f4f7fa"/>
+<text x="618" y="297" font-size="18" fill="#176b5b" font-weight="650" >New result, with its own sources.</text>
+<path d="M471 222 H569" fill="none" stroke="#8293a5" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="520" y="172" font-size="16" fill="#56667a" font-weight="600" text-anchor="middle">Later</text>
+<text x="520" y="193" font-size="16" fill="#56667a" font-weight="600" text-anchor="middle">correction</text>
+<rect x="40" y="369" width="960" height="49" rx="12" fill="#e8f5ef"/>
+<text x="63" y="400" font-size="20" fill="#176b5b" font-weight="650" >Decisions are added to history. They do not rewrite either saved calculation.</text>
+</svg>

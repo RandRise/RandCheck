@@ -12,6 +12,8 @@ public static class CitedFactQuestionPlan
     public static (CitedFactPlan? Plan, string? Refusal) Parse(string question)
     {
         if (string.IsNullOrWhiteSpace(question) || question.Length > 4000) return (null, "unsupported_scope");
+        if (question.Any(c => c is >= '\u0600' and <= '\u06ff' or >= '\ufb50' and <= '\ufeff'))
+            return CitedArabicFactQuestionPlan.Parse(question);
         var q = question.Normalize(NormalizationForm.FormKC).ToLowerInvariant();
         if (CitedScopeClaimPolicy.RequiresRefusal(q) || Has(q,
             @"\b(ignore|instructions?|system|prompt|pretend|override|execute|scripts?|legal|compliant|compliance|eligible|eligibility|deduct|reclaim)\b"))

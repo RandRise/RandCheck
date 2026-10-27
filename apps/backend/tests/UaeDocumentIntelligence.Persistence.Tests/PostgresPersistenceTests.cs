@@ -10,6 +10,7 @@ using UaeDocumentIntelligence.Infrastructure;
 
 namespace UaeDocumentIntelligence.Persistence.Tests;
 
+[Collection("Disposable PostgreSQL")]
 public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture database) :
     IClassFixture<PostgresDatabaseFixture>, IAsyncLifetime
 {
@@ -24,7 +25,8 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
     {
         await using var context = _database.CreateContext();
         var before = (await context.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(19, before.Length);
+        Assert.Equal(26, before.Length);
+        Assert.True(await ScalarAsync<bool>("SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename='reconciliation_cases' AND indexname='IX_reconciliation_cases_organization_id_created_by_actor_id' AND indexdef NOT LIKE '%WHERE%')"));
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
 
         await context.Database.MigrateAsync();
@@ -83,10 +85,10 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
             "__EFMigrationsHistory", "actors", "answer_citations", "answer_claims", "chunk_evidence_spans",
             "cited_answers", "cited_chunk_embeddings", "cited_document_indexes", "cited_generation_artifacts", "cited_pilot_budgets", "cited_recovery_audits", "cited_retrieval_runs",
             "cited_spend_events", "cited_spend_reservations", "document_chunks",
-            "document_deletions", "documents", "enterprise_identities", "extraction_jobs", "extraction_pages", "extraction_runs",
+            "document_deletions", "document_processing_requests", "documents", "enterprise_identities", "extraction_jobs", "extraction_pages", "extraction_runs",
             "extraction_warnings", "field_evidence", "finding_resolutions", "machine_field_values", "organization_capacity_policies", "organization_memberships", "organization_retention_policies", "organizations",
-            "reconciliation_cases", "reconciliation_document_links", "reconciliation_document_snapshots",
-            "reconciliation_field_snapshots", "reconciliation_findings", "reconciliation_runs",
+            "reconciliation_cases", "reconciliation_checks", "reconciliation_document_links", "reconciliation_document_snapshots", "reconciliation_draft_requests",
+            "reconciliation_field_snapshots", "reconciliation_findings", "reconciliation_reference_counters", "reconciliation_runs",
             "retention_holds", "retrieval_hits", "retrieval_sources", "review_actions", "review_sessions", "security_audit_events"
         }, tables);
 
@@ -94,6 +96,25 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
             "SELECT conname FROM pg_constraint WHERE connamespace='public'::regnamespace ORDER BY conname");
         var expectedConstraints = new[]
         {
+            "PK_reconciliation_draft_requests", "ck_reconciliation_cases_drafts", "ck_reconciliation_cases_workflow",
+            "ck_reconciliation_draft_requests_role", "ck_reconciliation_draft_requests_key", "ck_reconciliation_draft_requests_hash",
+            "FK_reconciliation_draft_requests_actors_organization_id_actor_~",
+            "FK_reconciliation_draft_requests_reconciliation_cases_organiza~",
+            "FK_reconciliation_cases_documents_organization_id_draft_invoic~",
+            "FK_reconciliation_cases_documents_organization_id_draft_purcha~",
+            "PK_reconciliation_checks", "ck_reconciliation_checks_finding", "ck_reconciliation_checks_numeric",
+            "ck_reconciliation_checks_occurrence", "ck_reconciliation_checks_status",
+            "ck_reconciliation_runs_pair_context", "ck_reconciliation_field_snapshots_source_kind",
+            "FK_reconciliation_runs_actors_organization_id_evaluation_actor~",
+            "FK_reconciliation_checks_reconciliation_field_snapshots_organi~",
+            "FK_reconciliation_checks_reconciliation_field_snapshots_organ~1",
+            "FK_reconciliation_checks_reconciliation_findings_organization_~",
+            "FK_reconciliation_checks_reconciliation_runs_organization_id_r~",
+            "PK_document_processing_requests",
+            "FK_document_processing_requests_actors_organization_id_actor_id",
+            "FK_document_processing_requests_organizations_organization_id",
+            "ck_document_processing_requests_hash", "ck_document_processing_requests_key",
+            "ck_document_processing_requests_kind", "ck_document_processing_requests_run",
             "ck_documents_sha256", "ck_documents_size", "ck_documents_status",
             "ck_extraction_jobs_attempts", "ck_extraction_jobs_completion",
             "ck_extraction_jobs_lease_shape", "ck_extraction_jobs_result",
@@ -107,6 +128,9 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
             "ck_field_evidence_polygon_unit", "ck_field_evidence_quote_offsets", "ck_machine_fields_confidence",
             "ck_review_actions_matrix", "ck_review_actions_value_type", "ck_review_sessions_revision",
             "ck_reconciliation_cases_status", "ck_reconciliation_document_links_role",
+            "ck_reconciliation_cases_category", "ck_reconciliation_cases_reference",
+            "reconciliation_reference_counters_pkey", "reconciliation_reference_counters_organization_id_fkey",
+            "reconciliation_reference_counters_reference_year_check", "reconciliation_reference_counters_last_number_check",
             "ck_reconciliation_document_links_sha256", "ck_reconciliation_document_snapshots_role",
             "ck_reconciliation_document_snapshots_sha256", "ck_reconciliation_field_snapshots_evidence",
             "ck_reconciliation_field_snapshots_occurrence", "ck_reconciliation_field_snapshots_source",
@@ -119,11 +143,22 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
         foreach (var expected in expectedConstraints) Assert.Contains(expected, constraints);
 
         var indexes = await QueryStringsAsync("SELECT indexname FROM pg_indexes WHERE schemaname='public'");
+        Assert.Contains("ux_reconciliation_draft_requests_intent", indexes);
+        Assert.Contains("ix_reconciliation_cases_workflow_created", indexes);
+        Assert.Contains("IX_reconciliation_cases_organization_id_draft_invoice_document~", indexes);
+        Assert.Contains("IX_reconciliation_cases_organization_id_draft_purchase_order_d~", indexes);
+        Assert.Contains("IX_reconciliation_draft_requests_organization_id_reconciliatio~", indexes);
+        Assert.Contains("PK_document_processing_requests", indexes);
         Assert.Contains("ix_documents_org_sha256", indexes);
         Assert.Contains("ux_documents_storage_key", indexes);
         Assert.Contains("ux_extraction_runs_org_document_number", indexes);
         Assert.Contains("ux_extraction_jobs_org_run", indexes);
         Assert.Contains("ux_extraction_jobs_org_document_active", indexes);
+        Assert.Contains("IX_reconciliation_runs_organization_id_evaluation_actor_id", indexes);
+        Assert.Contains("IX_reconciliation_checks_organization_id_reconciliation_run_id~", indexes);
+        Assert.Contains("IX_reconciliation_checks_organization_id_reconciliation_run_i~1", indexes);
+        Assert.Contains("IX_reconciliation_checks_organization_id_reconciliation_run_i~2", indexes);
+        Assert.Contains("IX_reconciliation_checks_organization_id_reconciliation_run_i~3", indexes);
         Assert.Contains("ix_extraction_jobs_due", indexes);
         Assert.Contains("ix_extraction_jobs_expired_lease", indexes);
         Assert.Contains("ux_extraction_warnings_global", indexes);
@@ -137,6 +172,30 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
         Assert.Contains("ux_reconciliation_runs_one_running", indexes);
         Assert.Contains("ux_reconciliation_fields_org_run_document_key_occurrence", indexes);
         Assert.Contains("ux_finding_resolutions_org_finding_sequence", indexes);
+        Assert.Contains("reconciliation_reference_counters_pkey", indexes);
+        Assert.Contains("ix_reconciliation_cases_org_category_created", indexes);
+        Assert.Contains("ix_reconciliation_cases_org_created_id", indexes);
+        Assert.Contains("ux_reconciliation_cases_org_reference", indexes);
+
+        Assert.Equal("PRIMARY KEY (organization_id, reference_year)", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='reconciliation_reference_counters'::regclass AND contype='p'"));
+        Assert.Equal("FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE RESTRICT", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='reconciliation_reference_counters_organization_id_fkey'"));
+        Assert.Equal("CHECK (((reference_year >= 1) AND (reference_year <= 9999)))", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='reconciliation_reference_counters_reference_year_check'"));
+        Assert.Equal("CHECK ((last_number > 0))", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='reconciliation_reference_counters_last_number_check'"));
+
+        Assert.Equal("PRIMARY KEY (organization_id, actor_id, kind, request_key)", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='document_processing_requests'::regclass AND contype='p'"));
+        Assert.Equal("FOREIGN KEY (organization_id, actor_id) REFERENCES actors(organization_id, id) ON DELETE RESTRICT", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='FK_document_processing_requests_actors_organization_id_actor_id'"));
+        Assert.Equal("FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE RESTRICT", await ScalarAsync<string>(
+            "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='FK_document_processing_requests_organizations_organization_id'"));
+        // No source FK: deletion leaves the accepted request as an unavailable
+        // tombstone, rather than permitting recreation under its original key.
+        Assert.Equal(2, await ScalarAsync<long>(
+            "SELECT count(*) FROM pg_constraint WHERE conrelid='document_processing_requests'::regclass AND contype='f'"));
 
         var hashIndex = await ScalarAsync<string>(
             "SELECT indexdef FROM pg_indexes WHERE schemaname='public' AND indexname='ix_documents_org_sha256'");
@@ -206,6 +265,10 @@ public sealed partial class PostgresPersistenceTests(PostgresDatabaseFixture dat
         {
             write.ReconciliationCases.Add(item);
             await write.SaveChangesAsync();
+            var reference = item.Reference;
+            item.UpdateMetadata("Renamed without changing evidence", ReconciliationCaseCategory.Services, now.AddMinutes(1));
+            await write.SaveChangesAsync();
+            Assert.Equal(reference, item.Reference);
         }
 
         await using var read = _database.CreateContext();

@@ -82,7 +82,7 @@ public sealed partial class PostgresPersistenceTests
         try
         {
             using var response = await admin.PostAsJsonAsync("/api/organization/memberships",
-                new MembershipEndpoints.AddMember(SecurityTenant, subject, "Not admitted", "Viewer", false));
+                new MembershipEndpoints.AddMember(SecurityTenant, subject, "Not admitted", "Staff"));
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.False(await db.EnterpriseIdentities.AnyAsync(i => i.ObjectId == subject));
             Assert.False(await db.Actors.AnyAsync(i => i.DisplayName == "Not admitted"));

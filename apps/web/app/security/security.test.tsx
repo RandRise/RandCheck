@@ -1,3 +1,4 @@
+import { clearMemberRecovery } from "../organization/people/member-recovery";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { secureTransport, apiFetch } from "./api-fetch";
@@ -5,7 +6,7 @@ import { EnterpriseProvider } from "./enterprise-provider";
 import { validIdentityConfig } from "./identity-client";
 import OrganizationPage from "../organization/page";
 import AuditPage from "../organization/audit/page";
-import Home from "../page";
+import Home from "../document-workspace";
 import { StrictMode } from "react";
 
 const navigation = vi.hoisted(() => ({ path: "/organization", replace: vi.fn() }));
@@ -13,10 +14,10 @@ vi.mock("next/navigation", () => ({ usePathname: () => navigation.path, useRoute
 const config = { mode: "Entra", tenantId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", clientId: "cccccccc-cccc-cccc-cccc-cccccccccccc",
   scope: "api://bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/DocumentIntelligence.Access", api: "http://localhost:8080" };
 const session = { organizationId: "org-a", organizationName: "Fictional enterprise", actorId: "admin-a", displayName: "Test administrator",
-  tenantId: config.tenantId, role: "None", canManageMembers: true };
-const member = { id: "member-a", actorId: "person-a", tenantId: config.tenantId, objectId: "dddddddd-dddd-dddd-dddd-dddddddddddd", displayName: "Test member", role: "Viewer", canManageMembers: false, isActive: true, version: "version-one" };
+  tenantId: config.tenantId, role: "Admin" };
+const member = { id: "member-a", actorId: "person-a", tenantId: config.tenantId, objectId: "dddddddd-dddd-dddd-dddd-dddddddddddd", displayName: "Test member", role: "Staff", isActive: true, version: "version-one" };
 const identity = () => ({ initialize: vi.fn(async () => true), token: vi.fn(async () => "test-token"), signIn: vi.fn(async () => {}), signOut: vi.fn(async () => {}) });
-afterEach(() => { vi.unstubAllGlobals(); navigation.path = "/organization"; });
+afterEach(() => { clearMemberRecovery("org-a:admin-a"); vi.unstubAllGlobals(); navigation.path = "/organization"; });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
 describe("authenticated transport", () => {
@@ -62,11 +63,15 @@ describe("organization access screens", () => {
     render(<EnterpriseProvider config={config} identityFactory={factory}><p>Bridge response</p></EnterpriseProvider>);
     expect(screen.getByText("Bridge response")).toBeTruthy(); expect(factory).not.toHaveBeenCalled();
   });
-  it("disables uploads for a Viewer while retaining the document workspace", async () => {
+  it("allows Staff uploads in the document workspace", async () => {
     navigation.path = "/";
-    vi.stubGlobal("fetch", vi.fn(async (url: string) => json(url.endsWith("/session") ? { ...session, role: "Viewer", canManageMembers: false } : [])));
-    render(<EnterpriseProvider config={config} identityFactory={async () => identity()}><Home/></EnterpriseProvider>);
-    expect((await screen.findByRole("button", { name: "Upload & extract" }) as HTMLButtonElement).disabled).toBe(true);
+    const fetcher = vi.fn(async (url: string, _init?: RequestInit) => json(url.endsWith("/session") ? { ...session, role: "Staff" } : []));
+    vi.stubGlobal("fetch", fetcher);
+    const { container } = render(<EnterpriseProvider config={config} identityFactory={async () => identity()}><Home/></EnterpriseProvider>);
+    await screen.findByRole("heading", { name: "Documents" });
+    expect(screen.getByRole("button", { name: "Upload & extract" })).toBeTruthy();
+    expect(container.querySelector('input[type="file"]')).toBeTruthy();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
     expect(screen.queryByRole("link", { name: "Organization" })).toBeNull();
   });
   it("gates the workspace until membership resolves and clears it on a denied request", async () => {
@@ -78,7 +83,7 @@ describe("organization access screens", () => {
     await screen.findByText("Access needs attention."); expect(screen.queryByText("Private workspace")).toBeNull();
   });
   it("does not show administrator content to a viewer", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => json({ ...session, role: "Viewer", canManageMembers: false })));
+    vi.stubGlobal("fetch", vi.fn(async () => json({ ...session, role: "Staff" })));
     render(<EnterpriseProvider config={config} identityFactory={async () => identity()}><p>Member controls</p></EnterpriseProvider>);
     await screen.findByText("Administration access required."); expect(screen.queryByText("Member controls")).toBeNull();
   });
@@ -94,19 +99,19 @@ describe("organization access screens", () => {
     vi.stubGlobal("fetch", fetcher);
     render(<EnterpriseProvider config={config} identityFactory={async () => identity()}><OrganizationPage/></EnterpriseProvider>);
     fireEvent.click(await screen.findByRole("button", { name: "Edit Test member" }));
-    fireEvent.change(screen.getByLabelText("Document role"), { target: { value: "Reviewer" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    fireEvent.change(screen.getByLabelText("Role"), { target: { value: "Admin" } });
+    fireEvent.click(screen.getByRole("button", { name: "Grant Admin access" }));
     await screen.findByRole("alert"); const change = fetcher.mock.calls.find(([, init]) => init?.method === "PUT");
-    expect(JSON.parse(change![1]!.body as string)).toMatchObject({ expectedVersion: "version-one", role: "Reviewer" });
-    expect((screen.getByRole("button", { name: "Save changes" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(JSON.parse(change![1]!.body as string)).toMatchObject({ expectedVersion: "version-one", role: "Admin" });
+    expect((screen.getByRole("button", { name: "Grant Admin access" }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByRole("button", { name: "Reload members" })).toBeTruthy();
   });
   it("asks for a concrete revocation confirmation before submitting", async () => {
     const fetcher = vi.fn(async (url: string, _init?: RequestInit) => url.endsWith("/session") ? json(session) : json([member])); vi.stubGlobal("fetch", fetcher);
     render(<EnterpriseProvider config={config} identityFactory={async () => identity()}><OrganizationPage/></EnterpriseProvider>);
-    fireEvent.click(await screen.findByRole("button", { name: "Edit Test member" })); fireEvent.click(screen.getByLabelText(/Active membership/));
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Test member" })); fireEvent.click(screen.getByLabelText(/Active access/));
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-    expect(screen.getByRole("button", { name: "Confirm revocation" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Confirm removal" })).toBeTruthy();
     expect(fetcher.mock.calls.every(call => !(call[1] as RequestInit | undefined)?.method)).toBe(true);
   });
   it("renders audit strings inertly and supports bounded pagination", async () => {
@@ -115,7 +120,7 @@ describe("organization access screens", () => {
     const fetcher = vi.fn(async (url: string) => json(url.endsWith("/session") ? session : url.endsWith("offset=0") ? events : [])); vi.stubGlobal("fetch", fetcher);
     render(<EnterpriseProvider config={config} identityFactory={async () => identity()}><AuditPage/></EnterpriseProvider>);
     await screen.findByText("100 events on this page"); expect(document.querySelector(".audit-detail script")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Older →" })); await screen.findByText("No events on this page.");
+    fireEvent.click(screen.getByRole("button", { name: "Older" })); await screen.findByText("No events on this page.");
     expect(fetcher.mock.calls.some(([url]) => url.endsWith("offset=100"))).toBe(true);
   });
 });

@@ -79,7 +79,7 @@ public sealed partial class PostgresPersistenceTests
         { OrganizationId = graph.Seed.OrganizationB, ActorId = graph.Seed.ActorB, Checkpoint = "none" }));
         if (await CrashState(runId) == "Dispatched")
         {
-            await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+            await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
             var ledger = services.GetRequiredService<ICitedGenerationLedger>();
             var id = await ScalarAsync<Guid>("SELECT id FROM cited_spend_reservations WHERE operation_id=@id", ("id", runId));
             await SpendDenied("invalid_spend_transition", () => ledger.CancelBeforeDispatchAsync(id, default));
@@ -145,9 +145,12 @@ public sealed partial class PostgresPersistenceTests
         await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
     }
 
-    // Only the test executable exposes this entry point. It cannot migrate, reset or call a live provider.
+    // Only the test executable exposes these opt-in probes. The browser branch
+    // owns the exact disposable test database; the crash branch cannot migrate/reset.
     public static async Task<int> Main(string[] args)
     {
+        if (args is ["--admin-browser-acceptance", var root, var output])
+            return await RunAdminBrowserAcceptanceAsync(root, output);
         if (args is not ["--cited-crash-probe"]) return 2;
         try
         {
@@ -157,7 +160,7 @@ public sealed partial class PostgresPersistenceTests
                 probe.Rate.Provider != "test-only") return 2;
             var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             { ["ConnectionStrings:Database"] = connection.ConnectionString }).Build();
-            var collection = new ServiceCollection().AddInfrastructure(config);
+            var collection = new ServiceCollection().AddInfrastructure(config).AddCitedPilotInfrastructure(config);
             collection.AddSingleton<IExecutionContext>(new CitedExecution(probe.OrganizationId, probe.ActorId));
             collection.RemoveAll<DbContextOptions<AppDbContext>>();
             collection.AddScoped(_ => new DbContextOptionsBuilder<AppDbContext>()

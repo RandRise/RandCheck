@@ -27,7 +27,10 @@ services:
       EXTRACTION_PROVIDER: local
       STORAGE_SHARED_ROOT: /data/uploads
       WORKER_SHARED_SECRET: disposable_demo_worker_only
-      OCR_LANGUAGE: eng
+      LOCAL_INPUT_PROFILE: supplier-invoice-v1
+      OCR_LANGUAGE: eng+ara
+      OCR_LAYOUT_PROFILE: lines-v1
+      OCR_ARABIC_MODEL: fast
       OMP_THREAD_LIMIT: "1"
       TZ: UTC
     volumes: ["uploads:/data/uploads:ro"]
@@ -42,7 +45,7 @@ services:
       Storage__UploadDirectory: /data/uploads
       AiService__BaseUrl: http://ai:8001
       AiService__WorkerToken: disposable_demo_worker_only
-      AiService__AdapterVersion: local-1.3.0
+      AiService__AdapterVersion: local-1.6.0
       ExtractionWorker__Enabled: "true"
       StorageMaintenance__Enabled: "true"
       Cors__Origins__0: http://127.0.0.1:3308

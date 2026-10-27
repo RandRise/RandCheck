@@ -1,6 +1,7 @@
 using UaeDocumentIntelligence.Application.Abstractions;
 using UaeDocumentIntelligence.Application.Documents.Upload;
 using UaeDocumentIntelligence.Domain.Model;
+using UaeDocumentIntelligence.Application.Documents.Processing;
 
 namespace UaeDocumentIntelligence.Application.Tests;
 
@@ -9,6 +10,71 @@ public sealed class UploadDocumentHandlerTests
     private static readonly DateTimeOffset Now = new(2026, 8, 11, 12, 0, 0, TimeSpan.Zero);
     private static readonly Guid OrganizationId = Guid.Parse("10000000-0000-0000-0000-000000000001");
     private static readonly Guid ActorId = Guid.Parse("20000000-0000-0000-0000-000000000002");
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" bad ")]
+    [InlineData("unsafe,key")]
+    public async Task Invalid_operation_key_rejects_before_storage(string key)
+    {
+        var queue = new FakeUploadQueueStore(); var storage = new FakeDocumentStorage();
+        var error = await Assert.ThrowsAsync<ProcessingIntentException>(() => CreateHandler(queue, storage)
+            .HandleAsync(CreateCommand() with { RequestKey = key }, default));
+        Assert.False(error.Conflict); Assert.Equal("invalid_operation_key", error.Code);
+        Assert.Equal(0, storage.SaveCallCount); Assert.Equal(0, queue.AddCallCount);
+    }
+
+    [Theory]
+    [InlineData(3)]
+    [InlineData(5)]
+    [InlineData(10485761)]
+    public async Task Keyed_upload_checks_exact_bounded_bytes_before_admission(long declared)
+    {
+        var queue = new FakeUploadQueueStore(); var storage = new FakeDocumentStorage();
+        await Assert.ThrowsAsync<DocumentTooLargeException>(() => CreateHandler(queue, storage)
+            .HandleAsync(CreateCommand() with { RequestKey = "intent", SizeBytes = declared }, default));
+        Assert.Equal(0, storage.SaveCallCount); Assert.Equal(0, queue.AddCallCount);
+    }
+
+    [Fact]
+    public async Task Keyed_replay_skips_storage_and_racing_replay_compensates_only_its_generated_source()
+    {
+        var originalQueue = new FakeUploadQueueStore(); var originalStorage = new FakeDocumentStorage();
+        await CreateHandler(originalQueue, originalStorage).HandleAsync(CreateCommand(), default);
+        var original = originalQueue.Document!;
+        var replayQueue = new FakeUploadQueueStore { Replay = original };
+        var replayStorage = new FakeDocumentStorage();
+        var replay = await CreateHandler(replayQueue, replayStorage).HandleAsync(CreateCommand() with { RequestKey = "intent" }, default);
+        Assert.Equal(original.Id, replay.Id); Assert.Equal(0, replayStorage.SaveCallCount);
+        var raceQueue = new FakeUploadQueueStore { Accepted = original };
+        var raceStorage = new FakeDocumentStorage { StoredFile = originalStorage.StoredFile with { StorageKey = "loser/source.pdf" } };
+        replay = await CreateHandler(raceQueue, raceStorage).HandleAsync(CreateCommand() with { RequestKey = "intent" }, default);
+        Assert.Equal(original.Id, replay.Id); Assert.Equal(new[] { "loser/source.pdf" }, raceStorage.DeletedStorageKeys);
+        Assert.NotNull(raceQueue.Intent); Assert.Equal(ActorId, raceQueue.Intent.ActorId);
+    }
+
+    [Fact]
+    public async Task Lost_commit_acknowledgement_preserves_owned_source_for_keyed_retry()
+    {
+        var queue = new FakeUploadQueueStore { CommitThenThrow = true };
+        var storage = new FakeDocumentStorage();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => CreateHandler(queue, storage)
+            .HandleAsync(CreateCommand() with { RequestKey = "intent" }, default));
+        Assert.Empty(storage.DeletedStorageKeys);
+        var replay = await CreateHandler(queue, storage).HandleAsync(CreateCommand() with { RequestKey = "intent" }, default);
+        Assert.Equal(queue.Document!.Id, replay.Id); Assert.Equal(1, storage.SaveCallCount);
+    }
+
+    [Fact]
+    public async Task Uncertain_compensation_lookup_preserves_source_for_existing_orphan_recovery()
+    {
+        var queue = new FakeUploadQueueStore { LookupFailsAfterAdd = true, Exception = new InvalidOperationException("Uncertain commit") };
+        var storage = new FakeDocumentStorage();
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => CreateHandler(queue, storage)
+            .HandleAsync(CreateCommand() with { RequestKey = "intent" }, default));
+        Assert.Equal("Uncertain commit", error.Message);
+        Assert.Empty(storage.DeletedStorageKeys);
+    }
 
     [Theory]
     [InlineData(false)]
@@ -129,6 +195,15 @@ public sealed class UploadDocumentHandlerTests
 
     private sealed class FakeUploadQueueStore : IUploadQueueStore
     {
+        public Document? Replay { get; init; }
+        public Document? Accepted { get; init; }
+        public bool CommitThenThrow { get; init; }
+        public bool LookupFailsAfterAdd { get; init; }
+        public ProcessingIntent? Intent { get; private set; }
+        public Task<Document?> FindUploadAsync(Guid org, ProcessingIntent intent, CancellationToken ct)
+        { Intent = intent; if (LookupFailsAfterAdd && AddCallCount > 0) throw new InvalidOperationException("Lookup unavailable"); return Task.FromResult(CommitThenThrow ? Document : Replay); }
+        public async Task<Document> AddWithIntentAsync(Document document, Guid run, Guid job, FileScanReceipt? scan, ProcessingIntent intent, CancellationToken ct)
+        { Intent = intent; await AddAsync(document, run, job, ct); if (CommitThenThrow) throw new InvalidOperationException("Commit acknowledgement lost"); return Accepted ?? document; }
         public Exception? Exception { get; init; }
         public Action? BeforeFailure { get; init; }
         public int AddCallCount { get; private set; }

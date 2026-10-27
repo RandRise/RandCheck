@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="660" viewBox="0 0 1040 660" role="img" aria-labelledby="title desc">
+<title id="title">One workflow, three clear result outcomes</title>
+<desc id="desc">Add invoice and purchase order, check details, then see results on the same page. Saved reviewed versions go to the backend. Results distinguish differences, incomplete checks and all required checks passed. Decisions are separate and never change checks. Illustration using made-up counts.</desc>
+<rect width="1040" height="660" rx="24" fill="#202329"/>
+<g font-family="Arial, sans-serif" fill="#f1f2f4">
+<text x="40" y="49" font-size="25" font-weight="bold">See results without leaving your workflow</text>
+<text x="40" y="79" font-size="17" fill="#bfc5ce">Illustration · Made-up counts · No payment approval is implied</text>
+<g fill="#30353e" stroke="#747d8b"><rect x="40" y="105" width="300" height="66" rx="12"/><rect x="370" y="105" width="300" height="66" rx="12"/><rect x="700" y="105" width="300" height="66" rx="12"/></g>
+<g font-size="20" text-anchor="middle"><text x="190" y="146">1. Add invoice + PO</text><text x="520" y="146">2. Check details</text><text x="850" y="146">3. See results</text></g>
+<text x="520" y="210" text-anchor="middle" font-size="18">The backend compares the exact saved reviews you checked.</text>
+<path d="M520 227 V253 M190 253 H850 M190 253 V270 M520 253 V270 M850 253 V270" stroke="#aeb8c8" fill="none" stroke-width="2"/>
+<g fill="#30353e" stroke="#747d8b"><rect x="40" y="270" width="300" height="130" rx="12"/><rect x="370" y="270" width="300" height="130" rx="12"/><rect x="700" y="270" width="300" height="130" rx="12"/></g>
+<g text-anchor="middle"><g font-size="20" font-weight="bold"><text x="190" y="307">Differences found</text><text x="520" y="307">Checks incomplete</text><text x="850" y="307">All required checks passed</text></g>
+<g font-size="17" fill="#d4d8df"><text x="190" y="341">Read what differs.</text><text x="190" y="369">Read missing checks too.</text><text x="520" y="341">Read what is missing.</text><text x="520" y="369">Follow one next action.</text><text x="850" y="341">Every required check ran</text><text x="850" y="369">and passed for this pair.</text></g></g>
+<rect x="40" y="428" width="960" height="93" rx="12" fill="#30353e" stroke="#747d8b"/>
+<text x="65" y="463" font-size="20">Example: 4 passed + 1 differed + 2 could not be checked = 7 checks</text>
+<text x="65" y="494" font-size="17" fill="#d4d8df">Open a check to read Invoice / Purchase order values, page numbers and supporting text.</text>
+<text x="40" y="565" font-size="20" font-weight="bold">Your decision is a separate record.</text>
+<text x="40" y="598" font-size="18">Choose a reason for that situation. Earlier decisions stay in history.</text>
+<text x="40" y="630" font-size="18">A decision never changes a missing check into a passed check.</text>
+</g></svg>

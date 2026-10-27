@@ -1,0 +1,724 @@
+[
+  {
+    "id": "mixed-latin-payment",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      130
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "فاتورة",
+        "conf": 91,
+        "left": 533,
+        "top": 16,
+        "width": 108,
+        "height": 44
+      },
+      {
+        "text": "تجريبية",
+        "conf": 90,
+        "left": 392,
+        "top": 27,
+        "width": 123,
+        "height": 33
+      },
+      {
+        "text": "/",
+        "conf": 90,
+        "left": 360,
+        "top": 17,
+        "width": 15,
+        "height": 36
+      },
+      {
+        "text": "5171117115716",
+        "conf": 60,
+        "left": 103,
+        "top": 16,
+        "width": 240,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      130
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "فاتورة",
+        "conf": 91,
+        "left": 533,
+        "top": 16,
+        "width": 108,
+        "height": 44
+      },
+      {
+        "text": "تجريبية",
+        "conf": 90,
+        "left": 392,
+        "top": 27,
+        "width": 123,
+        "height": 33
+      },
+      {
+        "text": "/",
+        "conf": 93,
+        "left": 360,
+        "top": 17,
+        "width": 15,
+        "height": 36
+      },
+      {
+        "text": "SYNTHETIC‏",
+        "conf": 93,
+        "left": 103,
+        "top": 16,
+        "width": 240,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      130
+    ],
+    "mode": "ara+eng",
+    "words": [
+      {
+        "text": "فاتورة",
+        "conf": 91,
+        "left": 533,
+        "top": 16,
+        "width": 108,
+        "height": 44
+      },
+      {
+        "text": "تجريبية",
+        "conf": 90,
+        "left": 392,
+        "top": 27,
+        "width": 123,
+        "height": 33
+      },
+      {
+        "text": "/",
+        "conf": 93,
+        "left": 360,
+        "top": 17,
+        "width": 15,
+        "height": 36
+      },
+      {
+        "text": "SYNTHETIC‏",
+        "conf": 93,
+        "left": 103,
+        "top": 16,
+        "width": 208,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      218
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "01/0166",
+        "conf": 24,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      },
+      {
+        "text": "جبوطدصل‎",
+        "conf": 0,
+        "left": 275,
+        "top": 15,
+        "width": 183,
+        "height": 33
+      },
+      {
+        "text": "١١/09",
+        "conf": 0,
+        "left": 481,
+        "top": 15,
+        "width": 166,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      218
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "Invoice",
+        "conf": 95,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      },
+      {
+        "text": "Number:",
+        "conf": 93,
+        "left": 275,
+        "top": 15,
+        "width": 183,
+        "height": 33
+      },
+      {
+        "text": "INV-019",
+        "conf": 89,
+        "left": 481,
+        "top": 15,
+        "width": 166,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      218
+    ],
+    "mode": "ara+eng",
+    "words": [
+      {
+        "text": "Invoice",
+        "conf": 95,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      },
+      {
+        "text": "Number:",
+        "conf": 93,
+        "left": 308,
+        "top": 15,
+        "width": 150,
+        "height": 33
+      },
+      {
+        "text": "INV-019",
+        "conf": 89,
+        "left": 481,
+        "top": 15,
+        "width": 166,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      330
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "الرقم",
+        "conf": 92,
+        "left": 2403,
+        "top": 16,
+        "width": 93,
+        "height": 44
+      },
+      {
+        "text": "الضريبي",
+        "conf": 91,
+        "left": 2239,
+        "top": 16,
+        "width": 143,
+        "height": 44
+      },
+      {
+        "text": "للمورد:",
+        "conf": 91,
+        "left": 2095,
+        "top": 16,
+        "width": 122,
+        "height": 44
+      },
+      {
+        "text": "000000000000702",
+        "conf": 90,
+        "left": 1659,
+        "top": 16,
+        "width": 413,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      330
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "الرقم",
+        "conf": 92,
+        "left": 2403,
+        "top": 16,
+        "width": 93,
+        "height": 44
+      },
+      {
+        "text": "الضريبي",
+        "conf": 91,
+        "left": 2239,
+        "top": 16,
+        "width": 143,
+        "height": 44
+      },
+      {
+        "text": "للمورد:",
+        "conf": 91,
+        "left": 2095,
+        "top": 16,
+        "width": 122,
+        "height": 44
+      },
+      {
+        "text": "000000000000702",
+        "conf": 92,
+        "left": 1659,
+        "top": 16,
+        "width": 413,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      330
+    ],
+    "mode": "ara+eng",
+    "words": [
+      {
+        "text": "الرقم",
+        "conf": 92,
+        "left": 2403,
+        "top": 16,
+        "width": 93,
+        "height": 44
+      },
+      {
+        "text": "الضريبي",
+        "conf": 91,
+        "left": 2239,
+        "top": 16,
+        "width": 143,
+        "height": 44
+      },
+      {
+        "text": "للمورد:",
+        "conf": 91,
+        "left": 2095,
+        "top": 16,
+        "width": 122,
+        "height": 44
+      },
+      {
+        "text": "000000000000702",
+        "conf": 90,
+        "left": 1659,
+        "top": 16,
+        "width": 413,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 3,
+    "box": [
+      0,
+      355,
+      2600,
+      427
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "ناعحط",
+        "conf": 19,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      },
+      {
+        "text": ":0011602",
+        "conf": 0,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 3,
+    "box": [
+      0,
+      355,
+      2600,
+      427
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "Currency:",
+        "conf": 96,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      },
+      {
+        "text": "AED",
+        "conf": 96,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 3,
+    "box": [
+      0,
+      355,
+      2600,
+      427
+    ],
+    "mode": "ara+eng",
+    "words": [
+      {
+        "text": "Currency:",
+        "conf": 96,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      },
+      {
+        "text": "AED",
+        "conf": 96,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 4,
+    "box": [
+      0,
+      455,
+      2600,
+      530
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 2337,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "315.75",
+        "conf": 93,
+        "left": 2167,
+        "top": 16,
+        "width": 147,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 4,
+    "box": [
+      0,
+      455,
+      2600,
+      530
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 2337,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "315.75",
+        "conf": 96,
+        "left": 2167,
+        "top": 16,
+        "width": 147,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 4,
+    "box": [
+      0,
+      455,
+      2600,
+      530
+    ],
+    "mode": "ara+eng",
+    "words": [
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 2337,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "315.75",
+        "conf": 93,
+        "left": 2167,
+        "top": 16,
+        "width": 147,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 5,
+    "box": [
+      0,
+      555,
+      2600,
+      630
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "شروط",
+        "conf": 89,
+        "left": 2380,
+        "top": 16,
+        "width": 116,
+        "height": 44
+      },
+      {
+        "text": "الدفع:",
+        "conf": 75,
+        "left": 2260,
+        "top": 16,
+        "width": 99,
+        "height": 44
+      },
+      {
+        "text": "آعلا",
+        "conf": 31,
+        "left": 2168,
+        "top": 17,
+        "width": 72,
+        "height": 32
+      },
+      {
+        "text": "45",
+        "conf": 93,
+        "left": 2096,
+        "top": 17,
+        "width": 50,
+        "height": 32
+      },
+      {
+        "text": "5لا03",
+        "conf": 52,
+        "left": 1978,
+        "top": 16,
+        "width": 100,
+        "height": 42
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 5,
+    "box": [
+      0,
+      555,
+      2600,
+      630
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "days",
+        "conf": 96,
+        "left": 1978,
+        "top": 16,
+        "width": 100,
+        "height": 42
+      },
+      {
+        "text": "45",
+        "conf": 95,
+        "left": 2096,
+        "top": 17,
+        "width": 50,
+        "height": 32
+      },
+      {
+        "text": "Net",
+        "conf": 95,
+        "left": 2168,
+        "top": 17,
+        "width": 72,
+        "height": 32
+      },
+      {
+        "text": "الدفع:‎",
+        "conf": 75,
+        "left": 2260,
+        "top": 16,
+        "width": 99,
+        "height": 44
+      },
+      {
+        "text": "by",
+        "conf": 58,
+        "left": 2384,
+        "top": 16,
+        "width": 50,
+        "height": 44
+      },
+      {
+        "text": "pw",
+        "conf": 80,
+        "left": 2450,
+        "top": 12,
+        "width": 50,
+        "height": 53
+      }
+    ]
+  },
+  {
+    "id": "mixed-latin-payment",
+    "row": 5,
+    "box": [
+      0,
+      555,
+      2600,
+      630
+    ],
+    "mode": "ara+eng",
+    "words": [
+      {
+        "text": "days",
+        "conf": 96,
+        "left": 1978,
+        "top": 16,
+        "width": 100,
+        "height": 42
+      },
+      {
+        "text": "45",
+        "conf": 95,
+        "left": 2096,
+        "top": 17,
+        "width": 50,
+        "height": 32
+      },
+      {
+        "text": "Net",
+        "conf": 95,
+        "left": 2168,
+        "top": 17,
+        "width": 72,
+        "height": 32
+      },
+      {
+        "text": "شروط",
+        "conf": 89,
+        "left": 2380,
+        "top": 16,
+        "width": 116,
+        "height": 44
+      },
+      {
+        "text": "الدفع:‎",
+        "conf": 75,
+        "left": 2260,
+        "top": 16,
+        "width": 99,
+        "height": 44
+      }
+    ]
+  }
+]

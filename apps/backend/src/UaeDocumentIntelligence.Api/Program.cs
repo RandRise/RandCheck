@@ -1,4 +1,5 @@
 using UaeDocumentIntelligence.Application.Documents.Queries;
+using UaeDocumentIntelligence.Application.Documents;
 using UaeDocumentIntelligence.Application.Documents.Upload;
 using UaeDocumentIntelligence.Api;
 using UaeDocumentIntelligence.Infrastructure;
@@ -106,6 +107,22 @@ var api = app.MapGroup("").AddEndpointFilter<SecurityAuditOutcomeFilter>().AddEn
 api.MapGet("/api/documents", async (DocumentQueries queries, CancellationToken cancellationToken) =>
     Results.Ok(await queries.ListAsync(cancellationToken)));
 
+api.MapGet("/api/documents/work-list", async (HttpContext context, DocumentQueries queries, CancellationToken cancellationToken) =>
+{
+    context.Response.Headers.CacheControl = "no-store";
+    return Results.Ok(await queries.WorkListAsync(cancellationToken));
+});
+
+api.MapGet("/api/documents/library", async (HttpContext context, string? q, string? type, bool? includeQuotations,
+    int? offset, DocumentLibraryQueries queries, CancellationToken cancellationToken) =>
+{
+    context.Response.Headers.CacheControl = "no-store";
+    DocumentLibraryQuery query;
+    try { query = DocumentLibraryQuery.Create(q, type, includeQuotations ?? false, offset ?? 0); }
+    catch (ArgumentException error) { return Results.BadRequest(new { detail = error.Message }); }
+    return Results.Ok(await queries.SearchAsync(query, cancellationToken));
+});
+
 api.MapGet("/api/documents/{id:guid}", async (Guid id, DocumentQueries queries, CancellationToken cancellationToken) =>
     await queries.GetAsync(id, cancellationToken) is { } document ? Results.Ok(document) : Results.NotFound());
 
@@ -114,10 +131,17 @@ api.MapPost("/api/documents", async (HttpContext context, IFormFile file, Upload
 {
     try
     {
+        await using var content = file.OpenReadStream();
+        var requestKey = context.Request.Headers.TryGetValue("X-Operation-Key", out var operationKey) ? operationKey.ToString() : null;
         var command = new UploadDocumentCommand(file.FileName, file.ContentType, file.Length,
-            file.OpenReadStream(), context.TraceIdentifier);
+            content, context.TraceIdentifier, requestKey);
         var document = await handler.HandleAsync(command, cancellationToken);
         return Results.Accepted($"/api/documents/{document.Id}", document);
+    }
+    catch (UaeDocumentIntelligence.Application.Documents.Processing.ProcessingIntentException error)
+    {
+        return Results.Problem(error.Message, statusCode: error.Conflict ? 409 : 400, title: error.Code,
+            extensions: new Dictionary<string, object?> { ["code"] = error.Code });
     }
     catch (UnsupportedDocumentTypeException)
     {

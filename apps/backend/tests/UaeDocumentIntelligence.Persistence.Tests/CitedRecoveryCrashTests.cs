@@ -14,7 +14,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_process_crash_keeps_accounting_audit_and_replay_atomic(bool settle, bool committed)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var spend = SpendCommand();
         var reservation = await ledger.ReserveAsync(spend, true, default);

@@ -9,7 +9,7 @@ const readyDocument = {
 };
 
 const emptyCase = {
-  id: "case-1", name: "August procurement", status: "Draft", concurrencyToken: "case-v1",
+  id: "11111111-1111-4111-8111-111111111111", name: "August procurement", status: "Draft", concurrencyToken: "case-v1",
   documents: [], runs: [],
 };
 
@@ -45,19 +45,26 @@ function jsonResponse(body: unknown, status = 200, etag?: string): Response {
   } as Response;
 }
 
-async function createCase(fetchMock: ReturnType<typeof vi.fn>) {
+// List refreshes are independent of the mutation response sequence under test.
+function installRequests(fetchMock: (url: string, init?: RequestInit) => unknown) {
+  vi.stubGlobal("fetch", vi.fn((url: string, init?: RequestInit) => {
+    if (/\/api\/reconciliation-cases(?:\?|$)/.test(url) && (!init?.method || init.method === "GET"))
+      return Promise.resolve(jsonResponse({ cases: [], nextOffset: null }));
+    return fetchMock(url, init);
+  }));
+}
+
+async function openExistingCase(fetchMock: ReturnType<typeof vi.fn>) {
+  window.history.replaceState(null, "", `/reconciliation?case=${emptyCase.id}`);
   render(<ReconciliationPage />);
-  await screen.findByRole("heading", { name: "Start a reconciliation case" });
-  await userEvent.type(screen.getByLabelText("Case name"), "August procurement");
-  await userEvent.click(screen.getByRole("button", { name: "Create case" }));
-  await screen.findByText("Case created. Link completed review revisions next.");
+  await screen.findByRole("heading", { name: emptyCase.name });
   expect(fetchMock.mock.calls[1][0]).toContain("/api/reconciliation-cases");
 }
 
 describe("reconciliation workspace", () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => { vi.restoreAllMocks(); window.history.replaceState(null, "", "/reconciliation"); });
 
-  it("creates a case and pins only a completed review with the current ETag", async () => {
+  it("opens an earlier case and pins only a completed review with the current ETag", async () => {
     const linkedCase = {
       ...emptyCase,
       concurrencyToken: "case-v2",
@@ -68,9 +75,9 @@ describe("reconciliation workspace", () => {
       .mockResolvedValueOnce(jsonResponse(emptyCase, 201, '"case-v1"'))
       .mockResolvedValueOnce(jsonResponse({ session: { id: "review-1", status: "Completed" } }))
       .mockResolvedValueOnce(jsonResponse(linkedCase, 200, '"case-v2"'));
-    vi.stubGlobal("fetch", fetchMock);
+    installRequests(fetchMock);
 
-    await createCase(fetchMock);
+    await openExistingCase(fetchMock);
     await userEvent.selectOptions(screen.getByLabelText("Quotation document"), "document-1");
     await userEvent.click(screen.getAllByRole("button", { name: "Pin review" })[0]);
 
@@ -84,9 +91,9 @@ describe("reconciliation workspace", () => {
       .mockResolvedValueOnce(jsonResponse([readyDocument]))
       .mockResolvedValueOnce(jsonResponse(emptyCase, 201, '"case-v1"'))
       .mockResolvedValueOnce(jsonResponse(evaluatedCase, 200, '"case-v2"'));
-    vi.stubGlobal("fetch", fetchMock);
+    installRequests(fetchMock);
 
-    await createCase(fetchMock);
+    await openExistingCase(fetchMock);
     fireEvent.submit(screen.getByRole("button", { name: "Run comparison" }).closest("form")!);
 
     expect(await screen.findByText("AMT-002")).toBeTruthy();
@@ -99,14 +106,14 @@ describe("reconciliation workspace", () => {
     expect(evaluation[1]?.headers).toMatchObject({ "If-Match": '"case-v1"' });
   });
 
-  it("requires a reason and records an append-only finding decision with the latest ETag", async () => {
+  it.each(["Approved variance", "اختبار عرض فقط — AED 50.00 / PO-260801 / 2026-09-22"])("records a finding decision with reason %s and the latest ETag", async (reason) => {
     const resolvedCase = {
       ...evaluatedCase,
       concurrencyToken: "case-v3",
       runs: evaluatedCase.runs.map(run => ({ ...run, findings: run.findings.map(finding => ({
         ...finding,
         resolutions: [{
-          id: "resolution-1", sequenceNumber: 1, action: "Accepted", reason: "Approved variance", createdAt: "2026-08-19T10:00:00Z",
+          id: "resolution-1", sequenceNumber: 1, action: "Accepted", reason, createdAt: "2026-08-19T10:00:00Z",
         }],
       })) })),
     };
@@ -115,21 +122,26 @@ describe("reconciliation workspace", () => {
       .mockResolvedValueOnce(jsonResponse(emptyCase, 201, '"case-v1"'))
       .mockResolvedValueOnce(jsonResponse(evaluatedCase, 200, '"case-v2"'))
       .mockResolvedValueOnce(jsonResponse(resolvedCase, 200, '"case-v3"'));
-    vi.stubGlobal("fetch", fetchMock);
+    installRequests(fetchMock);
 
-    await createCase(fetchMock);
+    await openExistingCase(fetchMock);
     fireEvent.submit(screen.getByRole("button", { name: "Run comparison" }).closest("form")!);
     await screen.findByText("AMT-002");
     await userEvent.click(screen.getByRole("button", { name: "Accepted" }));
-    expect(await screen.findByText("Add a reason before deciding a finding.")).toBeTruthy();
+    expect((screen.getByRole("button", { name: "Accepted" }) as HTMLButtonElement).disabled).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(3);
 
-    await userEvent.type(screen.getByLabelText("Reason for AMT-002"), "Approved variance");
+    fireEvent.change(screen.getByLabelText("Reason for AMT-002 choices"), { target: { value: "other" } });
+    const reasonInput = screen.getByLabelText("Reason for AMT-002: Your explanation");
+    expect(reasonInput.getAttribute("dir")).toBe("auto");
+    await userEvent.type(reasonInput, reason);
     await userEvent.click(screen.getByRole("button", { name: "Accepted" }));
 
-    expect(await screen.findByText("Latest decision: Accepted — Approved variance")).toBeTruthy();
+    const savedReason = await screen.findByText(reason);
+    expect(savedReason.tagName).toBe("BDI");
+    expect(savedReason.closest("p")?.textContent).toBe(`Latest decision: Accepted — ${reason}`);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
     expect(fetchMock.mock.calls[3][1]?.headers).toMatchObject({ "If-Match": '"case-v2"' });
-    expect(JSON.parse(String(fetchMock.mock.calls[3][1]?.body))).toEqual({ action: "Accepted", reason: "Approved variance" });
+    expect(JSON.parse(String(fetchMock.mock.calls[3][1]?.body))).toEqual({ action: "Accepted", reason });
   }, 15_000);
 });

@@ -11,7 +11,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_default_registration_denies_even_the_active_original_requester()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var reservation = await services.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default);
         await SpendDenied("recovery_forbidden", () => services.GetRequiredService<AssessCitedRecovery>()
             .AssessAsync(reservation.Id, null, default));
@@ -23,13 +23,13 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_operator_is_separate_from_inactive_requester_and_reader_filters_foreign_scope()
     {
         var seed = await SeedGraphAsync();
-        await using var owner = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var owner = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var reservation = await owner.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default);
         var operatorId = Guid.NewGuid();
         await ExecuteAsync("INSERT INTO actors (id,organization_id,kind,display_name,is_active,created_at_utc) VALUES (@id,@org,'System','Test Recovery Operator',true,@now)",
             ("id", operatorId), ("org", seed.OrganizationA), ("now", DateTimeOffset.UtcNow));
         await ExecuteAsync("UPDATE actors SET is_active=false WHERE id=@id", ("id", seed.ActorA));
-        await using var services = CitedServices(seed.OrganizationA, operatorId, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, operatorId, "http://127.0.0.1:1");
         var reader = services.GetRequiredService<ICitedRecoveryReader>();
         var result = await RecoveryAssessor(services).AssessAsync(reservation.Id, null, default);
         Assert.Equal(operatorId, result.OperatorActorId);
@@ -48,7 +48,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_verified_cost_preview_never_settles_or_clears_a_shared_freeze()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         Assert.True(await ledger.TryMarkDispatchedAsync(reservation.Id, true, default));
@@ -76,7 +76,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_unknown_outcome_keeps_hold_and_default_verifier_cannot_invent_zero_cost()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         Assert.True(await ledger.TryMarkDispatchedAsync(reservation.Id, true, default));
@@ -91,7 +91,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_reserved_preview_is_not_authority_to_cancel_after_a_concurrent_dispatch()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         var assessor = RecoveryAssessor(services);

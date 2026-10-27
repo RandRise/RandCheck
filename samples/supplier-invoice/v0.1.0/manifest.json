@@ -1,0 +1,42 @@
+{
+  "dataset": "supplier-invoice-v0.1.0",
+  "truthSha256": "48ae81b5eb9b0f5273b7dc70c5cc9d3c8e500004d3e3a1f0df699e34852eb3dd",
+  "files": [
+    {
+      "name": "english-invoice.txt",
+      "sha256": "ea8712e81165d0e785de0d8570feb3e32b120d079d17c3a371512d8e035c2224",
+      "representation": "text-helper",
+      "pages": 1
+    },
+    {
+      "name": "english-invoice.pdf",
+      "sha256": "6faeccedb93b9d02226a1f1d2c39b4bd84bcaae437f88702def53617ef2dd802",
+      "representation": "native-pdf",
+      "pages": 1
+    },
+    {
+      "name": "english-po.txt",
+      "sha256": "2c3f5f7816d500037dfa9825434bfdfda8f68ef82279109e8d1b84d190ab8500",
+      "representation": "text-helper",
+      "pages": 1
+    },
+    {
+      "name": "english-po.pdf",
+      "sha256": "e1dcd378eda2d3c631de2410f75dbf5ea7f1b91c7e486c0db1aeb879c3728378",
+      "representation": "native-pdf",
+      "pages": 1
+    },
+    {
+      "name": "arabic-invoice.txt",
+      "sha256": "0706bee7cf16053058b9f6f30407f393f6f76adea549edec68bfecb1d98cd6fe",
+      "representation": "text-helper",
+      "pages": 1
+    },
+    {
+      "name": "arabic-po.txt",
+      "sha256": "0000c2d0226a56c63b2a4771c02e6af15d7da092f1d9425bc36bc6737d028efc",
+      "representation": "text-helper",
+      "pages": 1
+    }
+  ]
+}

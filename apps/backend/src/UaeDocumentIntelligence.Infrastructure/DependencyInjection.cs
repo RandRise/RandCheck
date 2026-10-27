@@ -13,7 +13,7 @@ using UaeDocumentIntelligence.Infrastructure.Services;
 
 namespace UaeDocumentIntelligence.Infrastructure;
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
@@ -52,31 +52,13 @@ public static class DependencyInjection
         services.Configure<ExtractionWorkerOptions>(configuration.GetSection("ExtractionWorker"));
         services.Configure<StorageMaintenanceOptions>(configuration.GetSection("StorageMaintenance"));
         services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IDocumentLibraryRepository, DocumentRepository>();
         services.AddScoped<IReconciliationRepository, ReconciliationRepository>();
+        services.AddScoped<IReconciliationReportRepository, ReconciliationReportRepository>();
+        services.AddScoped<IReconciliationDraftRequestStore, ReconciliationDraftRequestStore>();
         services.AddScoped<ICitedQuestionRepository, CitedQuestionRepository>();
-        services.AddScoped<ICitedEmbeddingStore, CitedEmbeddingStore>(); // Saved outcomes only; no HTTP route or paid dispatch.
-        services.AddScoped<ICitedEmbeddingSources, CitedEmbeddingSources>();
+        // Existing prepared semantic searches belong to the public, provider-free graph.
         services.AddScoped<ICitedSemanticRetrievalStore, CitedEmbeddingStore>();
-        services.AddSingleton(new CitedEmbeddingSettings()); // Explicit standalone pilot override only.
-        services.AddScoped<CitedEmbeddingCoordinator>();
-        services.AddHttpClient<ICitedEmbeddingClient, PythonCitedEmbeddingClient>(client =>
-        {
-            client.BaseAddress = new Uri(configuration["AiService:BaseUrl"] ?? "http://127.0.0.1:8001");
-            client.Timeout = Timeout.InfiniteTimeSpan;
-        }).ConfigurePrimaryHttpMessageHandler(PrivateServiceHandler)
-          .RemoveAllLoggers();
-        services.AddScoped<CitedGenerationLedger>();
-        services.AddScoped<ICitedGenerationLedger>(sp => sp.GetRequiredService<CitedGenerationLedger>());
-        services.AddScoped<ICitedGenerationJournal>(sp => sp.GetRequiredService<CitedGenerationLedger>());
-        services.AddScoped<ICitedPilotUnknownHold>(sp => sp.GetRequiredService<CitedGenerationLedger>());
-        services.AddSingleton<ICitedRecoveryAuthorization, DenyCitedRecoveryAuthorization>();
-        services.AddSingleton<ICitedRecoveryEvidenceVerifier, UnavailableCitedRecoveryEvidenceVerifier>();
-        services.AddScoped<ICitedRecoveryReader, CitedRecoveryReader>();
-        services.AddScoped<AssessCitedRecovery>(); // Read-only; all callers denied by default.
-        services.AddSingleton<ICitedRecoveryExecutionAuthorization, DenyCitedRecoveryExecutionAuthorization>();
-        services.AddScoped<ICitedRecoveryExecutor, CitedRecoveryExecutor>(); // No public route or live authority adapter.
-        services.AddSingleton(new CitedGenerationSettings()); // No runtime/live enable switch yet.
-        services.AddScoped<CitedGenerationCoordinator>();
         services.AddScoped<ICitedRetrievalStore, CitedRetrievalStore>();
         services.AddScoped<IndexReviewedDocumentHandler>();
         services.AddScoped<RetrieveEvidenceHandler>();
@@ -97,12 +79,6 @@ public static class DependencyInjection
             client.BaseAddress = new Uri(configuration["AiService:BaseUrl"] ?? "http://localhost:8001");
             client.Timeout = Timeout.InfiniteTimeSpan;
         }).ConfigurePrimaryHttpMessageHandler(PrivateServiceHandler).RemoveAllLoggers();
-        services.AddHttpClient<ICitedAnswerClient, PythonCitedAiClient>(client =>
-        {
-            client.BaseAddress = new Uri(configuration["AiService:BaseUrl"] ?? "http://localhost:8001");
-            client.Timeout = Timeout.InfiniteTimeSpan;
-        }).ConfigurePrimaryHttpMessageHandler(PrivateServiceHandler)
-          .RemoveAllLoggers();
         services.AddScoped<IUploadQueueStore, UploadQueueStore>();
         services.AddScoped<IExtractionJobQueue, ExtractionJobQueue>();
         services.AddScoped<IDocumentStorage, LocalDocumentStorage>();
@@ -114,6 +90,7 @@ public static class DependencyInjection
         services.AddScoped<CancelExtractionHandler>();
         services.AddScoped<ReprocessDocumentHandler>();
         services.AddScoped<DocumentQueries>();
+        services.AddScoped<DocumentLibraryQueries>();
         services.AddScoped<MetricsQuery>();
         services.AddScoped<GetReviewHistoryHandler>();
         services.AddScoped<GetReviewWorkspaceHandler>();
@@ -122,7 +99,11 @@ public static class DependencyInjection
         services.AddScoped<CompleteReviewHandler>();
         services.AddScoped<CreateReconciliationCaseHandler>();
         services.AddScoped<GetReconciliationCaseHandler>();
+        services.AddScoped<GetReconciliationReportHandler>();
+        services.AddScoped<ListReconciliationCasesHandler>();
+        services.AddScoped<UpdateReconciliationCaseMetadataHandler>();
         services.AddScoped<LinkReconciliationDocumentHandler>();
+        services.AddScoped<SetReconciliationDraftDocumentHandler>();
         services.AddScoped<EvaluateReconciliationCaseHandler>();
         services.AddScoped<ResolveReconciliationFindingHandler>();
         services.AddHttpClient<IExtractionClient, PythonExtractionClient>(client =>

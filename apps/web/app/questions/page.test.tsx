@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import QuestionsPage from "./page";
+beforeEach(() => window.history.replaceState(null, "", "/questions"));
 
 const id = (n: number) => `00000000-0000-4000-8000-${n.toString().padStart(12, "0")}`;
 const source = { documentId: id(1), filename: "invoice.pdf", reviewSessionId: id(2), extractionRunId: id(3), revisionNumber: 1 };
@@ -19,6 +20,21 @@ const reviewedResult = { ...result, stage: "ReviewedAnswer", answer: null,
     claims: [{ text: "Invoice total: 100.00 AED.", citations: [{ hitId: id(6), spanId: null }] }] } };
 
 describe("reviewed answer mode", () => {
+  it("keeps mixed source text and Arabic questions intact in the evidence view", async () => {
+    const question = "ما إجمالي الفاتورة؟";
+    const before = "رقم الفاتورة: INV-007\nالإجمالي: ";
+    const quote = "١٠٥٫٠٠";
+    mockApi({ reviewed: async () => json({ ...reviewedResult, question }),
+      evidence: async () => json({ ...location, page: { ...location.page, before, quote, after: " AED\nشكراً" } }) });
+    render(<QuestionsPage />);
+    await pinAndAsk(true);
+    expect(screen.getByLabelText("Your question").getAttribute("dir")).toBe("auto");
+    expect((await screen.findByRole("heading", { name: question })).getAttribute("dir")).toBe("auto");
+    await userEvent.click(screen.getByRole("button", { name: /Source: invoice.pdf/ }));
+    const mark = await screen.findByText(quote);
+    expect(mark.closest("pre")?.getAttribute("dir")).toBe("auto");
+    expect(mark.closest("pre")?.textContent).toBe(before + quote + " AED\nشكراً");
+  });
   beforeEach(() => vi.restoreAllMocks());
 
   it("submits the reviewed mode and opens the saved claim citation", async () => {
@@ -72,19 +88,22 @@ describe("case sources and semantic search", () => {
 
   it("loads a reconciliation case's frozen sources and submits those indexes", async () => {
     const fetch = mockApi(); render(<QuestionsPage />);
+    await userEvent.click(screen.getByText("Open a case by ID"));
     await userEvent.type(screen.getByLabelText("Reconciliation case ID"), id(22));
-    await userEvent.click(screen.getByRole("button", { name: "Use case sources" }));
+    await userEvent.click(screen.getByRole("button", { name: "Use this case's documents" }));
     await screen.findByText(/Sources loaded from Procurement case/);
     await userEvent.type(screen.getByLabelText("Your question"), "What is the total?");
+    await userEvent.selectOptions(screen.getByLabelText("Question mode"), "evidence");
     await userEvent.click(screen.getByRole("button", { name: "Search selected sources" }));
     await screen.findByText("1 evidence hit · Not a generated answer");
-    const post = fetch.mock.calls.find(([url]) => String(url).endsWith("/api/cited-questions"));
+    const post = fetch.mock.calls.find(([url, init]) => String(url).endsWith("/api/cited-questions") && init?.method === "POST");
     expect(JSON.parse(String(post?.[1]?.body)).indexIds).toEqual([id(4)]);
   });
 
   it("switches to hybrid search with a new request identity", async () => {
     const fetch = mockApi(); render(<QuestionsPage />); await pinAndAsk();
     await screen.findByText("1 evidence hit · Not a generated answer");
+    await userEvent.click(screen.getByText("Experimental search settings"));
     await userEvent.selectOptions(screen.getByLabelText("Search method"), "hybrid-nonredundant");
     await userEvent.click(screen.getByRole("button", { name: "Search selected sources" }));
     await screen.findByText("1 evidence hit · Not a generated answer");
@@ -98,16 +117,19 @@ describe("case sources and semantic search", () => {
     const fetch = mockApi({ semantic: async () => json({}, 422) });
     render(<QuestionsPage />); await pinAndAsk();
     await screen.findByText("1 evidence hit · Not a generated answer");
+    await userEvent.click(screen.getByText("Experimental search settings"));
     await userEvent.selectOptions(screen.getByLabelText("Search method"), "vector");
     await userEvent.click(screen.getByRole("button", { name: "Search selected sources" }));
     await screen.findByText(/Semantic search is not available for this question/);
-    expect(fetch.mock.calls.filter(([url]) => String(url).endsWith("/api/cited-questions")).length).toBe(1);
+    expect(fetch.mock.calls.filter(([url, init]) => String(url).endsWith("/api/cited-questions") && init?.method === "POST").length).toBe(1);
   });
 });
 
 function mockApi(overrides: { question?: () => Promise<Response>; reviewed?: () => Promise<Response>; semantic?: () => Promise<Response>; caseSources?: () => Promise<Response>; saved?: unknown; evidence?: () => Promise<Response>; sources?: unknown } = {}) {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const url = String(input);
+    if (url.endsWith("/api/reconciliation-cases")) return json({ cases: [], nextOffset: null });
+    if (url.endsWith("/api/cited-questions") && init?.method === "GET") return json({ questions: [] });
     if (url.includes("/evidence")) return overrides.evidence?.() ?? json(location);
     if (url.endsWith("/api/cited-sources")) return json(overrides.sources ?? { sources: [source], nextOffset: null });
     if (url.includes("/api/cited-cases/")) return overrides.caseSources?.() ?? json({ name: "Procurement case", sources: [{ ...source, indexId: id(4) }] });
@@ -125,7 +147,7 @@ async function pinAndAsk(reviewed = false) {
   await userEvent.click(screen.getByRole("button", { name: "Add source" }));
   await screen.findByRole("button", { name: "Remove invoice.pdf" });
     await userEvent.type(screen.getByLabelText("Your question"), "What is the total?");
-  if (reviewed) await userEvent.selectOptions(screen.getByLabelText("Question mode"), "reviewed");
+  await userEvent.selectOptions(screen.getByLabelText("Question mode"), reviewed ? "reviewed" : "evidence");
   await userEvent.click(screen.getByRole("button", { name: reviewed ? "Answer from selected reviews" : "Search selected sources" }));
 }
 
@@ -134,12 +156,12 @@ describe("evidence question workspace", () => {
 
   it("requires a selected source and pins the exact completed review before searching", async () => {
     const fetch = mockApi(); render(<QuestionsPage />);
-    expect(screen.getByRole("button", { name: "Search selected sources" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "Answer from selected reviews" }).hasAttribute("disabled")).toBe(true);
     await pinAndAsk();
     await screen.findByText("1 evidence hit · Not a generated answer");
     const indexCall = fetch.mock.calls.find(([url]) => String(url).endsWith("/api/cited-indexes"))!;
     expect(JSON.parse(String(indexCall[1]?.body))).toEqual({ documentId: id(1), reviewSessionId: id(2) });
-    const askCall = fetch.mock.calls.find(([url]) => String(url).endsWith("/api/cited-questions"))!;
+    const askCall = fetch.mock.calls.find(([url, init]) => String(url).endsWith("/api/cited-questions") && init?.method === "POST")!;
     expect(JSON.parse(String(askCall[1]?.body))).toMatchObject({ question: "What is the total?", indexIds: [id(4)], topK: 5 });
     expect(screen.getByText("Answers from reviewed fields")).toBeTruthy();
   });
@@ -180,7 +202,7 @@ describe("evidence question workspace", () => {
     await userEvent.type(screen.getByLabelText("Your question"), " Again");
     await userEvent.click(screen.getByRole("button", { name: "Search selected sources" }));
     await screen.findByText("1 evidence hit · Not a generated answer");
-    const bodies = fetch.mock.calls.filter(([url]) => String(url).endsWith("/api/cited-questions")).map(([, init]) => JSON.parse(String(init?.body)));
+    const bodies = fetch.mock.calls.filter(([url, init]) => String(url).endsWith("/api/cited-questions") && init?.method === "POST").map(([, init]) => JSON.parse(String(init?.body)));
     expect(bodies[0].requestKey).toBe(bodies[1].requestKey);
     expect(bodies[2].requestKey).not.toBe(bodies[0].requestKey);
   });
@@ -229,7 +251,7 @@ describe("evidence question workspace", () => {
 
   it("guides users when no completed reviews exist", async () => {
     mockApi({ sources: { sources: [], nextOffset: null } }); render(<QuestionsPage />);
-    await screen.findByText(/No completed reviews are available/);
+    await screen.findByText(/No completed reviews found/);
     expect(screen.getByRole("button", { name: "Add source" }).hasAttribute("disabled")).toBe(true);
   });
 });

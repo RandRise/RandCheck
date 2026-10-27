@@ -35,7 +35,7 @@ try
         ["ConnectionStrings:Database"] = "Host=127.0.0.1;Port=25434;Database=phase5_e2e_20260908;Username=document_intelligence;Password=local_development_only",
         ["AiService:BaseUrl"] = "http://127.0.0.1:28158", ["AiService:WorkerToken"] = token
     }).Build();
-    var collection = new ServiceCollection().AddInfrastructure(config);
+    var collection = new ServiceCollection().AddInfrastructure(config).AddCitedPilotInfrastructure(config);
     collection.AddSingleton<IExecutionContext>(new Identity(org,actor));
     // Official standard input rate reviewed 2026-09-10; only new embedding admission uses this window.
     // Generation rate settings are not modified. Historical outcome replay is rate-window independent.

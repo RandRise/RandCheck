@@ -1,0 +1,208 @@
+{
+  "dataset": "language-v0.2.0",
+  "datasetSha256": "09fddd0258dddb00aec5ba4e4f8ac6b764e86e79072f7041091f604a0af9614e",
+  "policy": "arabic-evidence-v1",
+  "scope": "canonical-text parsing; no OCR or model calls",
+  "groups": {
+    "ar": {
+      "passed": 5,
+      "total": 5
+    },
+    "ar-en": {
+      "passed": 3,
+      "total": 3
+    },
+    "en": {
+      "passed": 1,
+      "total": 1
+    }
+  },
+  "cases": [
+    {
+      "id": "ar-basic",
+      "language": "ar",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      },
+      "evidenceSpans": 6
+    },
+    {
+      "id": "mixed-identifiers",
+      "language": "ar-en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "supplier_trn": true,
+        "currency": true,
+        "total": true,
+        "payment_terms": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-007",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "total": "210.50",
+        "payment_terms": "خلال 30 يوماً"
+      },
+      "evidenceSpans": 5
+    },
+    {
+      "id": "ar-diacritics",
+      "language": "ar",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "total": true,
+        "currency": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "002",
+        "currency": "AED",
+        "total": "105.00"
+      },
+      "evidenceSpans": 3
+    },
+    {
+      "id": "ar-tatweel",
+      "language": "ar",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "total": true,
+        "currency": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "003",
+        "currency": "AED",
+        "total": "315.00"
+      },
+      "evidenceSpans": 3
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "language": "ar-en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "currency": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "MIX-2",
+        "currency": "AED",
+        "subtotal": "100.00",
+        "vat": "5.00",
+        "total": "105.00"
+      },
+      "evidenceSpans": 5
+    },
+    {
+      "id": "ar-due-date",
+      "language": "ar",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "total": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "004",
+        "invoice_date": "2026-09-21",
+        "due_date": "2026-10-21",
+        "total": "500.00"
+      },
+      "evidenceSpans": 4
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "language": "ar",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "payment_terms": true,
+        "total": true,
+        "absent:due_date": true,
+        "warning:due_date_requires_review": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "005",
+        "total": "500.00",
+        "payment_terms": "خلال 30 يوماً"
+      },
+      "evidenceSpans": 3
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "language": "ar-en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "total": true,
+        "absent:due_date": true,
+        "warning:due_date_conflicting": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "MIX-3",
+        "total": "100.00"
+      },
+      "evidenceSpans": 2
+    },
+    {
+      "id": "en-control",
+      "language": "en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      },
+      "evidenceSpans": 6
+    }
+  ]
+}

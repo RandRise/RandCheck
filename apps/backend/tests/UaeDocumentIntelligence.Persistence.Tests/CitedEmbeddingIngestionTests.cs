@@ -20,13 +20,13 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var op = IngestionOperation(g);
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var client = new EmbeddingClientFixture();
         var first = await Coordinator(services, client).RunAsync(op, default);
         Assert.Equal(new EmbeddingStorageResult(1, 0), first.Storage);
         Assert.False(first.Replayed);
         Assert.Equal(1, client.Calls);
-        await using var restarted = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var restarted = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var offline = new EmbeddingClientFixture("transport");
         var replay = await Coordinator(restarted, offline).RunAsync(op, default);
         Assert.True(replay.Replayed);
@@ -50,7 +50,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var op = IngestionOperation(g);
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var client = new EmbeddingClientFixture(mode);
         await Assert.ThrowsAsync<CitedWorkflowException>(() => Coordinator(services, client).RunAsync(op, default));
         Assert.Equal(state, await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
@@ -66,7 +66,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ingestion_source_retirement_during_preparation_prevents_reservation_and_dispatch()
     {
         var g = await SeedCitedGraphAsync();
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var client = new EmbeddingClientFixture { AfterPrepare = () => ExecuteAsync(
             "UPDATE cited_document_indexes SET status='Quarantined' WHERE id=@id", ("id",g.Index.Id)) };
         await SpendDenied("embedding_source_ineligible", () => Coordinator(services, client).RunAsync(IngestionOperation(g), default));
@@ -78,8 +78,8 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ingestion_serializes_different_operation_ids_before_duplicate_paid_work()
     {
         var g = await SeedCitedGraphAsync();
-        await using var a = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var ca = new EmbeddingClientFixture();
         var cb = new EmbeddingClientFixture();
         var result = await Task.WhenAll(Coordinator(a, ca).RunAsync(IngestionOperation(g), default),
@@ -94,9 +94,9 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var client = new EmbeddingClientFixture();
-        await using var owner = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var owner = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("embedding_disabled", () => Coordinator(owner, client, false).RunAsync(IngestionOperation(g), default));
-        await using var foreign = CitedServices(g.Seed.OrganizationB, g.Seed.ActorB, "http://127.0.0.1:1");
+        await using var foreign = CitedPilotServices(g.Seed.OrganizationB, g.Seed.ActorB, "http://127.0.0.1:1");
         await SpendDenied("embedding_source_ineligible", () => Coordinator(foreign, client).RunAsync(IngestionOperation(g), default));
         Assert.Equal(0, client.Preparations);
         Assert.Equal(0, client.Calls);
@@ -106,7 +106,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_ingestion_query_requires_coverage_then_searches_without_indexing_question()
     {
         var g = await SeedCitedGraphAsync();
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var client = new EmbeddingClientFixture();
         var query = new EmbeddingOperation(Guid.NewGuid(), "query", [g.Index.Id], [], "What is the invoice total?");
         await SpendDenied("embedding_corpus_incomplete", () => Coordinator(services, client).RunAsync(query, default));

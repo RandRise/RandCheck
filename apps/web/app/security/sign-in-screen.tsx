@@ -6,11 +6,10 @@ export function SignInScreen({ configured = false, busy = false, message = "", o
   configured?: boolean; busy?: boolean; message?: string; onSignIn?: () => void; onSignOut?: () => void;
 }) {
   return <main className="signin-page">
-    <div className="security-wordmark"><span aria-hidden="true">DI</span> DOCUMENT INTELLIGENCE</div>
+    <div className="security-wordmark"><span aria-hidden="true">DI</span> Document review</div>
     <div className="signin-grid">
       <section className="signin-story">
-        <p className="security-eyebrow">YOUR ORGANIZATION’S WORKSPACE</p>
-        <h1>Clear evidence.<br />Controlled access.</h1>
+        <h1>Your document workspace</h1>
         <p className="signin-lead">Review documents, reconcile the details, and trace every decision back to its source.</p>
         <div className="signin-principles">
           <div><b>01</b><p><strong>One trusted identity</strong><span>Use your organization’s Microsoft account.</span></p></div>
@@ -19,7 +18,6 @@ export function SignInScreen({ configured = false, busy = false, message = "", o
         </div>
       </section>
       <section className="signin-card" aria-labelledby="signin-title">
-        <span className="security-eyebrow">WELCOME BACK</span>
         <h2 id="signin-title">Sign in to your<br />workspace.</h2>
         <p>Continue with the work account that your administrator has given access.</p>
         <button className="microsoft-button" disabled={!configured || busy} onClick={onSignIn}>

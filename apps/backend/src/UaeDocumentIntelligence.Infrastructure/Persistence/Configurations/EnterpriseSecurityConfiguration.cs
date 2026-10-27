@@ -21,14 +21,13 @@ internal sealed class OrganizationMembershipConfiguration : IEntityTypeConfigura
 {
     public void Configure(EntityTypeBuilder<OrganizationMembership> b)
     {
-        b.ToTable("organization_memberships", t => t.HasCheckConstraint("ck_membership_role", "role IN ('None','Viewer','Reviewer','Operator')"));
+        b.ToTable("organization_memberships", t => t.HasCheckConstraint("ck_membership_role", "role IN ('Staff','Admin')"));
         b.HasKey(x => x.Id); b.Ignore(x => x.AccessState);
         b.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
         b.Property(x => x.OrganizationId).HasColumnName("organization_id");
         b.Property(x => x.IdentityId).HasColumnName("identity_id");
         b.Property(x => x.ActorId).HasColumnName("actor_id");
         b.Property(x => x.Role).HasColumnName("role").HasConversion<string>().HasMaxLength(16);
-        b.Property(x => x.CanManageMembers).HasColumnName("can_manage_members");
         b.Property(x => x.IsActive).HasColumnName("is_active");
         b.Property(x => x.Version).HasColumnName("version").IsConcurrencyToken();
         b.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");

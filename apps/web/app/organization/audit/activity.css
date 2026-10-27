@@ -1,0 +1,59 @@
+.activity-page .security-heading { gap: 24px; align-items: center; margin-bottom: 16px; }
+.activity-page .security-heading h2 { margin: 0 0 8px; }
+.activity-page .security-heading p { margin: 0; color: var(--app-muted); }
+.activity-help { margin: 0 0 24px; color: var(--app-muted); }
+.activity-list { overflow: hidden; }
+.activity-list-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 22px 24px; }
+.activity-list-heading h3 { margin: 0; font-size: 18px; }
+.activity-list-heading > span { color: var(--app-muted); font-size: 13px; }
+.activity-columns, .activity-event > summary { display: grid; grid-template-columns: minmax(170px, 2fr) minmax(135px, 1.25fr) minmax(140px, 1.2fr) minmax(100px, .85fr) 76px; gap: 20px; align-items: center; padding: 18px 24px; }
+.activity-columns { border-top: 1px solid var(--app-border); background: var(--app-raised); color: var(--app-muted); font-size: 12px; font-weight: 600; }
+.activity-events { list-style: none; margin: 0; padding: 0; }
+.activity-event { border-top: 1px solid var(--app-border); }
+.activity-event > summary { list-style: none; cursor: pointer; min-height: 98px; }
+.activity-event > summary::-webkit-details-marker { display: none; }
+.activity-event > summary:hover, .activity-event[open] > summary { background: var(--app-tint); }
+.activity-event > summary > span { min-width: 0; overflow-wrap: anywhere; }
+.activity-event > summary:focus-visible { outline: 3px solid var(--app-accent); outline-offset: -3px; }
+.activity-what strong { font-size: 14px; font-weight: 600; line-height: 1.5; }
+.activity-who { color: var(--app-text); font-size: 13px; }
+.activity-who small { display: block; color: var(--app-muted); margin-top: 6px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.activity-event time { font-size: 13px; font-variant-numeric: tabular-nums; }
+.activity-result { display: inline-block; padding: 5px 9px; border: 1px solid var(--app-control-border); border-radius: 6px; font-size: 12px; line-height: 1.5; }
+.activity-result.success { background: var(--app-success-bg); color: var(--app-success); border-color: currentColor; }
+.activity-result.denied { background: var(--app-warning-bg); color: var(--app-warning); border-color: currentColor; }
+.activity-result.failed { background: var(--app-error-bg); color: var(--app-error); border-color: currentColor; }
+.activity-result.unknown { background: var(--app-raised); color: var(--app-muted); }
+.activity-details-label { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+.activity-details-label svg { flex-shrink: 0; }
+.activity-event[open] .activity-details-label svg { transform: rotate(180deg); }
+.activity-mobile-label { display: none; }
+.activity-page .activity-evidence { padding: 24px; border-top: 1px solid var(--app-border); }
+.activity-evidence > p { color: var(--app-muted); margin: 0 0 20px; font-size: 13px; }
+.activity-page .activity-evidence dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.activity-page .activity-evidence dt { font-size: 12px; color: var(--app-muted); margin-bottom: 7px; }
+.activity-page .activity-evidence dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.6 "Segoe UI", Arial, sans-serif; color: var(--app-text); }
+.activity-message { padding: 24px; border-top: 1px solid var(--app-border); }
+.activity-message h3 { margin: 0 0 8px; }
+.activity-message > p { margin: 0 0 16px; }
+.activity-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; border-top: 1px solid var(--app-border); }
+.activity-pagination > span { font-size: 13px; text-align: center; color: var(--app-muted); }
+.activity-limit, .activity-footnote { font-size: 13px; color: var(--app-muted); line-height: 1.6; }
+.activity-limit { margin: 0; padding: 0 24px 24px; }
+.activity-footnote { margin: 18px 0 0; max-width: 85ch; }
+
+@media (max-width: 1200px) {
+  .activity-columns { display: none; }
+  .activity-event > summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 24px; }
+  .activity-what { grid-column: 1 / -1; }
+  .activity-mobile-label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 400; color: var(--app-muted); }
+  .activity-details-label { justify-self: end; }
+}
+
+@media (max-width: 600px) {
+  .activity-page .security-heading { flex-wrap: wrap; align-items: flex-start; }
+  .activity-list-heading, .activity-event > summary, .activity-page .activity-evidence, .activity-message, .activity-pagination { padding: 18px 16px; }
+  .activity-page .activity-evidence dl { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .activity-pagination { flex-wrap: wrap; }
+  .activity-pagination > span { flex: 1; min-width: 90px; }
+}

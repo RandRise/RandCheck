@@ -42,7 +42,7 @@ public sealed partial class PostgresPersistenceTests
         using var host = role.Host(source.Host); using var admin = WithAuthority(host, source.Admin); using var user = WithAuthority(host, source.User);
         Assert.Equal(HttpStatusCode.OK, (await user.GetAsync("/api/session")).StatusCode);
         var member = await SecurityAdd(admin, Guid.NewGuid());
-        Assert.Equal(HttpStatusCode.OK, (await SecurityChange(admin, member, "Reviewer", false, true)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SecurityChange(admin, member, "Admin", false, true)).StatusCode);
         var grantResponse = await user.PostAsync($"/api/documents/{source.Source.DocumentId}/source-access", null);
         Assert.Equal(HttpStatusCode.OK, grantResponse.StatusCode);
         var grant = (await grantResponse.Content.ReadFromJsonAsync<DocumentSourceEndpoints.AccessGrant>())!;

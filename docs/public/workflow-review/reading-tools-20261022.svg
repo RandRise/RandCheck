@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 360" role="img" aria-labelledby="title desc">
+  <title id="title">Two simple reading paths</title>
+  <desc id="desc">History goes from a saved case to a comparison and its evidence. Questions goes from selected reviews to a question and its answer. Neither path confirms values automatically.</desc>
+  <rect width="1040" height="360" rx="18" fill="#1c1d21"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#f3f3f7">
+    <text x="32" y="40" font-size="23" font-weight="600">Read saved work. Keep its sources.</text>
+    <text x="32" y="78" font-size="15" fill="#bfc0cd">Earlier cases and history</text>
+    <g fill="#313239" stroke="#42434d"><rect x="32" y="94" width="296" height="70" rx="10"/><rect x="372" y="94" width="296" height="70" rx="10"/><rect x="712" y="94" width="296" height="70" rx="10"/></g>
+    <g font-size="18" font-weight="600"><text x="50" y="135">1. Find a case</text><text x="390" y="135">2. Choose a comparison</text><text x="730" y="123">3. Read evidence</text><text x="754" y="148">and decisions</text></g>
+    <text x="32" y="205" font-size="15" fill="#bfc0cd">Ask about documents</text>
+    <g fill="#313239" stroke="#42434d"><rect x="32" y="221" width="296" height="70" rx="10"/><rect x="372" y="221" width="296" height="70" rx="10"/><rect x="712" y="221" width="296" height="70" rx="10"/></g>
+    <g font-size="18" font-weight="600"><text x="50" y="262">1. Choose saved sources</text><text x="390" y="262">2. Ask a question</text><text x="730" y="250">3. Read the answer</text><text x="754" y="275">and evidence</text></g>
+    <g font-size="26" fill="#d5ccff"><text x="340" y="138">→</text><text x="680" y="138">→</text><text x="340" y="265">→</text><text x="680" y="265">→</text></g>
+    <text x="32" y="332" font-size="15" fill="#bfc0cd">Opening a page does not confirm values. Missing facts stay unanswered.</text>
+  </g>
+</svg>

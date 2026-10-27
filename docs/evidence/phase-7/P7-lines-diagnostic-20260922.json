@@ -1,0 +1,828 @@
+[
+  {
+    "id": "mixed-identifiers",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      130
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "فاتورة",
+        "conf": 91,
+        "left": 533,
+        "top": 16,
+        "width": 108,
+        "height": 44
+      },
+      {
+        "text": "تجريبية",
+        "conf": 90,
+        "left": 392,
+        "top": 27,
+        "width": 123,
+        "height": 33
+      },
+      {
+        "text": "/",
+        "conf": 90,
+        "left": 360,
+        "top": 17,
+        "width": 15,
+        "height": 36
+      },
+      {
+        "text": "5171117115716",
+        "conf": 60,
+        "left": 103,
+        "top": 16,
+        "width": 240,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      130
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "فاتورة",
+        "conf": 91,
+        "left": 533,
+        "top": 16,
+        "width": 108,
+        "height": 44
+      },
+      {
+        "text": "تجريبية",
+        "conf": 90,
+        "left": 392,
+        "top": 27,
+        "width": 123,
+        "height": 33
+      },
+      {
+        "text": "/",
+        "conf": 93,
+        "left": 360,
+        "top": 17,
+        "width": 15,
+        "height": 36
+      },
+      {
+        "text": "SYNTHETIC‏",
+        "conf": 93,
+        "left": 103,
+        "top": 16,
+        "width": 240,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      218
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "07",
+        "conf": 68,
+        "left": 597,
+        "top": 15,
+        "width": 49,
+        "height": 33
+      },
+      {
+        "text": "/ال١ي١‏",
+        "conf": 0,
+        "left": 481,
+        "top": 16,
+        "width": 83,
+        "height": 32
+      },
+      {
+        "text": "جبوطصنلا",
+        "conf": 0,
+        "left": 275,
+        "top": 15,
+        "width": 183,
+        "height": 33
+      },
+      {
+        "text": "01/0166",
+        "conf": 22,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      218
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "Invoice",
+        "conf": 95,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      },
+      {
+        "text": "Number:",
+        "conf": 93,
+        "left": 275,
+        "top": 15,
+        "width": 183,
+        "height": 33
+      },
+      {
+        "text": "INV-007",
+        "conf": 87,
+        "left": 481,
+        "top": 15,
+        "width": 165,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      330
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "الرقم",
+        "conf": 91,
+        "left": 2403,
+        "top": 16,
+        "width": 93,
+        "height": 44
+      },
+      {
+        "text": "الضريبي",
+        "conf": 91,
+        "left": 2239,
+        "top": 16,
+        "width": 143,
+        "height": 44
+      },
+      {
+        "text": "للمورد:",
+        "conf": 91,
+        "left": 2095,
+        "top": 16,
+        "width": 122,
+        "height": 44
+      },
+      {
+        "text": "000000000000701",
+        "conf": 93,
+        "left": 1659,
+        "top": 16,
+        "width": 413,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      330
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "الرقم",
+        "conf": 91,
+        "left": 2403,
+        "top": 16,
+        "width": 93,
+        "height": 44
+      },
+      {
+        "text": "الضريبي",
+        "conf": 91,
+        "left": 2239,
+        "top": 16,
+        "width": 143,
+        "height": 44
+      },
+      {
+        "text": "للمورد:",
+        "conf": 91,
+        "left": 2095,
+        "top": 16,
+        "width": 122,
+        "height": 44
+      },
+      {
+        "text": "000000000000701",
+        "conf": 93,
+        "left": 1659,
+        "top": 16,
+        "width": 413,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 3,
+    "box": [
+      0,
+      355,
+      2600,
+      427
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "ناعحط",
+        "conf": 19,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      },
+      {
+        "text": ":0011602",
+        "conf": 0,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 3,
+    "box": [
+      0,
+      355,
+      2600,
+      427
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "Currency:",
+        "conf": 96,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      },
+      {
+        "text": "AED",
+        "conf": 96,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 4,
+    "box": [
+      0,
+      455,
+      2600,
+      530
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 2337,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "210.50",
+        "conf": 93,
+        "left": 2167,
+        "top": 16,
+        "width": 148,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 4,
+    "box": [
+      0,
+      455,
+      2600,
+      530
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 2337,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "210.50",
+        "conf": 93,
+        "left": 2167,
+        "top": 16,
+        "width": 148,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 5,
+    "box": [
+      0,
+      556,
+      2600,
+      643
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "شروط",
+        "conf": 90,
+        "left": 2380,
+        "top": 28,
+        "width": 117,
+        "height": 44
+      },
+      {
+        "text": "الدفع:",
+        "conf": 92,
+        "left": 2260,
+        "top": 28,
+        "width": 99,
+        "height": 44
+      },
+      {
+        "text": "خلال",
+        "conf": 93,
+        "left": 2159,
+        "top": 28,
+        "width": 79,
+        "height": 40
+      },
+      {
+        "text": "30",
+        "conf": 96,
+        "left": 2089,
+        "top": 28,
+        "width": 50,
+        "height": 33
+      },
+      {
+        "text": "يوماً",
+        "conf": 91,
+        "left": 2000,
+        "top": 15,
+        "width": 71,
+        "height": 57
+      }
+    ]
+  },
+  {
+    "id": "mixed-identifiers",
+    "row": 5,
+    "box": [
+      0,
+      556,
+      2600,
+      643
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "شروط",
+        "conf": 90,
+        "left": 2380,
+        "top": 28,
+        "width": 117,
+        "height": 44
+      },
+      {
+        "text": "الدفع:",
+        "conf": 92,
+        "left": 2260,
+        "top": 28,
+        "width": 99,
+        "height": 44
+      },
+      {
+        "text": "خلال",
+        "conf": 93,
+        "left": 2159,
+        "top": 28,
+        "width": 79,
+        "height": 40
+      },
+      {
+        "text": "30",
+        "conf": 95,
+        "left": 2089,
+        "top": 28,
+        "width": 50,
+        "height": 33
+      },
+      {
+        "text": "log,‏",
+        "conf": 85,
+        "left": 2000,
+        "top": 15,
+        "width": 71,
+        "height": 57
+      }
+    ]
+  },
+  {
+    "id": "mixed-neighbor-fields",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      118
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "2كأر",
+        "conf": 7,
+        "left": 530,
+        "top": 15,
+        "width": 66,
+        "height": 33
+      },
+      {
+        "text": "اانا",
+        "conf": 7,
+        "left": 481,
+        "top": 16,
+        "width": 43,
+        "height": 32
+      },
+      {
+        "text": "جروطدصنل]",
+        "conf": 7,
+        "left": 275,
+        "top": 15,
+        "width": 183,
+        "height": 33
+      },
+      {
+        "text": "01/0166",
+        "conf": 17,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-neighbor-fields",
+    "row": 0,
+    "box": [
+      0,
+      55,
+      2600,
+      118
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "Invoice",
+        "conf": 95,
+        "left": 104,
+        "top": 15,
+        "width": 151,
+        "height": 33
+      },
+      {
+        "text": "Number:",
+        "conf": 92,
+        "left": 275,
+        "top": 15,
+        "width": 183,
+        "height": 33
+      },
+      {
+        "text": "MIX-2",
+        "conf": 92,
+        "left": 481,
+        "top": 15,
+        "width": 115,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-neighbor-fields",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      230
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "المجموع",
+        "conf": 92,
+        "left": 2349,
+        "top": 16,
+        "width": 146,
+        "height": 44
+      },
+      {
+        "text": "الفرعي:",
+        "conf": 92,
+        "left": 2187,
+        "top": 16,
+        "width": 140,
+        "height": 44
+      },
+      {
+        "text": "100.00",
+        "conf": 93,
+        "left": 2019,
+        "top": 16,
+        "width": 146,
+        "height": 33
+      },
+      {
+        "text": "|",
+        "conf": 96,
+        "left": 1991,
+        "top": 16,
+        "width": 3,
+        "height": 44
+      },
+      {
+        "text": "ضريبة",
+        "conf": 91,
+        "left": 1863,
+        "top": 27,
+        "width": 105,
+        "height": 33
+      },
+      {
+        "text": "القيمة",
+        "conf": 92,
+        "left": 1739,
+        "top": 16,
+        "width": 103,
+        "height": 39
+      },
+      {
+        "text": "المضافة:",
+        "conf": 92,
+        "left": 1565,
+        "top": 16,
+        "width": 153,
+        "height": 34
+      },
+      {
+        "text": "5.00",
+        "conf": 93,
+        "left": 1451,
+        "top": 16,
+        "width": 92,
+        "height": 33
+      },
+      {
+        "text": "|",
+        "conf": 96,
+        "left": 1427,
+        "top": 16,
+        "width": 1,
+        "height": 44
+      },
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 1242,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "105.00",
+        "conf": 92,
+        "left": 1074,
+        "top": 16,
+        "width": 146,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-neighbor-fields",
+    "row": 1,
+    "box": [
+      0,
+      155,
+      2600,
+      230
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "المجموع",
+        "conf": 92,
+        "left": 2349,
+        "top": 16,
+        "width": 146,
+        "height": 44
+      },
+      {
+        "text": "الفرعي:",
+        "conf": 92,
+        "left": 2187,
+        "top": 16,
+        "width": 140,
+        "height": 44
+      },
+      {
+        "text": "100.00",
+        "conf": 93,
+        "left": 2019,
+        "top": 16,
+        "width": 146,
+        "height": 33
+      },
+      {
+        "text": "|",
+        "conf": 92,
+        "left": 1991,
+        "top": 16,
+        "width": 3,
+        "height": 44
+      },
+      {
+        "text": "ضريبة",
+        "conf": 91,
+        "left": 1863,
+        "top": 27,
+        "width": 105,
+        "height": 33
+      },
+      {
+        "text": "القيمة",
+        "conf": 92,
+        "left": 1739,
+        "top": 16,
+        "width": 103,
+        "height": 39
+      },
+      {
+        "text": "المضافة:",
+        "conf": 92,
+        "left": 1565,
+        "top": 16,
+        "width": 153,
+        "height": 34
+      },
+      {
+        "text": "5.00",
+        "conf": 76,
+        "left": 1451,
+        "top": 16,
+        "width": 92,
+        "height": 33
+      },
+      {
+        "text": "|",
+        "conf": 76,
+        "left": 1425,
+        "top": 16,
+        "width": 3,
+        "height": 44
+      },
+      {
+        "text": "الإجمالي:",
+        "conf": 91,
+        "left": 1242,
+        "top": 16,
+        "width": 159,
+        "height": 44
+      },
+      {
+        "text": "105.00",
+        "conf": 92,
+        "left": 1074,
+        "top": 16,
+        "width": 146,
+        "height": 33
+      }
+    ]
+  },
+  {
+    "id": "mixed-neighbor-fields",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      327
+    ],
+    "mode": "ara",
+    "words": [
+      {
+        "text": "ناعحط",
+        "conf": 19,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      },
+      {
+        "text": ":0011602",
+        "conf": 0,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      }
+    ]
+  },
+  {
+    "id": "mixed-neighbor-fields",
+    "row": 2,
+    "box": [
+      0,
+      255,
+      2600,
+      327
+    ],
+    "mode": "eng+ara",
+    "words": [
+      {
+        "text": "Currency:",
+        "conf": 96,
+        "left": 102,
+        "top": 15,
+        "width": 206,
+        "height": 42
+      },
+      {
+        "text": "AED",
+        "conf": 96,
+        "left": 328,
+        "top": 16,
+        "width": 88,
+        "height": 32
+      }
+    ]
+  }
+]

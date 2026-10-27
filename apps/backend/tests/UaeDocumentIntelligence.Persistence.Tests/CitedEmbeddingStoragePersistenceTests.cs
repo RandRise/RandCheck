@@ -53,13 +53,13 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var f = StoredFixture(g);
-        await using (var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1"))
+        await using (var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1"))
         {
             await SaveEmbeddingJournal(services, f);
             Assert.Equal(new EmbeddingStorageResult(1, 0), await services.GetRequiredService<ICitedEmbeddingStore>()
                 .StoreChunkOutcomeAsync(f.Operation, default));
         }
-        await using var restarted = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var restarted = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         Assert.Equal(new EmbeddingStorageResult(0, 1), await restarted.GetRequiredService<ICitedEmbeddingStore>()
             .StoreChunkOutcomeAsync(f.Operation, default));
         Assert.Equal(1, await ScalarAsync<long>("SELECT count(*) FROM cited_chunk_embeddings"));
@@ -75,8 +75,8 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var f = StoredFixture(g);
-        await using var a = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         await SaveEmbeddingJournal(a, f);
         var results = await Task.WhenAll(a.GetRequiredService<ICitedEmbeddingStore>().StoreChunkOutcomeAsync(f.Operation, default),
             b.GetRequiredService<ICitedEmbeddingStore>().StoreChunkOutcomeAsync(f.Operation, default));
@@ -98,11 +98,11 @@ public sealed partial class PostgresPersistenceTests
         var g = await SeedCitedGraphAsync();
         var f = StoredFixture(g, kind == "query" ? "query" : "chunk", text: kind == "source" ? "Different source" : null);
         if (kind == "raw_usage") { f.Raw["usage"]!["prompt_tokens"] = 1; f.SyncRaw(); }
-        await using var owner = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var owner = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         await SaveEmbeddingJournal(owner, f, kind != "unsettled", kind == "wrong_cost" ? 0m : null);
         if (kind == "actor") await ExecuteAsync("UPDATE actors SET is_active=false WHERE id=@id", ("id", g.Seed.ActorA));
         if (kind == "retired") await ExecuteAsync("UPDATE cited_document_indexes SET status='Superseded' WHERE id=@id", ("id", g.Index.Id));
-        await using var caller = CitedServices(kind == "foreign" ? g.Seed.OrganizationB : g.Seed.OrganizationA,
+        await using var caller = CitedPilotServices(kind == "foreign" ? g.Seed.OrganizationB : g.Seed.OrganizationA,
             kind == "foreign" ? g.Seed.ActorB : g.Seed.ActorA, "http://127.0.0.1:1");
         var e = await Assert.ThrowsAsync<CitedWorkflowException>(() => caller.GetRequiredService<ICitedEmbeddingStore>()
             .StoreChunkOutcomeAsync(f.Operation, default));
@@ -114,7 +114,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_storage_conflicting_vector_cannot_overwrite_existing_values()
     {
         var g = await SeedCitedGraphAsync();
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var store = services.GetRequiredService<ICitedEmbeddingStore>();
         var first = StoredFixture(g);
         await SaveEmbeddingJournal(services, first);
@@ -133,7 +133,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var f = StoredFixture(g);
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         await SaveEmbeddingJournal(services, f);
         await services.GetRequiredService<ICitedEmbeddingStore>().StoreChunkOutcomeAsync(f.Operation, default);
         await AssertSqlStateAsync("23514", "UPDATE cited_chunk_embeddings SET input_sha256=repeat('0',64)");
@@ -149,7 +149,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_search_uses_saved_query_and_excludes_unselected_sources_and_rechecks_retirement()
     {
         var g = await SeedCitedGraphAsync();
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var store = services.GetRequiredService<ICitedEmbeddingStore>();
         var chunk = StoredFixture(g);
         await SaveEmbeddingJournal(services, chunk);
@@ -166,7 +166,7 @@ public sealed partial class PostgresPersistenceTests
         Assert.Equal(g.Index.Id, hit.IndexId);
         Assert.Equal(1d, hit.Similarity, 6);
         Assert.Equal(2, await ScalarAsync<long>("SELECT count(*) FROM cited_chunk_embeddings")); // Query is never indexed.
-        await using var foreign = CitedServices(g.Seed.OrganizationB, g.Seed.ActorB, "http://127.0.0.1:1");
+        await using var foreign = CitedPilotServices(g.Seed.OrganizationB, g.Seed.ActorB, "http://127.0.0.1:1");
         await SpendDenied("embedding_operation_not_found", () => foreign.GetRequiredService<ICitedEmbeddingStore>()
             .SearchQueryOutcomeAsync(query.Operation, 5, default));
         await ExecuteAsync("UPDATE cited_document_indexes SET status='Quarantined' WHERE id=@id", ("id", g.Index.Id));
@@ -178,7 +178,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var extra = await AdditionalEmbeddingIndex(g);
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var store = services.GetRequiredService<ICitedEmbeddingStore>();
         var first = StoredFixture(g);
         await SaveEmbeddingJournal(services, first);
@@ -196,7 +196,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var g = await SeedCitedGraphAsync();
         var extra = await AdditionalEmbeddingIndex(g, 3);
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var store = services.GetRequiredService<ICitedEmbeddingStore>();
         var batch = new EmbeddingFixture(g.Seed.OrganizationA, g.Seed.ActorA, [extra.Index.Id],
             extra.Chunks.Select(x => (x.Id, x.Content)).ToArray());
@@ -216,7 +216,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Embedding_search_rejects_incomplete_corpus_and_foreign_selected_index()
     {
         var g = await SeedCitedGraphAsync();
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var store = services.GetRequiredService<ICitedEmbeddingStore>();
         var query = StoredFixture(g, "query", text: "What is the total?");
         await SaveEmbeddingJournal(services, query);

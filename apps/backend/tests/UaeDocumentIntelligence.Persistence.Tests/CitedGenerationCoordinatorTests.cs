@@ -14,7 +14,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Generation_default_and_live_models_are_blocked_before_reservation()
     {
         var graph = await SeedCitedGraphAsync();
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         var client = new AnswerReply();
         await SpendDenied("generation_disabled", () => services.GetRequiredService<CitedGenerationCoordinator>().ProposeAsync(graph.Request.Id, default));
         await SpendDenied("generation_live_not_ready", () => Coordinator(services, client,
@@ -30,7 +30,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         await using var python = await PrivateCitedServer.StartAsync(fakeAnswers: true);
         var settings = new CitedGenerationSettings(true, SpendCommand().Rate);
-        await using (var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, python.Url))
+        await using (var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, python.Url))
         {
             var result = await Coordinator(services, services.GetRequiredService<ICitedAnswerClient>(), settings).ProposeAsync(runId, default);
             Assert.False(result.PublicationAllowed);
@@ -41,7 +41,7 @@ public sealed partial class PostgresPersistenceTests
             Assert.Equal(decimal.Ceiling(inputTokens * 0.05m + 50 * 0.40m) / 1_000_000m,
                 await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));
         }
-        await using var restarted = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, python.Url);
+        await using var restarted = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, python.Url);
         var replay = await Coordinator(restarted, new AnswerReply((_, _) => throw new InvalidOperationException()), settings)
             .ProposeAsync(runId, default);
         Assert.True(replay.Replayed);
@@ -65,7 +65,7 @@ public sealed partial class PostgresPersistenceTests
         });
         var results = await Task.WhenAll(Enumerable.Range(0, 6).Select(async _ =>
         {
-            await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+            await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
             try { return !(await Coordinator(services, client, settings).ProposeAsync(runId, default)).Replayed; }
             catch (CitedWorkflowException e) when (e.Code == "generation_already_dispatched") { return false; }
         }));
@@ -80,10 +80,10 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         var client = new AnswerReply();
-        await using var foreign = CitedServices(graph.Seed.OrganizationB, graph.Seed.ActorB, "http://127.0.0.1:1");
+        await using var foreign = CitedPilotServices(graph.Seed.OrganizationB, graph.Seed.ActorB, "http://127.0.0.1:1");
         await SpendDenied("retrieval_not_found", () => Coordinator(foreign, client).ProposeAsync(runId, default));
         await ExecuteAsync("UPDATE actors SET is_active=false WHERE id=@id", ("id", graph.Seed.ActorA));
-        await using var owner = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var owner = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("reservation_not_found", () => Coordinator(owner, client).ProposeAsync(runId, default));
         await ExecuteAsync("UPDATE actors SET is_active=true WHERE id=@id", ("id", graph.Seed.ActorA));
         await ExecuteAsync("UPDATE cited_document_indexes SET status='Quarantined' WHERE id=@id", ("id", graph.Index.Id));
@@ -101,7 +101,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         var settings = new CitedGenerationSettings(true, SpendCommand().Rate);
         var client = new AnswerReply((_, _) => throw (timeout ? new TimeoutException("SECRET INVOICE") : new InvalidOperationException("SECRET INVOICE")));
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("generation_outcome_uncertain", () => Coordinator(services, client, settings).ProposeAsync(runId, default));
         await SpendDenied("generation_already_dispatched", () => Coordinator(services, client, settings).ProposeAsync(runId, default));
         Assert.Equal("Uncertain", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
@@ -121,7 +121,7 @@ public sealed partial class PostgresPersistenceTests
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(reply);
         });
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Coordinator(services, client).ProposeAsync(runId, cancellation.Token));
         Assert.Equal("Uncertain", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
         Assert.Equal(1, client.Calls);
@@ -143,7 +143,7 @@ public sealed partial class PostgresPersistenceTests
             "incomplete" => reply with { Outcome = "truncated" },
             _ => reply with { RequestSha256 = new string('b', 64) }
         }));
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("generation_outcome_uncertain", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal("Uncertain", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
         Assert.Equal(0m, await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));
@@ -155,7 +155,7 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         var client = new AnswerReply((reply, _) => Task.FromResult(reply with { ProposalUtf8 = "SECRET INVALID JSON"u8.ToArray() }));
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("answer_proposal_not_accepted", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal("Settled", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
         Assert.Equal(0.000025m, await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));
@@ -172,7 +172,7 @@ public sealed partial class PostgresPersistenceTests
             await ExecuteAsync("UPDATE cited_document_indexes SET status='Quarantined' WHERE id=@id", ("id", graph.Index.Id));
             return reply;
         });
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("answer_proposal_not_accepted", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal("Settled", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
     }
@@ -184,7 +184,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         await ExecuteAsync("ALTER TABLE cited_spend_events ADD CONSTRAINT injected_dispatch_failure CHECK (sequence=1)");
         var client = new AnswerReply();
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("spend_store_unavailable", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal(0, client.Calls);
         Assert.Equal("Reserved", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
@@ -197,7 +197,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         await ExecuteAsync("ALTER TABLE cited_spend_events ADD CONSTRAINT injected_settlement_failure CHECK (sequence<=2)");
         var client = new AnswerReply();
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("generation_outcome_uncertain", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal("Dispatched", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
         Assert.Equal(0m, await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));
@@ -211,7 +211,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         await using var python = await PrivateCitedServer.StartAsync(fakeAnswers: true);
         var settings = new CitedGenerationSettings(true, SpendCommand().Rate, SourceAwarePilot: true);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, python.Url);
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, python.Url);
         var result = await Coordinator(services, services.GetRequiredService<ICitedAnswerClient>(), settings).ProposeAsync(runId, default);
         Assert.False(result.PublicationAllowed);
         Assert.False(result.Validation.SemanticSupportEstablished);
@@ -239,7 +239,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         var client = new AnswerReply();
         await SpendDenied("invalid_prompt_preparation", () => Coordinator(services, client,
             new(true, SpendCommand().Rate, SourceAwarePilot: true)).ProposeAsync(runId, default));
@@ -254,7 +254,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         var settings = new CitedGenerationSettings(true, SpendCommand().Rate, SourceAwarePilot: true);
         var client = new AnswerReply((reply, _) =>
         {

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="490" viewBox="0 0 1040 490" role="img" aria-labelledby="title desc">
+  <title id="title">Choose a task from the side menu</title>
+  <desc id="desc">Home starts or continues an invoice check. Document library finds saved files and opens their details on the same page. Earlier quotations are hidden from the list until Show earlier quotations is selected. Their reviews and history remain accessible. The library does not confirm values or start a comparison.</desc>
+  <rect width="1040" height="490" fill="#f5f7fa"/>
+  <g font-family="Arial, sans-serif" fill="#202d3d">
+    <text x="40" y="52" font-size="28" font-weight="700">One menu. Two clear tasks.</text>
+    <text x="40" y="88" font-size="18">Choose where to work from the side menu.</text>
+    <rect x="40" y="122" width="460" height="278" rx="12" fill="#fff" stroke="#8998aa"/>
+    <rect x="540" y="122" width="460" height="278" rx="12" fill="#fff" stroke="#8998aa"/>
+    <text x="64" y="166" font-size="24" font-weight="700">Home</text>
+    <text x="64" y="207" font-size="19">Start or continue an invoice check.</text>
+    <text x="64" y="255" font-size="19">1. Add the invoice and purchase order</text>
+    <text x="64" y="293" font-size="19">2. Check their values</text>
+    <text x="64" y="331" font-size="19">3. Read the results</text>
+    <text x="64" y="375" font-size="17">The work stays on one workflow page.</text>
+    <text x="564" y="166" font-size="24" font-weight="700">Document library</text>
+    <text x="564" y="207" font-size="16">Search files, suppliers or invoice/PO numbers.</text>
+    <text x="564" y="255" font-size="19">10 per page. Previous / Next.</text>
+    <text x="564" y="293" font-size="19">Read values and source evidence</text>
+    <text x="564" y="331" font-size="19">Download its original or review history</text>
+    <text x="564" y="367" font-size="15">Show earlier quotations includes older files.</text>
+    <text x="564" y="389" font-size="15">Saved reviews and history are kept.</text>
+    <text x="40" y="450" font-size="18" font-weight="700">The library is optional. Reading a file does not confirm its values.</text>
+  </g>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600" role="img" aria-labelledby="title desc">
+<title id="title">New checks and earlier quotation work</title>
+<desc id="desc">New work uses only an invoice and purchase order. Earlier quotation documents, saved reviews, results, evidence, decisions and audit records remain accessible with existing permissions. No records are deleted or converted.</desc>
+<style>text{font-family:Segoe UI,Arial,sans-serif}.heading{font-size:25px;font-weight:700;fill:#17283d}.body{font-size:18px;fill:#34465d}.label{font-size:14px;font-weight:700;fill:#176b5b}</style>
+<rect width="1040" height="600" fill="#f6f8fb"/>
+<text x="40" y="40" class="label">Q01 / OCTOBER 12, 2026 / CURRENT WORKFLOW</text>
+<text x="40" y="82" class="heading">New work changes. Earlier work stays.</text>
+<rect x="40" y="118" width="460" height="355" rx="16" fill="#e8f5ef" stroke="#97bcae"/>
+<text x="65" y="160" class="heading">Start a new check</text>
+<g fill="white" stroke="#97bcae"><rect x="65" y="188" width="185" height="94" rx="8"/><rect x="280" y="188" width="195" height="94" rx="8"/></g>
+<text x="86" y="227" class="body">Invoice</text><text x="86" y="257" class="body">What was billed</text>
+<text x="296" y="227" class="body">Purchase order</text><text x="296" y="257" class="body">What was ordered</text>
+<path d="M265 297 V328 M257 320 L265 328 L273 320" fill="none" stroke="#176b5b" stroke-width="3"/>
+<text x="65" y="360" class="body">Check values → Compare → Decide</text>
+<text x="65" y="400" class="body">No quotation step or new choice.</text>
+<text x="65" y="432" class="body">Missing facts still mean Could not check.</text>
+<rect x="540" y="118" width="460" height="355" rx="16" fill="white" stroke="#aebccc"/>
+<text x="565" y="160" class="heading">Open earlier work</text>
+<text x="565" y="206" class="label">DOCUMENTS</text>
+<text x="565" y="239" class="body">Quotation file + saved review</text>
+<text x="565" y="280" class="label">COMPARE DOCUMENTS → SAVED CASES</text>
+<text x="565" y="313" class="body">Old sources, results and evidence</text>
+<text x="565" y="346" class="body">Decisions and their history</text>
+<text x="565" y="387" class="label">AUDIT HISTORY</text>
+<text x="565" y="420" class="body">Recorded actions stay in the record.</text>
+<text x="565" y="451" font-size="15" fill="#56667a">Existing permissions still apply.</text>
+<rect x="40" y="499" width="960" height="65" rx="10" fill="#e8edf4"/>
+<text x="60" y="526" class="body">No deletion. No conversion of old reviews. No new access rights.</text>
+<text x="60" y="551" font-size="16" fill="#34465d">Recovery of earlier interrupted requests keeps its original workflow and request key.</text>
+</svg>

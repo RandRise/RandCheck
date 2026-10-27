@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="650" viewBox="0 0 1040 650" role="img" aria-labelledby="title desc">
+  <title id="title">One invoice check, three steps</title>
+  <desc id="desc">Home opens saved work or starts a check. Add invoice and purchase order, check both documents, then read results and evidence. Back and Continue stay within the saved check. Missing checks are not a match.</desc>
+  <rect width="1040" height="650" fill="#f5f3ee"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#18372f">
+    <text x="48" y="55" font-size="16" letter-spacing="2">WORKFLOW MAP · ILLUSTRATION, NOT AN APP SCREENSHOT</text>
+    <text x="48" y="103" font-size="34" font-weight="700">One invoice check. One clear path.</text>
+    <rect x="48" y="135" width="944" height="90" rx="12" fill="#173d34"/>
+    <text x="72" y="172" font-size="25" fill="white" font-weight="700">Home</text>
+    <text x="72" y="202" font-size="20" fill="white">Check an invoice  •  Continue saved work</text>
+    <path d="M520 225v40" stroke="#446d60" stroke-width="3"/>
+    <g fill="white" stroke="#a0b6ac" stroke-width="2">
+      <rect x="48" y="265" width="294" height="200" rx="12"/>
+      <rect x="373" y="265" width="294" height="200" rx="12"/>
+      <rect x="698" y="265" width="294" height="200" rx="12"/>
+    </g>
+    <g font-size="25" font-weight="700">
+      <text x="68" y="307">1. Add documents</text>
+      <text x="393" y="307">2. Check details</text>
+      <text x="718" y="307">3. See results</text>
+    </g>
+    <g font-size="20">
+      <text x="68" y="350">Upload or choose:</text>
+      <text x="68" y="385">Invoice + purchase order</text>
+      <text x="68" y="431">Save each selection.</text>
+      <text x="393" y="350">Read values and sources.</text>
+      <text x="393" y="385">Check both documents.</text>
+      <text x="393" y="431">Save each review.</text>
+      <text x="718" y="350">Read differences and gaps.</text>
+      <text x="718" y="385">See evidence here.</text>
+      <text x="718" y="431">Record your decisions.</text>
+      <text x="347" y="374">→</text><text x="672" y="374">→</text>
+    </g>
+    <path d="M845 480v30H195v-30" fill="none" stroke="#446d60" stroke-width="2"/>
+    <text x="275" y="544" font-size="21">Back and Continue stay inside the same saved check.</text>
+    <rect x="48" y="570" width="944" height="48" rx="8" fill="#fff0cb"/>
+    <text x="69" y="601" font-size="20">Missing checks stay visible. Moving to the next step never confirms a value.</text>
+  </g>
+</svg>

@@ -1,8 +1,11 @@
 # Disposable local demo
 
-This Phase 8 increment runs the current application with fictional English invoice
-data, local extraction and the existing **Development identity**. No external account
-or paid provider is needed. Phase 7 Arabic/bilingual support remains pending.
+Run the invoice and purchase-order workflow with fictional documents, local
+extraction and the existing **Development identity**. No external account or paid
+provider is needed. The October 27 source uses the supplier-invoice-v1 profile
+(local-1.6.0), with bounded English/Arabic OCR. Current end-to-end acceptance is
+recorded in the [completion ledger](tasks/local-completion-20261027.md); configuration
+alone does not prove OCR accuracy.
 See the [verification report and screenshots](evidence/phase-8/P8-local-demo-20260916.md)
 for observed results and host-specific startup limitations.
 
@@ -32,8 +35,8 @@ Do not put real documents into it or expose it through a proxy/tunnel.
 
 The source copy lives under `outputs/local-demo/<random-id>`. It includes current
 uncommitted implementation files, selected with an explicit allowlist, plus the
-single-invoice and three-document reconciliation fixtures with their provenance
-and license records. `source-inventory.json` records
+current supplier invoice/PO samples and retained historical fixtures with their
+provenance and license records. `source-inventory.json` records
 every copied file's SHA-256. It excludes retained data, private environment files,
 Git history, build outputs and existing dependencies. It never exports plain HEAD.
 Prepare a new copy to pick up subsequent source changes; existing copies are checked
@@ -51,82 +54,45 @@ No host .NET/Node installation is needed for this Docker path. For any host buil
 or tests, first run `tools/install-project-runtimes.ps1` and dot-source
 `tools/use-project-runtimes.ps1` in that shell.
 
-## Walkthrough
+## Current workflow: add, check, read results
 
-1. Upload `samples/phase-2/generated/native-two-page-invoice.pdf` from the **copy**.
-   This is a fictional, two-page English invoice. The source/license register
-   identifies CC0 synthetic content and the included Bitstream Vera font notice.
-2. Wait for local extraction and open the document. Inspect extracted fields and
-   page evidence. The machine total is `1,050.00`.
-3. Start review. Correct total to `1155.00` with a synthetic demonstration reason,
-   confirm remaining machine fields and complete review. This deliberately chosen
-   correction demonstrates provenance; it is not an accuracy label.
-4. Stop and restart using the commands below. Reopen the document and its history:
-   completed review and effective total persist; machine total stays `1,050.00`.
+1. Open **Home** and start an invoice check. Upload `english-invoice.pdf` and
+   `english-po.pdf` from `samples/supplier-invoice/v0.1.0/` in the source copy.
+   Choosing each file uploads it; there is no second upload button. One file alone
+   does not create a case. Both accepted documents belong to one check.
+2. Wait for extraction. In **Check details**, read each value beside its document
+   evidence. Confirm it only when it agrees with the printed document. Correct a
+   mistake using the reason choices. Check the invoice, then the purchase order.
+3. These samples both total **1260.00 AED** and contain two items. They omit some
+   comparison details, such as units and amount bases. Leave information that the
+   documents do not establish unconfirmed; never invent values to obtain a pass.
+4. Select **See results**. The backend compares those exact saved reviews. Read
+   which checks passed, differed or could not be checked. For this incomplete
+   sample, **Checks incomplete** is a valid result, even when the totals agree.
+5. Record a decision where useful. The decision explains your handling of a
+   finding; it does not change missing checks into passed checks.
+6. Download a readable **HTML report** or **CSV spreadsheet** from the results.
+   Both use the same captured saved version. Reopen the files and inspect amounts,
+   evidence, missing checks and decision history. The HTML report can be printed.
+7. Use `down` and `up` below. Reopen the saved check: reviewed versions, results
+   and decisions must remain. Do not use `reset` when you want to keep this demo.
 
-For a repeatable HTTP verification, start with an empty demo and run these stages.
-Pause between stages to inspect the same real document in the browser:
+The `.txt` files in the sample pack test parser helpers. They are not the local
+PDF/OCR walkthrough. New reviews use invoice/PO only. Old quotation documents,
+reviews and comparisons remain supported as historical data.
 
-```powershell
-./tools/verify-local-demo.ps1 Empty
-./tools/test-local-demo-guards.ps1
-./tools/verify-local-demo.ps1 Upload
-./tools/verify-local-demo.ps1 Review
-./tools/verify-local-demo.ps1 Restart
-```
+## Verification tools and historical evidence
 
-`journey.json` stores the synthetic result and the full pre-restart review workspace.
-Restart verification compares that workspace exactly after removing/recreating the
-containers. It does not use a database fixture or mocked extraction service.
-The guard check temporarily changes the copy's ownership/configuration and creates
-one disposable probe volume, verifies that reset refuses each mismatch, then
-restores the original bytes and removes its probe. Run it only on an empty demo.
+`test-local-demo-guards.ps1` checks ownership and reset refusals on an empty demo.
+`verify-local-demo.ps1` is the retained single-invoice upload/review/restart probe;
+its `Empty` stage checks an empty initial/reset store. `verify-demo-reconciliation.ps1`
+is a **historical Phase 4 three-document probe**, not instructions for creating a
+new review. Its old nine-finding expectations must not be used as acceptance of
+the current invoice/PO policy. Keep its fixtures and receipts for compatibility.
 
-## Reconciliation walkthrough (existing Phase 4 feature)
-
-Use a **fresh demo copy** for this separate walkthrough; do not run the earlier
-single-invoice `Upload`/`Review` stages in it. After `up`, run inside the copy:
-
-```powershell
-./tools/verify-demo-reconciliation.ps1 Prepare
-```
-
-This uploads the three unchanged CC0 synthetic PDFs in
-`samples/phase-4/procurement-v0.1.0/`, uses local extraction, confirms the machine
-fields and completes their review revisions through the existing API. Automatic
-confirmation here prepares a known fictional fixture; it is not a recommendation
-to accept machine results without reviewing real documents. Sample hashes are
-checked before upload, and partial progress is retained if preparation fails.
-
-1. Open [Reconcile documents](http://127.0.0.1:3308/reconciliation).
-2. Create a case named **Synthetic procurement walkthrough**.
-3. Select and pin the completed review for each role: `synthetic-quotation-Q-260801.pdf`,
-   `synthetic-purchase-order-PO-260801.pdf`, and `synthetic-tax-invoice-SYN-STD-260801.pdf`.
-4. Keep the default tolerances and select **Run comparison**. Expect nine findings.
-   Supplier, AED currency and the first line match; the second line and totals
-   deliberately differ. The interface lists exceptions, so matching fields do not
-   produce finding cards.
-5. Inspect **AMT-002**: purchase order **8925.00**, invoice **8820.00**, absolute
-   difference **105**, tolerance **0.01**, with the source pages shown.
-6. Enter the reason below on AMT-002, then select **Accepted**:
-   `Synthetic demo: reviewed the AED 105 difference; no payment approval.`
-   The original finding stays visible alongside the reasoned decision.
-7. Copy the case UUID shown in the case summary and verify the stored result:
-
-```powershell
-./tools/verify-demo-reconciliation.ps1 Verify -CaseId '<case UUID>'
-```
-
-Verification checks the exact pinned review revisions, all nine expected finding
-identities, both source pages/quotes for every finding, the matching fields and
-the retained decision on a fresh API read. `reconciliation-journey.json` stores
-the result inside this disposable copy. This is one focused demonstration of the
-already completed Phase 4 feature, not a repeat of Phase 4 acceptance or an accuracy
-claim. The page currently keeps the selected case in memory; refreshing it returns
-to case creation, although the case remains stored and can be read by its UUID.
-
-Finish with `./tools/local-demo.ps1 reset` to remove this copy's disposable volumes.
-Keep the source copy and receipt if you want to inspect the evidence afterward.
+All scripted confirmations concern known fictional fixtures. They never authorize
+automatic confirmation of real documents. Agent-operated browser acceptance and
+historical evidence are identified separately in the completion records.
 
 ## Stop, diagnose and reset
 
@@ -181,12 +147,10 @@ Original-file download requires Entra plus enforced storage, so it is unavailabl
 in this demo; inspect the supplied sample locally instead. Image builds run
 sequentially to reduce peak memory demand; first startup can be slow on an 8 GB host.
 
-The original increment verifies native PDF extraction, review and restart/reset
-behavior. The separate reconciliation walkthrough exercises the existing Phase 4
-feature with its unchanged synthetic pack. Neither re-accepts OCR accuracy,
-Arabic, real-world reconciliation accuracy, cited-answer quality,
-real Entra, TLS, production container hardening or CI. Dependency downloads use the
-repository's current locks/ranges; this is workflow reproducibility, not a claim that
-every future rebuilt image will be byte-identical. Repository license/publication
-review and the wider Phase 8 delivery checklist remain separate work.
-
+The September 16 report above is historical verification of its then-current
+source. The current invoice/PO, OCR, local security and clean-source results are
+tracked separately in the completion ledger. None establish accuracy on arbitrary
+supplier layouts, real Entra integration, production readiness or hosted CI.
+Dependency downloads use the repository's current locks/ranges; this is workflow
+reproducibility, not a promise of byte-identical future images. Publishing the
+repository remains a separate action.

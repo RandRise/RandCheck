@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using UaeDocumentIntelligence.Domain.Model;
 using UaeDocumentIntelligence.Infrastructure.Persistence;
 
@@ -13,20 +14,22 @@ public static class MembershipEndpoints
             EnterpriseSecurityOptions settings, CancellationToken ct) => Execute(async () =>
         {
             if (body.TenantId != settings.TenantId || !ParseRole(body.Role, out var role)) return BadRequest();
-            return Results.Json(await members.AddAsync(body.TenantId, body.ObjectId, body.DisplayName, role, body.CanManageMembers, ct), statusCode: 201);
+            return Results.Json(await members.AddAsync(body.TenantId, body.ObjectId, body.DisplayName, role, ct), statusCode: 201);
         }));
         endpoints.MapPut("/api/organization/memberships/{id:guid}", (Guid id, ChangeMember body,
             EnterpriseMembershipService members, CancellationToken ct) => Execute(async () =>
         {
             if (!ParseRole(body.Role, out var role)) return BadRequest();
-            return Results.Ok(await members.ChangeAsync(id, body.ExpectedVersion, role, body.CanManageMembers, body.IsActive, ct));
+            return Results.Ok(await members.ChangeAsync(id, body.ExpectedVersion, role, body.IsActive, ct));
         }));
         endpoints.MapGet("/api/organization/audit", (int? offset, EnterpriseMembershipService members, CancellationToken ct) =>
             Execute(async () => Results.Ok(await members.AuditAsync(offset ?? 0, ct))));
         return endpoints;
     }
-    public sealed record AddMember(Guid TenantId, Guid ObjectId, string DisplayName, string Role, bool CanManageMembers);
-    public sealed record ChangeMember(Guid ExpectedVersion, string Role, bool CanManageMembers, bool IsActive);
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    public sealed record AddMember(Guid TenantId, Guid ObjectId, string DisplayName, string Role);
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    public sealed record ChangeMember(Guid ExpectedVersion, string Role, [property: JsonRequired] bool IsActive);
     private static bool ParseRole(string text, out OrganizationAccessRole role) =>
         Enum.TryParse(text, false, out role) && Enum.IsDefined(role) && role.ToString() == text;
     private static IResult BadRequest() => Results.Problem(statusCode: 400, title: "Invalid membership request");

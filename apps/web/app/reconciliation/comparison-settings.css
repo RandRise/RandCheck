@@ -1,0 +1,5 @@
+.tolerance-panel .comparison-form { display: block; min-width: 0; }
+.comparison-settings summary { cursor: pointer; font-weight: 600; }
+.comparison-settings-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.comparison-submit { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.comparison-settings summary:focus-visible { outline: 2px solid var(--app-accent, #26705d); outline-offset: 4px; }

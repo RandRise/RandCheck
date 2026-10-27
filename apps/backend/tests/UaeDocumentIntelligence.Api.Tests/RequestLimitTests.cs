@@ -171,7 +171,7 @@ public sealed partial class EnterpriseSecurityTests
     [InlineData(true)]
     public async Task Body_limits_reject_oversized_authorized_JSON_with_or_without_content_length(bool unknownLength)
     {
-        var store = new ActorStore { Actor = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.Operator) };
+        var store = new ActorStore { Actor = new(Guid.NewGuid(), Guid.NewGuid(), OrganizationAccessRole.Staff) };
         using var host = Host(store).WithWebHostBuilder(b => b.UseSetting("RequestLimits:Enabled", "true"));
         using var client = host.CreateClient(); client.DefaultRequestHeaders.Authorization = new("Bearer", Token());
         var bytes = System.Text.Encoding.UTF8.GetBytes("{\"name\":\"" + new string('x', RequestBodyLimit.JsonBytes) + "\"}");

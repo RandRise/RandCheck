@@ -6,6 +6,50 @@ namespace UaeDocumentIntelligence.Application.Tests;
 
 public sealed class ReviewHandlerTests
 {
+    [Theory]
+    [InlineData("Confirmed", null, null, null)]
+    [InlineData("Corrected", "Decimal", "125.00", "Checked source")]
+    [InlineData("Cleared", null, null, "Absent on source")]
+    public async Task Identical_latest_machine_decision_is_no_op_but_stale_token_still_rejects(
+        string action, string? type, string? value, string? reason)
+    {
+        var (document, run) = CreateReadyDocument();
+        var actor = Guid.NewGuid();
+        var session = document.OpenReview(Guid.NewGuid(), actor, Now);
+        var repository = new FakeRepository(document);
+        var handler = new RecordReviewActionHandler(repository, new FakeExecutionContext(document.OrganizationId, actor), new FakeClock(Now));
+        var stale = session.ConcurrencyToken;
+        var command = new RecordReviewActionCommand(action, Assert.Single(run.Fields).Id, null, null, type, value, reason);
+        await handler.HandleAsync(document.Id, session.Id, stale, command, default);
+        var saved = session.ConcurrencyToken;
+        await handler.HandleAsync(document.Id, session.Id, saved, command with { Reason = reason is null ? null : $" {reason} " }, default);
+        Assert.Single(session.Actions);
+        Assert.Equal(saved, session.ConcurrencyToken);
+        Assert.Equal(1, repository.ReviewSaveCount);
+        await Assert.ThrowsAsync<ReviewPreconditionException>(() => handler.HandleAsync(document.Id, session.Id, stale, command, default));
+        Assert.Single(session.Actions);
+    }
+
+    [Fact]
+    public async Task Repeated_added_and_cleared_decisions_preserve_history_but_deliberate_changes_append()
+    {
+        var (document, _) = CreateReadyDocument();
+        var actor = Guid.NewGuid();
+        var session = document.OpenReview(Guid.NewGuid(), actor, Now);
+        var handler = new RecordReviewActionHandler(new FakeRepository(document), new FakeExecutionContext(document.OrganizationId, actor), new FakeClock(Now));
+        var added = new RecordReviewActionCommand("Added", null, "due_date", 0, "Date", "2026-10-02", "Checked source");
+        await Act(added); await Act(added);
+        Assert.Single(session.Actions);
+        await Act(added with { Value = "2026-10-03" });
+        var cleared = new RecordReviewActionCommand("Cleared", null, "due_date", 0, null, null, "Removed date");
+        await Act(cleared); var token = session.ConcurrencyToken; await Act(cleared);
+        Assert.Equal(3, session.Actions.Count); Assert.Equal(token, session.ConcurrencyToken);
+        await Assert.ThrowsAsync<ReviewValidationException>(() => Act(cleared with { Reason = "Other removal" }));
+        await Assert.ThrowsAsync<ReviewValidationException>(() => Act(cleared with { Value = "invalid" }));
+        Assert.Equal(3, session.Actions.Count);
+        Task<ReviewWorkspaceView> Act(RecordReviewActionCommand command) => handler.HandleAsync(document.Id, session.Id, session.ConcurrencyToken, command, default);
+    }
+
     private const string ValidSha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     private static readonly DateTimeOffset Now = new(2026, 8, 11, 9, 0, 0, TimeSpan.Zero);
 

@@ -256,7 +256,7 @@ public sealed partial class PostgresPersistenceTests
         new RetentionEndpoints.DeleteDocument(plan.DocumentVersion, plan.PolicyVersion));
     private async Task<DeletionFixture> DeletionFixtureAsync(bool terminal = true)
     {
-        var source = await SourceFixtureAsync("Operator");
+        var source = await SourceFixtureAsync("Staff");
         try
         {
             await RetentionPolicy(source); source.Clock.UtcNow = source.Clock.UtcNow.AddDays(3);

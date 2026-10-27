@@ -1,0 +1,57 @@
+.journey-actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-block: 1.5rem; }
+.pair-inputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
+.pair-inputs label { display: grid; gap: .5rem; margin-block: 1rem; }
+.pair-inputs select, .pair-inputs input { max-width: 100%; }
+.embedded-document { padding: 0; }
+.embedded-document .workspace { display: block; }
+.embedded-document .review { width: 100%; min-width: 0; }
+.journey-notice { padding-block: 1rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 700px) {
+  .pair-inputs { grid-template-columns: 1fr; }
+}
+
+.workflow-overview[hidden] { display: none !important; }
+.workflow-heading { gap: 2rem; padding-bottom: 1.5rem; align-items: start; }
+.workflow-heading h1 { margin: 0; }
+.workflow-heading p { max-width: 65ch; margin: .6rem 0 0; }
+.workflow-heading > p { max-width: 38ch; }
+.workflow-phases { list-style: none; padding: 0; margin: 0; }
+.workflow-phase { padding-block: 1.5rem; border-bottom: 1px solid var(--app-border, #8998aa); }
+.workflow-phase-heading { display: flex; justify-content: space-between; gap: 1.5rem; align-items: start; }
+.workflow-phase h2 { margin: 0; }
+.workflow-phase-title { display: flex; align-items: center; gap: 12px; }
+.workflow-phase-number { display: grid; place-items: center; flex: 0 0 38px; height: 38px; border-radius: 50%; border: 1px solid var(--app-control-border); background: var(--app-raised); color: var(--app-muted); font-size: 18px; font-variant-numeric: tabular-nums; }
+.workflow-phase-state { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--app-muted); font-size: 13px; font-weight: 600; }
+.workflow-phase-state svg { flex-shrink: 0; }
+.workflow-phase[data-progress="current"] .workflow-phase-number { background: var(--app-tint); color: var(--app-accent); border: 2px solid var(--app-accent); }
+.workflow-phase[data-progress="current"] .workflow-phase-state { color: var(--app-accent); }
+.workflow-phase[data-progress="saved"] .workflow-phase-number { background: var(--app-success-bg); color: var(--app-success); border-color: var(--app-success); }
+.workflow-phase[data-progress="saved"] .workflow-phase-state { color: var(--app-success); }
+.workflow-phase p { max-width: 72ch; margin-block: .5rem; }
+.workflow-phase-status { color: var(--app-muted, #596879); }
+.workflow-phase[aria-current="step"] .workflow-phase-status { color: var(--app-accent, #285bd4); font-weight: 600; }
+.workflow-phase-actions { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; flex-shrink: 0; }
+.workflow-phase-work { padding-top: 1.25rem; }
+.workflow-phase-work > .journey-actions:last-child { margin-bottom: 0; }
+.workflow-overview .pair-inputs { gap: 1.5rem; }
+.workflow-overview .pair-inputs > section { margin: 0; padding: 1.25rem; border-color: var(--app-border, #8998aa); background: var(--app-surface, #fff); }
+.pair-inputs h3 { margin-block: 0 .5rem; }
+.saved-file-choice { margin-top: 1rem; }
+.saved-file-choice summary { cursor: pointer; min-height: 40px; padding-block: .5rem; }
+.workflow-save-note { margin-top: 1.5rem; color: var(--app-muted, #596879); }
+.workflow-details > .workflow-heading { margin-top: 1.5rem; }
+.workflow-file-details { margin: 1.5rem 0; }
+.workflow-file-details > div { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 1rem; padding-block: 1rem; border-bottom: 1px solid var(--app-border, #8998aa); }
+.workflow-file-details dt { font-weight: 600; }
+.workflow-file-details dd { margin: 0; overflow-wrap: anywhere; }
+.workflow-details bdi, .workflow-overview bdi { overflow-wrap: anywhere; }
+.workflow-overview :focus-visible, .workflow-details :focus-visible { outline-offset: 4px; }
+.workflow-overview ::selection, .workflow-details ::selection { background: var(--app-accent, #285bd4); color: var(--app-on-accent, #fff); }
+@media (max-width: 760px) {
+  .workflow-heading, .workflow-phase-heading { flex-direction: column; gap: .75rem; }
+  .workflow-heading > p { max-width: 65ch; }
+  .workflow-file-details > div { grid-template-columns: 1fr; gap: .5rem; }
+  .workflow-overview .pair-inputs { grid-template-columns: 1fr; }
+  .workflow-phase-actions { flex-shrink: 1; }
+}

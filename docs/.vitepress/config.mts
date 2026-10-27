@@ -7,6 +7,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: "Overview", link: "/" },
+      { text: "Workflow review", link: "/workflow-review" },
       { text: "Setup", link: "/setup" },
       { text: "Product", link: "/product-spec" },
       { text: "Phases", link: "/phases/" },
@@ -17,12 +18,20 @@ export default defineConfig({
       {
         text: "Product",
         items: [
+          { text: "Workflow review room", link: "/workflow-review" },
           { text: "Overview", link: "/" },
           { text: "Product specification", link: "/product-spec" },
+          { text: "Supplier invoice product plan", link: "/design/supplier-invoice-product-plan" },
+          { text: "Supplier invoice product tasks", link: "/tasks/supplier-invoice-product" },
+          { text: "Reviewer experience recovery plan", link: "/design/reviewer-experience-recovery-plan" },
+          { text: "Recovery phases and task gates", link: "/tasks/reviewer-experience-recovery" },
           { text: "Architecture", link: "/architecture" },
           { text: "Local setup", link: "/setup" },
+          { text: "Fast UI preview (no Docker)", link: "/ui-preview" },
           { text: "Disposable local demo", link: "/local-demo" },
           { text: "CI checks", link: "/testing/ci" },
+          { text: "Local acceptance and limits", link: "/testing/local-delivery-acceptance-20261027" },
+          { text: "Third-party notices", link: "/security/third-party-notices" },
           { text: "Database design", link: "/data/database-design" },
           { text: "Phase 1 tasks", link: "/tasks/phase-1" },
           { text: "Phase 1 database evidence", link: "/evidence/phase-1/P1-T04-database-verification" },
@@ -157,6 +166,16 @@ export default defineConfig({
           { text: "Phase 6 quality plan", link: "/testing/phase-6-quality-plan" },
           { text: "Identity foundation verification", link: "/evidence/phase-6/P6-identity-foundation-20260911" },
           { text: "Membership and audit verification", link: "/evidence/phase-6/P6-membership-audit-20260911" }
+        ]
+      },
+      {
+        text: "Phase 7 language work",
+        collapsed: false,
+        items: [
+          { text: "Language contract", link: "/design/phase-7-language-contract" },
+          { text: "Phase 7 tasks", link: "/tasks/phase-7" },
+          { text: "Quality plan", link: "/testing/phase-7-quality-plan" },
+          { text: "Foundation and OCR baseline", link: "/evidence/phase-7/P7-language-foundation-20260921" }
         ]
       },
       {

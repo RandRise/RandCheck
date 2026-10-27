@@ -25,15 +25,26 @@ public static class CitedRetrievalEndpoints
             .Accepts<RetrieveBody>("application/json");
         endpoints.MapGet("/api/cited-questions/{id:guid}", async (Guid id, CitedQuestionHandler handler, CancellationToken ct) =>
             await Execute(async () => Results.Ok(await handler.GetAsync(id, ct))));
+        endpoints.MapGet("/api/cited-questions", async (CitedWorkspaceHandler handler, HttpContext context, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "no-store";
+            return await Execute(async () => Results.Ok(await handler.RecentQuestionsAsync(ct)));
+        });
         endpoints.MapPost("/api/cited-questions/reviewed", async (HttpContext context, CitedReviewedQuestionHandler handler, CancellationToken ct) =>
             await ReadBody<ReviewedBody>(context, body => Execute(async () => Results.Ok(await handler.HandleAsync(
                 body.Question, body.RequestKey, body.IndexIds, ct)))))
             .Accepts<ReviewedBody>("application/json");
-        endpoints.MapGet("/api/cited-sources", async (int? offset, CitedWorkspaceHandler handler, HttpContext context, CancellationToken ct) =>
+        endpoints.MapGet("/api/cited-sources", async (int? offset, string? q, CitedWorkspaceHandler handler, HttpContext context, CancellationToken ct) =>
         {
             context.Response.Headers.CacheControl = "no-store";
-            return await Execute(async () => Results.Ok(await handler.SourcesAsync(offset ?? 0, ct)));
+            return await Execute(async () => Results.Ok(await handler.SourcesAsync(offset ?? 0, ct, q)));
         });
+        endpoints.MapGet("/api/cited-sources/{documentId:guid}/reviews/{reviewId:guid}",
+            async (Guid documentId, Guid reviewId, CitedWorkspaceHandler handler, HttpContext context, CancellationToken ct) =>
+            {
+                context.Response.Headers.CacheControl = "no-store";
+                return await Execute(async () => Results.Ok(await handler.SourceAsync(documentId, reviewId, ct)));
+            });
         endpoints.MapGet("/api/cited-questions/{id:guid}/hits/{hitId:guid}/evidence",
             async (Guid id, Guid hitId, Guid? spanId, CitedWorkspaceHandler handler, HttpContext context, CancellationToken ct) =>
             {

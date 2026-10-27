@@ -12,7 +12,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_source_connection_recovery_only_accepts_the_named_incident_and_retains_cost()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
         var holds = services.GetRequiredService<ICitedPilotUnknownHold>();
         foreach (var _ in Enumerable.Range(0, 2))
         {
@@ -40,7 +40,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_source_count_hold_requires_pre_generation_network_evidence(string defect)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
         var spend = await SourceUnknownHold(services, defect, countStage: defect != "counted");
         var holds = services.GetRequiredService<ICitedPilotUnknownHold>();
         if (defect != "none")
@@ -64,7 +64,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_source_count_hold_enforces_separate_count_cap_and_global_budget()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
         var holds = services.GetRequiredService<ICitedPilotUnknownHold>();
         foreach (var _ in Enumerable.Range(0, 27))
         {
@@ -88,7 +88,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_source_generation_hold_requires_bound_count_and_keeps_unknown_cost(string defect)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
         var spend = await SourceUnknownHold(services, defect);
         if (defect == "large") await ExecuteAsync("UPDATE cited_spend_reservations SET reserved_usd=.002001");
         var holds = services.GetRequiredService<ICitedPilotUnknownHold>();
@@ -113,7 +113,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_source_generation_hold_stops_at_aggregate_cap_and_preserves_global_budget()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
         var holds = services.GetRequiredService<ICitedPilotUnknownHold>();
         foreach (var _ in Enumerable.Range(0, 2))
         {
@@ -160,7 +160,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_low_preflight_hold_keeps_full_cost_and_rejects_counted_or_large_incidents(string defect)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1", pilotClock: true);
         var hash = new string('a',64);
         var bytes = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new {
             preparation = new { openAi = new { reasoningEffort="low", generationSha256=hash } } });
@@ -212,7 +212,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_unknown_hold_retains_cost_replays_and_admits_new_work_without_redispatch()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var old = await UnknownHold(services);
         var holds = services.GetRequiredService<ICitedPilotUnknownHold>();
         var results = await Task.WhenAll(holds.RetainAsync(old.Id, true, default), holds.RetainAsync(old.Id, true, default));
@@ -234,8 +234,8 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_unknown_hold_requires_explicit_opt_in_owner_and_active_actor()
     {
         var seed = await SeedGraphAsync();
-        await using var a = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
         var old = await UnknownHold(a);
         await SpendDenied("pilot_unknown_hold_disabled", () => a.GetRequiredService<ICitedPilotUnknownHold>().RetainAsync(old.Id, false, default));
         await SpendDenied("reservation_not_found", () => b.GetRequiredService<ICitedPilotUnknownHold>().RetainAsync(old.Id, true, default));
@@ -248,7 +248,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_unknown_hold_is_still_counted_at_budget_ceiling_and_cannot_be_released_in_SQL()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var old = await UnknownHold(services);
         await services.GetRequiredService<ICitedPilotUnknownHold>().RetainAsync(old.Id, true, default);
         await ExecuteAsync("UPDATE cited_pilot_budgets SET settled_usd=7.999840");
@@ -266,7 +266,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_unknown_hold_never_waives_known_overruns_or_flagged_settled_outcomes(bool flag)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var bytes = PreparationArtifact();
         var prior = await services.GetRequiredService<ICitedGenerationJournal>().ReservePreparedAsync(ArtifactCommand(bytes), bytes, true, default);
@@ -285,7 +285,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Pilot_unknown_hold_rejects_large_reservations_and_other_providers()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var old = await UnknownHold(services);
         await ExecuteAsync("UPDATE cited_spend_reservations SET reserved_usd=.000161");
         await SpendDenied("pilot_unknown_hold_ineligible", () => services.GetRequiredService<ICitedPilotUnknownHold>().RetainAsync(old.Id, true, default));

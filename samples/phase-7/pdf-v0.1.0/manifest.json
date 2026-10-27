@@ -1,0 +1,98 @@
+{
+  "dataset": "pdf-v0.1.0",
+  "kind": "fictional workflow fixtures; same content in two representations",
+  "profile": "eng+ara/best/lines-v1",
+  "pageTimeoutSeconds": 30,
+  "receipts": [
+    {
+      "source": {
+        "name": "mixed-native-two-page.pdf",
+        "sha256": "e6dc0255c374659712e66b04da33bc6333712148fab1aef1ec63e62bee60a990",
+        "bytes": 50858,
+        "pages": 2
+      },
+      "expected": {
+        "invoice_number": "AR-2026-101",
+        "invoice_date": "2026-09-22",
+        "due_date": "2026-10-22",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "subtotal": "1200.00",
+        "vat": "60.00",
+        "total": "1260.00",
+        "payment_terms": "خلال 30 يوماً"
+      },
+      "extractionFile": "mixed-native-two-page-extraction.json",
+      "extractionSha256": "26aaffb254bfb41d42b94f80b2cdf6c15668f73c32850fdef1430bc605608735",
+      "outcome": "Partial",
+      "observed": {
+        "invoice_number": "AR-2026-101",
+        "invoice_date": "2026-09-22",
+        "due_date": "2026-10-22",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "subtotal": "1200.00",
+        "vat": "60.00",
+        "total": "1260.00",
+        "payment_terms": "خلال 30 يوما"
+      },
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "supplier_trn": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "payment_terms": false
+      },
+      "allEvidenceSlicesMatch": true
+    },
+    {
+      "source": {
+        "name": "mixed-scanned-two-page.pdf",
+        "sha256": "029c75f02956915f40f0c573e1d4d1a9e7f06fa4badd96acc8153a5a6e705082",
+        "bytes": 389880,
+        "pages": 2
+      },
+      "expected": {
+        "invoice_number": "AR-2026-101",
+        "invoice_date": "2026-09-22",
+        "due_date": "2026-10-22",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "subtotal": "1200.00",
+        "vat": "60.00",
+        "total": "1260.00",
+        "payment_terms": "خلال 30 يوماً"
+      },
+      "extractionFile": "mixed-scanned-two-page-extraction.json",
+      "extractionSha256": "a104fe0614be8fa579145df1c3bd4d72a414ce91e4aeb05471893e2bee0f73c2",
+      "outcome": "Partial",
+      "observed": {
+        "invoice_number": "AR-2026-101",
+        "invoice_date": "2026-09-22",
+        "due_date": "2026-10-22",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "subtotal": "1200.00",
+        "vat": "60.00",
+        "total": "1260.00",
+        "payment_terms": "خلال 30 يوما"
+      },
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "supplier_trn": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "payment_terms": false
+      },
+      "allEvidenceSlicesMatch": true
+    }
+  ]
+}

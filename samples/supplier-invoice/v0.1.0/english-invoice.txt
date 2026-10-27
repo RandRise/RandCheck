@@ -1,0 +1,16 @@
+INVOICE
+Invoice Number: SINV-0001
+Purchase Order Number: SPO-0001
+Supplier TRN: 000000000000701
+Invoice Date: 2026-10-06
+Due Date: 2026-11-05
+Currency: AED
+Subtotal: 1200.00
+VAT: 60.00
+Total: 1,260.00
+Line 1 Description: Document review training
+Line 1 Quantity: 2
+Line 1 Unit Price: 400.00
+Line 2 Description: Workflow configuration session
+Line 2 Quantity: 1
+Line 2 Unit Price: 400.00

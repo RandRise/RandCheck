@@ -1,5 +1,11 @@
 # Product specification
 
+The focused prototype direction is described in the
+[supplier invoice product plan](design/supplier-invoice-product-plan.md), proposed
+October 6, 2026. Its [task sequence](tasks/supplier-invoice-product.md) starts with
+the active bounded document-input stage. The broader specification below remains available
+as background; it does not expand the focused prototype's scope.
+
 ## Product summary
 
 The UAE Enterprise Document Intelligence Platform helps finance and procurement teams review supplier documents. It extracts structured information, connects related documents, identifies discrepancies, and provides evidence for every finding.

@@ -1,0 +1,44 @@
+.storage-page .security-heading { align-items: center; gap: 24px; margin-bottom: 16px; }
+.storage-page .security-heading h2 { margin: 0 0 8px; }
+.storage-page .security-heading p, .storage-intro { margin: 0; color: var(--app-muted); }
+.storage-intro { margin-bottom: 24px; }
+.storage-overview { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 18px 20px; margin-bottom: 24px; border: 1px solid var(--app-border); border-radius: 10px; background: var(--app-surface); }
+.storage-overview span { color: var(--app-muted); font-size: 13px; }
+.storage-primary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 24px; }
+.storage-page .security-panel-heading { padding: 22px 24px; align-items: start; flex-wrap: wrap; gap: 16px; border-color: var(--app-border); }
+.storage-page .security-panel-heading :is(h3,h4) { margin: 0; font-size: 18px; }
+.storage-page .security-panel-heading p { margin: 8px 0 0; color: var(--app-muted); font-size: 13px; }
+.storage-page .retention-form { gap: 18px; }
+.storage-page .retention-form p { color: var(--app-muted); font-size: 13px; }
+.storage-page .retention-form label { font-size: 13px; }
+.storage-page .retention-form input[type="checkbox"] { min-height: 18px; padding: 0; }
+.storage-page .retention-form .security-check { align-items: start; gap: 12px; }
+.storage-subheading { padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border-top: 1px solid var(--app-border); }
+.storage-subheading h4 { margin: 0; }
+.storage-subheading > span { color: var(--app-muted); font-size: 13px; }
+.storage-page .retention-row { border-color: var(--app-border); flex-wrap: wrap; }
+.storage-page .retention-row small, .storage-page .retention-note { color: var(--app-muted); font-size: 12px; }
+.storage-page .security-badge { white-space: normal; }
+.storage-page .audit-pagination { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding: 20px 24px; border-top: 1px solid var(--app-border); }
+.storage-page .audit-pagination > span { color: var(--app-muted); font-size: 13px; }
+.storage-status, .storage-removal { margin-top: 24px; }
+.storage-status > summary, .storage-removal > summary { cursor: pointer; padding: 22px 24px; border: 1px solid var(--app-border); border-radius: 10px; background: var(--app-surface); }
+.storage-status > summary { border: 0; }
+.storage-status > summary span, .storage-removal > summary span { display: block; margin: 8px 0 0 18px; font-size: 13px; color: var(--app-muted); }
+.storage-removal-sections { display: grid; gap: 24px; margin-top: 24px; }
+.storage-removal-sections .retention-section { margin-top: 0; }
+.storage-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.storage-page .retention-confirm { background: var(--app-warning-bg); color: var(--app-warning); }
+.storage-page .retention-confirm p { color: var(--app-warning); font-size: 13px; }
+.storage-cleanup-result { border: 1px solid var(--app-border); border-radius: 8px; padding: 16px; }
+.storage-footnote { margin: 24px 0 0; color: var(--app-muted); font-size: 13px; line-height: 1.6; max-width: 90ch; }
+
+@media (max-width: 1050px) {
+  .storage-primary { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .storage-page .security-heading { flex-wrap: wrap; }
+  .storage-page .security-panel-heading, .storage-page .retention-form, .storage-page .retention-row, .storage-page .audit-pagination, .storage-subheading, .storage-status > summary, .storage-removal > summary { padding: 18px 16px; }
+  .storage-page .retention-row > div { min-width: min(180px, 100%); }
+}

@@ -1,0 +1,1241 @@
+{
+  "scenario": "Real HTTP uploads, durable worker, pinned local OCR, browser reviews/answers/reconciliation",
+  "profile": "eng+ara/best/lines-v1",
+  "invoices": [
+    {
+      "filename": "native-two-page-invoice.pdf",
+      "documentId": "a9201822-fea8-402c-bc21-cca4c11b3013",
+      "sha256": "002a63dede487a4390f0178b5c64581a31edbbbad4948798403796d17bb56bdf",
+      "processing": {
+        "jobId": "39752ef5-1d4c-4e45-a3d4-fdc1a986fe45",
+        "extractionRunId": "779b6e37-5f0b-4930-910e-a1a2319fc0b8",
+        "status": "Ready",
+        "attemptCount": 1,
+        "retryAt": null,
+        "leaseExpiresAtUtc": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "createdAtUtc": "2026-09-22T17:00:35.335872+00:00",
+        "updatedAtUtc": "2026-09-22T17:00:42.933011+00:00",
+        "completedAtUtc": "2026-09-22T17:00:42.933011+00:00"
+      },
+      "actualMachineValues": {
+        "currency": "AED",
+        "invoice_date": "2026-08-11",
+        "invoice_number": "INV-AE-2026-002",
+        "payment_terms": "Net 30",
+        "subtotal": "1,000.00",
+        "supplier_trn": "000000000000000",
+        "total": "1,050.00",
+        "vat": "50.00"
+      },
+      "expected": {
+        "invoice_number": "INV-AE-2026-002",
+        "invoice_date": "2026-08-11",
+        "supplier_trn": "000000000000000",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00",
+        "payment_terms": "Net 30"
+      },
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "supplier_trn": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "payment_terms": true
+      },
+      "strictPassCount": 8,
+      "fieldCount": 8,
+      "machineLineFields": 0,
+      "review": {
+        "id": "0bc4195a-cb28-4b24-b486-b5a280b3fd67",
+        "revisionNumber": 1,
+        "status": "Completed",
+        "concurrencyToken": "c076273c-2878-4a21-87b6-b677f893d5a6",
+        "createdAt": "2026-09-22T17:01:23.124821+00:00",
+        "startedAt": "2026-09-22T17:01:23.124821+00:00",
+        "completedAt": "2026-09-22T17:02:03.970173+00:00"
+      }
+    },
+    {
+      "filename": "mixed-native-two-page.pdf",
+      "documentId": "3e1ef423-c39b-420e-8884-b014339130e2",
+      "sha256": "e6dc0255c374659712e66b04da33bc6333712148fab1aef1ec63e62bee60a990",
+      "processing": {
+        "jobId": "8ceb28f3-d421-47ac-9a9f-99fa257e1e04",
+        "extractionRunId": "60c8fbd0-cb21-40c5-9728-c35bf09e5fa1",
+        "status": "Partial",
+        "attemptCount": 1,
+        "retryAt": null,
+        "leaseExpiresAtUtc": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "createdAtUtc": "2026-09-22T17:03:03.759569+00:00",
+        "updatedAtUtc": "2026-09-22T17:03:17.554084+00:00",
+        "completedAtUtc": "2026-09-22T17:03:17.554084+00:00"
+      },
+      "actualMachineValues": {
+        "currency": "AED",
+        "due_date": "2026-10-22",
+        "invoice_date": "2026-09-22",
+        "invoice_number": "AR-2026-101",
+        "payment_terms": "خلال 30 يوما",
+        "subtotal": "1200.00",
+        "supplier_trn": "000000000000701",
+        "total": "1260.00",
+        "vat": "60.00"
+      },
+      "expected": {
+        "invoice_number": "AR-2026-101",
+        "invoice_date": "2026-09-22",
+        "due_date": "2026-10-22",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "subtotal": "1200.00",
+        "vat": "60.00",
+        "total": "1260.00",
+        "payment_terms": "خلال 30 يوماً"
+      },
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "supplier_trn": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "payment_terms": false
+      },
+      "strictPassCount": 8,
+      "fieldCount": 9,
+      "machineLineFields": 0,
+      "review": {
+        "id": "1a66b6e4-24ae-48d0-bb36-249991bd8fe8",
+        "revisionNumber": 1,
+        "status": "Completed",
+        "concurrencyToken": "35d0a3f1-080e-4774-bd09-06cb880806e3",
+        "createdAt": "2026-09-22T17:06:27.471641+00:00",
+        "startedAt": "2026-09-22T17:06:27.471641+00:00",
+        "completedAt": "2026-09-22T17:06:35.761148+00:00"
+      }
+    },
+    {
+      "filename": "mixed-scanned-two-page.pdf",
+      "documentId": "fa20cda4-3fbb-4c44-abdf-2603e2e2edd5",
+      "sha256": "029c75f02956915f40f0c573e1d4d1a9e7f06fa4badd96acc8153a5a6e705082",
+      "processing": {
+        "jobId": "965a72c9-8c84-4105-9124-f7483e171218",
+        "extractionRunId": "360ac7cf-6a5e-45c7-9415-f10bbfd432be",
+        "status": "Partial",
+        "attemptCount": 1,
+        "retryAt": null,
+        "leaseExpiresAtUtc": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "createdAtUtc": "2026-09-22T17:08:15.676082+00:00",
+        "updatedAtUtc": "2026-09-22T17:09:01.22514+00:00",
+        "completedAtUtc": "2026-09-22T17:09:01.22514+00:00"
+      },
+      "actualMachineValues": {
+        "currency": "AED",
+        "due_date": "2026-10-22",
+        "invoice_date": "2026-09-22",
+        "invoice_number": "AR-2026-101",
+        "payment_terms": "خلال 30 يوما",
+        "subtotal": "1200.00",
+        "supplier_trn": "000000000000701",
+        "total": "1260.00",
+        "vat": "60.00"
+      },
+      "expected": {
+        "invoice_number": "AR-2026-101",
+        "invoice_date": "2026-09-22",
+        "due_date": "2026-10-22",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "subtotal": "1200.00",
+        "vat": "60.00",
+        "total": "1260.00",
+        "payment_terms": "خلال 30 يوماً"
+      },
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "supplier_trn": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "payment_terms": false
+      },
+      "strictPassCount": 8,
+      "fieldCount": 9,
+      "machineLineFields": 0,
+      "review": null
+    }
+  ],
+  "answers": [
+    {
+      "id": "d42c9b00-730b-409f-9bfb-51370881402a",
+      "text": "Invoice payment terms: خلال 30 يوماً.",
+      "exactUtf8Evidence": true,
+      "evidence": [
+        {
+          "retrievalRunId": "d42c9b00-730b-409f-9bfb-51370881402a",
+          "hitId": "2dab59d1-617b-4e86-be30-c85ed7b9247f",
+          "indexId": "2ddb6378-9196-4b63-ae1a-b3a7d1c45547",
+          "documentId": "3e1ef423-c39b-420e-8884-b014339130e2",
+          "filename": "mixed-native-two-page.pdf",
+          "extractionRunId": "60c8fbd0-cb21-40c5-9728-c35bf09e5fa1",
+          "reviewSessionId": "1a66b6e4-24ae-48d0-bb36-249991bd8fe8",
+          "kind": "ReviewedFact",
+          "reviewedFact": "payment_terms[0]: خلال 30 يوماً",
+          "review": {
+            "actionId": "3df5f88e-93f2-4755-9d5c-3d21991f3455",
+            "action": "Corrected",
+            "fieldKey": "payment_terms",
+            "occurrence": 0,
+            "reason": "تصحيح التشكيل حسب المصدر — page 2 / 2026-09-22",
+            "createdAtUtc": "2026-09-22T17:06:34.853405+00:00"
+          },
+          "page": {
+            "pageNumber": 2,
+            "byteStart": 231,
+            "byteEnd": 251,
+            "before": "SYNTHETIC DEVELOPMENT DOCUMENT - NOT A REAL TAX INVOICE\nAR-2026-101 / continued\nالمجموع الفرعي: 1200.00\nضريبة القيمة المضافة: 60.00\nالإجمالي: 1260.00\nAED العملة:‎\nشروط الدفع: ",
+            "quote": "خلال 30 يوما",
+            "after": "‎\nيرجى مراجعة البيانات قبل اعتماد الفاتورة.‎\nReview note: dates and amounts use Western digits.\nThis document is a workflow fixture, not a production accuracy benchmark.\nFictional parties and tax identifier. For local development only. Page 2 of 2\n"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b59e1de3-99f6-4c7c-a9b5-64f2c50b0c3c",
+      "text": "Invoice total: 1050.00 AED.",
+      "exactUtf8Evidence": true,
+      "evidence": [
+        {
+          "retrievalRunId": "b59e1de3-99f6-4c7c-a9b5-64f2c50b0c3c",
+          "hitId": "3cdb98d0-d8d2-42cd-ad4c-e45e9c74049f",
+          "indexId": "966d3342-c065-45bc-8c18-b2037a82dd8c",
+          "documentId": "a9201822-fea8-402c-bc21-cca4c11b3013",
+          "filename": "native-two-page-invoice.pdf",
+          "extractionRunId": "779b6e37-5f0b-4930-910e-a1a2319fc0b8",
+          "reviewSessionId": "0bc4195a-cb28-4b24-b486-b5a280b3fd67",
+          "kind": "ReviewedFact",
+          "reviewedFact": "total[0]: 1050.00",
+          "review": {
+            "actionId": "511f3567-3dad-400f-a02b-6cab0651ee8f",
+            "action": "Confirmed",
+            "fieldKey": "total",
+            "occurrence": 0,
+            "reason": null,
+            "createdAtUtc": "2026-09-22T17:02:02.146661+00:00"
+          },
+          "page": {
+            "pageNumber": 2,
+            "byteStart": 143,
+            "byteEnd": 151,
+            "before": "SYNTHETIC TEST DOCUMENT - NOT A REAL TAX INVOICE\nTAX INVOICE - PAGE 2\nInvoice Number: INV-AE-2026-002\n\nSubtotal: 1,000.00\nVAT 5%: 50.00\nTotal: ",
+            "quote": "1,050.00",
+            "after": "\nPayment Terms: Net 30\n"
+          }
+        },
+        {
+          "retrievalRunId": "b59e1de3-99f6-4c7c-a9b5-64f2c50b0c3c",
+          "hitId": "30518cdc-1dbc-4759-b941-184fe1725a22",
+          "indexId": "966d3342-c065-45bc-8c18-b2037a82dd8c",
+          "documentId": "a9201822-fea8-402c-bc21-cca4c11b3013",
+          "filename": "native-two-page-invoice.pdf",
+          "extractionRunId": "779b6e37-5f0b-4930-910e-a1a2319fc0b8",
+          "reviewSessionId": "0bc4195a-cb28-4b24-b486-b5a280b3fd67",
+          "kind": "ReviewedFact",
+          "reviewedFact": "currency[0]: AED",
+          "review": {
+            "actionId": "0a2257d9-5297-4d67-967d-e4b812032b49",
+            "action": "Confirmed",
+            "fieldKey": "currency",
+            "occurrence": 0,
+            "reason": null,
+            "createdAtUtc": "2026-09-22T17:01:59.718974+00:00"
+          },
+          "page": {
+            "pageNumber": 1,
+            "byteStart": 274,
+            "byteEnd": 277,
+            "before": "SYNTHETIC TEST DOCUMENT - NOT A REAL TAX INVOICE\nDESERT HORIZON TECHNOLOGY L.L.C.\nTAX INVOICE\nInvoice Number: INV-AE-2026-002\nInvoice Date: 2026-08-11\nSupplier TRN: 000000000000000\nCustomer: Gulf Office Supplies L.L.C.\nCustomer Email: accounts@gulf-office.invalid\nCurrency: ",
+            "quote": "AED",
+            "after": "\n\nDescription | Quantity | Unit Price | Line Total\nDocument Intelligence Setup | 1 | 1,000.00 | 1,000.00\n"
+          }
+        }
+      ]
+    }
+  ],
+  "histories": {
+    "native-two-page-invoice.pdf": {
+      "documentId": "a9201822-fea8-402c-bc21-cca4c11b3013",
+      "sessions": [
+        {
+          "id": "0bc4195a-cb28-4b24-b486-b5a280b3fd67",
+          "extractionRunId": "779b6e37-5f0b-4930-910e-a1a2319fc0b8",
+          "revisionNumber": 1,
+          "status": "Completed",
+          "assignedActorId": "22222222-2222-2222-2222-222222222222",
+          "supersedesReviewSessionId": null,
+          "createdAt": "2026-09-22T17:01:23.124821+00:00",
+          "startedAt": "2026-09-22T17:01:23.124821+00:00",
+          "completedAt": "2026-09-22T17:02:03.970173+00:00",
+          "actions": [
+            {
+              "id": "0a2257d9-5297-4d67-967d-e4b812032b49",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 1,
+              "action": "Confirmed",
+              "fieldKey": "currency",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "6f34a2ab-57c3-4b7f-b03c-716a2347f3a8",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:01:59.718974+00:00"
+            },
+            {
+              "id": "e86774f2-8d2d-436d-a9e7-7196a7897e08",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 2,
+              "action": "Confirmed",
+              "fieldKey": "invoice_date",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "33e1a049-864c-4931-828a-4b334aa5eaa4",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:00.551216+00:00"
+            },
+            {
+              "id": "ea6c0e8e-fc2c-4364-8670-1774720beac5",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 3,
+              "action": "Confirmed",
+              "fieldKey": "invoice_number",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "d4afa138-6c5e-4613-86d7-73c0e0e29554",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:00.933765+00:00"
+            },
+            {
+              "id": "3f445044-2e04-4b14-9519-239d32237b7d",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 4,
+              "action": "Confirmed",
+              "fieldKey": "payment_terms",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "ffa40709-7fda-48ed-9c8e-78c10b8ddd38",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:01.27792+00:00"
+            },
+            {
+              "id": "f385e8e9-9586-47b9-8956-713399a3bb9e",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 5,
+              "action": "Confirmed",
+              "fieldKey": "subtotal",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "ad3997fe-30eb-4861-8b86-5e8512c94f93",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:01.569913+00:00"
+            },
+            {
+              "id": "9a091d38-92f5-430d-80e6-680854315214",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 6,
+              "action": "Confirmed",
+              "fieldKey": "supplier_trn",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "f8cc8eee-6f00-41a8-97f9-bb7a6165d895",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:01.819463+00:00"
+            },
+            {
+              "id": "511f3567-3dad-400f-a02b-6cab0651ee8f",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 7,
+              "action": "Confirmed",
+              "fieldKey": "total",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "1debe7a5-1f44-4d34-a399-d4411f77cfb9",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:02.146661+00:00"
+            },
+            {
+              "id": "a59c8d52-d645-442a-8c14-32430c51f835",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 8,
+              "action": "Confirmed",
+              "fieldKey": "vat",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "77fd623b-7805-4212-bf41-18be3ebf12c2",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:02:03.185227+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    "mixed-native-two-page.pdf": {
+      "documentId": "3e1ef423-c39b-420e-8884-b014339130e2",
+      "sessions": [
+        {
+          "id": "1a66b6e4-24ae-48d0-bb36-249991bd8fe8",
+          "extractionRunId": "60c8fbd0-cb21-40c5-9728-c35bf09e5fa1",
+          "revisionNumber": 1,
+          "status": "Completed",
+          "assignedActorId": "22222222-2222-2222-2222-222222222222",
+          "supersedesReviewSessionId": null,
+          "createdAt": "2026-09-22T17:06:27.471641+00:00",
+          "startedAt": "2026-09-22T17:06:27.471641+00:00",
+          "completedAt": "2026-09-22T17:06:35.761148+00:00",
+          "actions": [
+            {
+              "id": "27819f7a-d7a2-4c13-8de5-e267ada19a8e",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 1,
+              "action": "Confirmed",
+              "fieldKey": "currency",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "f453e759-17ba-4396-b5ad-eacc99be917f",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:28.608836+00:00"
+            },
+            {
+              "id": "e387d642-683e-4be3-ba3d-4c9209d17651",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 2,
+              "action": "Confirmed",
+              "fieldKey": "due_date",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "49b4db84-a892-4829-8cb7-38573e526cd9",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:28.93306+00:00"
+            },
+            {
+              "id": "c7154b23-3dbe-4953-b96c-bebdda53b673",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 3,
+              "action": "Confirmed",
+              "fieldKey": "invoice_date",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "a8074b9e-f196-465e-8375-5d7f41927159",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:29.223975+00:00"
+            },
+            {
+              "id": "6ec7d074-785a-4b99-b190-042b56f68d2d",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 4,
+              "action": "Confirmed",
+              "fieldKey": "invoice_number",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "74aaa95e-ca6f-4690-bbcf-7b7b344f41e5",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:29.527991+00:00"
+            },
+            {
+              "id": "9a7ef8c6-689b-447d-93cc-0c3fc2d8e315",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 5,
+              "action": "Confirmed",
+              "fieldKey": "subtotal",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "08b5f08f-567b-4840-8197-9a165a066e07",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:30.148357+00:00"
+            },
+            {
+              "id": "5fda5575-10c8-4e93-b440-bc14ae2e98fe",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 6,
+              "action": "Confirmed",
+              "fieldKey": "supplier_trn",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "531ede19-43b6-459c-b7a9-fabec6f77099",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:30.892297+00:00"
+            },
+            {
+              "id": "7ce479ba-5105-4e58-b289-e978f5897673",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 7,
+              "action": "Confirmed",
+              "fieldKey": "total",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "9e8c77a4-b332-48d8-8ef4-3fbda2d96a7d",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:31.762977+00:00"
+            },
+            {
+              "id": "25a53e8c-6327-4f85-aa00-aca3568b155c",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 8,
+              "action": "Confirmed",
+              "fieldKey": "vat",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "bc82ea48-e242-40b1-bd08-c31c62582429",
+              "valueType": null,
+              "value": null,
+              "reason": null,
+              "createdAt": "2026-09-22T17:06:33.962566+00:00"
+            },
+            {
+              "id": "3df5f88e-93f2-4755-9d5c-3d21991f3455",
+              "actorId": "22222222-2222-2222-2222-222222222222",
+              "sequenceNumber": 9,
+              "action": "Corrected",
+              "fieldKey": "payment_terms",
+              "occurrenceIndex": 0,
+              "machineFieldValueId": "cc6d8d93-be4f-4837-8086-1ef9834a91c5",
+              "valueType": "String",
+              "value": "خلال 30 يوماً",
+              "reason": "تصحيح التشكيل حسب المصدر — page 2 / 2026-09-22",
+              "createdAt": "2026-09-22T17:06:34.853405+00:00"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "reconciliation": {
+    "id": "8f90f622-5be4-484d-86ce-f845d0563276",
+    "name": "مقارنة تجريبية — PO-260801 / 2026-09-22",
+    "status": "Evaluated",
+    "concurrencyToken": "50eb376e-7876-4868-b5b1-47ce563ad429",
+    "documents": [
+      {
+        "id": "e0b518dd-1e1e-4694-881a-caaa38ac77b3",
+        "role": "Quotation",
+        "documentId": "e220ae34-ccfd-4e57-9e4e-c7891c74f792",
+        "reviewSessionId": "5bd1421d-5933-47ac-90b2-4861055be5a0",
+        "extractionRunId": "7e142224-52cf-4a21-9c16-5d58c050eaa6",
+        "sha256": "d8b502341da89dacffd763e4ec562a2bdf9fc2e2c5836ea1230a64121b10e636"
+      },
+      {
+        "id": "b5dd81b3-add7-406f-8b2f-696bd53dc721",
+        "role": "PurchaseOrder",
+        "documentId": "5f571b68-2c83-427c-bc57-3ae3a1ab3eb8",
+        "reviewSessionId": "2680a37d-2841-4350-8012-27feec91e7da",
+        "extractionRunId": "105d9779-42c2-49d0-b9c0-24f8e6fdc233",
+        "sha256": "fb83571835445e42a7f74402193996acbacb931460cb495ea0beeb4fedcbbb0f"
+      },
+      {
+        "id": "d0bba74a-cd44-4aaa-8caa-1d5ccd3cdce5",
+        "role": "Invoice",
+        "documentId": "3e1ef423-c39b-420e-8884-b014339130e2",
+        "reviewSessionId": "1a66b6e4-24ae-48d0-bb36-249991bd8fe8",
+        "extractionRunId": "60c8fbd0-cb21-40c5-9728-c35bf09e5fa1",
+        "sha256": "e6dc0255c374659712e66b04da33bc6333712148fab1aef1ec63e62bee60a990"
+      }
+    ],
+    "runs": [
+      {
+        "id": "4c1541f3-05e6-406c-b427-98eb4e242729",
+        "runNumber": 1,
+        "status": "Completed",
+        "ruleSetVersion": "1.0",
+        "fields": [
+          {
+            "id": "134f67fc-c849-45d9-b1d5-5470b7a0dcad",
+            "key": "currency",
+            "occurrence": 0,
+            "valueType": "Currency",
+            "value": "AED",
+            "machineFieldValueId": "c02eceb9-29d9-4a9e-a31d-fe3840b79b2c",
+            "reviewActionId": "07b3ce90-55e6-4115-a79c-4678bad00a40",
+            "page": 1,
+            "quote": "AED"
+          },
+          {
+            "id": "14af7f73-038c-48a1-b29f-677927154b0b",
+            "key": "document_number",
+            "occurrence": 0,
+            "valueType": "String",
+            "value": "Q-260801",
+            "machineFieldValueId": "59a2810e-d8ab-43db-b677-7743720f4150",
+            "reviewActionId": "8754d2ca-f776-4651-a17c-ff9e58b6e421",
+            "page": 1,
+            "quote": "Q-260801"
+          },
+          {
+            "id": "49af4f51-0c48-4424-a90d-b629286042e3",
+            "key": "line_description",
+            "occurrence": 1,
+            "valueType": "String",
+            "value": "Document workflow configuration",
+            "machineFieldValueId": "2f6c62a4-d54f-4c9d-8b38-f2ac9ceac60f",
+            "reviewActionId": "328fb8a5-c402-4bbd-b711-3713a7e922b8",
+            "page": 1,
+            "quote": "Document workflow configuration"
+          },
+          {
+            "id": "871d4020-dfb3-42db-9b84-2488de2a79b1",
+            "key": "line_description",
+            "occurrence": 2,
+            "valueType": "String",
+            "value": "Reviewer onboarding workshop",
+            "machineFieldValueId": "31e91e3e-00f6-4b7f-a4f7-d7e2ffccaecd",
+            "reviewActionId": "e87e6b9a-6de8-4fd9-90d9-d7cc79e071fb",
+            "page": 1,
+            "quote": "Reviewer onboarding workshop"
+          },
+          {
+            "id": "7a7f2a8e-4b17-4f95-bd91-e285a9f6ba67",
+            "key": "line_item_code",
+            "occurrence": 1,
+            "valueType": "String",
+            "value": "DOC-WORKFLOW",
+            "machineFieldValueId": "b00aba79-8b8a-4602-9440-fd74d8b35ad4",
+            "reviewActionId": "1be626ae-953a-4fdb-83cd-7bceb6bf8bc3",
+            "page": 1,
+            "quote": "DOC-WORKFLOW"
+          },
+          {
+            "id": "2c39031e-ac6a-40ed-8925-f63c54049930",
+            "key": "line_item_code",
+            "occurrence": 2,
+            "valueType": "String",
+            "value": "TRAINING",
+            "machineFieldValueId": "320961a2-2c3d-43a1-91dc-993d822e5884",
+            "reviewActionId": "f41193ea-1bc6-4382-9112-440a67a5a692",
+            "page": 1,
+            "quote": "TRAINING"
+          },
+          {
+            "id": "d9cfc910-fb69-437f-b95f-4b7e6bfd8c4c",
+            "key": "line_quantity",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "1",
+            "machineFieldValueId": "8bf03bfc-3959-4fc9-a97a-253e94048523",
+            "reviewActionId": "6c43e35f-b3d0-4057-abbc-db336dc8f77c",
+            "page": 1,
+            "quote": "1"
+          },
+          {
+            "id": "e35a91ac-a583-418b-8bb8-64bdce4b78e7",
+            "key": "line_quantity",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "2",
+            "machineFieldValueId": "dba75328-fbbd-48b4-aae0-1b99550f15f7",
+            "reviewActionId": "a37df759-167e-4ec8-b692-d23d9d78d86e",
+            "page": 1,
+            "quote": "2"
+          },
+          {
+            "id": "70065c61-d245-4ef7-9545-28903adbdf71",
+            "key": "line_tax",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "300.00",
+            "machineFieldValueId": "0d876c9e-56e8-4e05-adc4-c92ca47f637a",
+            "reviewActionId": "a31f0206-9284-4542-a628-adfcdbde5bb5",
+            "page": 1,
+            "quote": "300.00"
+          },
+          {
+            "id": "8442dde3-7a4b-4a6f-aae8-da2cc554e33e",
+            "key": "line_tax",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "120.00",
+            "machineFieldValueId": "f734cb77-21d9-4df3-aa8c-dca25749f40e",
+            "reviewActionId": "00188e41-14be-4eea-a8a7-295b22d1ab6c",
+            "page": 1,
+            "quote": "120.00"
+          },
+          {
+            "id": "f88f287e-04f3-4537-8f90-6f658ef9cec7",
+            "key": "line_total",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "6300.00",
+            "machineFieldValueId": "197b1a79-5e55-42d0-8694-5c4ac9f2ada6",
+            "reviewActionId": "18f948d4-ed06-4e74-ad72-2d02bde21932",
+            "page": 1,
+            "quote": "6300.00"
+          },
+          {
+            "id": "594abb8f-36dc-46a4-910e-d59dbad79d1a",
+            "key": "line_total",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "2520.00",
+            "machineFieldValueId": "e034136d-e81e-4f8a-9994-f9a7edab88f4",
+            "reviewActionId": "871b8321-b4d2-47b0-adca-4163f1d4791d",
+            "page": 1,
+            "quote": "2520.00"
+          },
+          {
+            "id": "16c65743-9a10-457a-8655-f83379b0a31c",
+            "key": "line_unit_price",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "6000.00",
+            "machineFieldValueId": "6e3fac35-711e-4ffb-97d3-0ee91f0b40f8",
+            "reviewActionId": "84abb7d3-16f9-448d-8439-e8395df77dc9",
+            "page": 1,
+            "quote": "6000.00"
+          },
+          {
+            "id": "2de41853-7328-4ba4-ba06-3f0263cc861d",
+            "key": "line_unit_price",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "1200.00",
+            "machineFieldValueId": "3b955da8-1ac5-4ad5-b025-8f48037a7fc0",
+            "reviewActionId": "e96740ce-400f-494f-bb11-4dacd9e8619b",
+            "page": 1,
+            "quote": "1200.00"
+          },
+          {
+            "id": "a8c07636-2678-4a70-a001-a24976f38a23",
+            "key": "subtotal",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "8400.00",
+            "machineFieldValueId": "5088c722-1357-4f20-9334-7afb237f3651",
+            "reviewActionId": "96b87dce-986e-483a-9ffe-9affe7be80b2",
+            "page": 1,
+            "quote": "8400.00"
+          },
+          {
+            "id": "129f1599-98e5-4b42-ade6-41101c1db01b",
+            "key": "supplier_trn",
+            "occurrence": 0,
+            "valueType": "Identifier",
+            "value": "000000000000701",
+            "machineFieldValueId": "b2758b6c-9d65-401e-9c07-a601aece2464",
+            "reviewActionId": "5cb115a4-1754-4217-854d-7f7c0fe4ec33",
+            "page": 1,
+            "quote": "000000000000701"
+          },
+          {
+            "id": "441f14a7-ce78-4e8f-a5de-681e00e6be14",
+            "key": "total",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "8820.00",
+            "machineFieldValueId": "4c12b0f0-6255-44e5-bcbb-a4546a1511e3",
+            "reviewActionId": "d5d268a5-25f7-4e80-a377-17147f186e3d",
+            "page": 1,
+            "quote": "8820.00"
+          },
+          {
+            "id": "013c0b2f-0de5-4718-88b0-8ed1536b9d66",
+            "key": "vat",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "420.00",
+            "machineFieldValueId": "6e0caa74-1573-47e0-a6ad-22797b337a42",
+            "reviewActionId": "6e962a8b-76c6-4c06-a641-94b12a08a950",
+            "page": 1,
+            "quote": "420.00"
+          },
+          {
+            "id": "e995735b-b722-4364-ad73-b63dc0b9b794",
+            "key": "currency",
+            "occurrence": 0,
+            "valueType": "Currency",
+            "value": "AED",
+            "machineFieldValueId": "ec5884ae-289f-45be-83c8-01ee92e54397",
+            "reviewActionId": "77176438-0fb9-4a50-9b81-c9783c6b366f",
+            "page": 1,
+            "quote": "AED"
+          },
+          {
+            "id": "7384133a-891c-4e22-bc6d-d8753ac83460",
+            "key": "document_number",
+            "occurrence": 0,
+            "valueType": "String",
+            "value": "PO-260801",
+            "machineFieldValueId": "a748505c-724b-4d98-9b8b-1d5237f43906",
+            "reviewActionId": "37cfd879-2971-40cb-8a32-b720b7a15eca",
+            "page": 1,
+            "quote": "PO-260801"
+          },
+          {
+            "id": "6e0430b8-430b-456a-a543-8ed516cd887e",
+            "key": "line_description",
+            "occurrence": 1,
+            "valueType": "String",
+            "value": "Document workflow configuration",
+            "machineFieldValueId": "057ea92f-a130-4336-81f0-0bf474c5beb1",
+            "reviewActionId": "64225e43-d617-4366-95bf-3ad9bff30507",
+            "page": 1,
+            "quote": "Document workflow configuration"
+          },
+          {
+            "id": "e4363524-d106-4dd0-a15b-e056573c1f23",
+            "key": "line_description",
+            "occurrence": 2,
+            "valueType": "String",
+            "value": "Reviewer onboarding workshop",
+            "machineFieldValueId": "8c48b507-936e-422e-bd31-eaded929c7a3",
+            "reviewActionId": "f06ac275-ea74-4938-b2e4-ddcee44798ab",
+            "page": 1,
+            "quote": "Reviewer onboarding workshop"
+          },
+          {
+            "id": "d75dfaee-9af6-4497-ac68-40de7ba7ec7d",
+            "key": "line_item_code",
+            "occurrence": 1,
+            "valueType": "String",
+            "value": "DOC-WORKFLOW",
+            "machineFieldValueId": "78067a81-08af-455c-8d8d-9ec1768aa682",
+            "reviewActionId": "6599b977-0cbe-4dd9-88b1-a06c4a921225",
+            "page": 1,
+            "quote": "DOC-WORKFLOW"
+          },
+          {
+            "id": "0381bab4-75a8-4815-8b7e-ddc012d81193",
+            "key": "line_item_code",
+            "occurrence": 2,
+            "valueType": "String",
+            "value": "TRAINING",
+            "machineFieldValueId": "d161f6ba-c062-4676-9f2a-64c1d0ab9301",
+            "reviewActionId": "e6dc0936-2da9-4ec3-b9d9-7ff6d4c64200",
+            "page": 1,
+            "quote": "TRAINING"
+          },
+          {
+            "id": "984648c0-30ed-4611-8a0d-3dde9c5df503",
+            "key": "line_quantity",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "1",
+            "machineFieldValueId": "5874d9ac-9b86-43d2-a122-0fc6e5c34ac5",
+            "reviewActionId": "d0f0b16b-6df4-4ad1-8522-9a65cb613bc0",
+            "page": 1,
+            "quote": "1"
+          },
+          {
+            "id": "d092d8f0-ee28-4518-82b2-8f757da8c56f",
+            "key": "line_quantity",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "2",
+            "machineFieldValueId": "2c8818e8-8ec8-4d61-8233-f429c43e26af",
+            "reviewActionId": "5db25a5a-66ba-4370-983d-aa4ab544bdf6",
+            "page": 1,
+            "quote": "2"
+          },
+          {
+            "id": "939208d9-751f-44d0-8e3d-2de328ba0d28",
+            "key": "line_tax",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "300.00",
+            "machineFieldValueId": "b62dbcc1-014f-4fec-ad3c-81943eae133d",
+            "reviewActionId": "0fb694d7-dd44-4b94-8c24-608fb686c331",
+            "page": 1,
+            "quote": "300.00"
+          },
+          {
+            "id": "93254ae9-068c-4182-bf2e-eeafffc97eb5",
+            "key": "line_tax",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "125.00",
+            "machineFieldValueId": "1b1190d5-eae7-4d99-82bc-01730f71bee7",
+            "reviewActionId": "e9384ac2-c36b-4c1b-a771-7951f999c743",
+            "page": 1,
+            "quote": "125.00"
+          },
+          {
+            "id": "ad5f78b8-d545-4e90-92c6-95c7837c0535",
+            "key": "line_total",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "6300.00",
+            "machineFieldValueId": "dcc35d58-f11a-4126-893c-388378b4db78",
+            "reviewActionId": "cf5e593a-9285-45fe-ab65-e6dddae0cf2c",
+            "page": 1,
+            "quote": "6300.00"
+          },
+          {
+            "id": "51cbdd1d-ba3c-46d2-824b-9b6618a887b5",
+            "key": "line_total",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "2625.00",
+            "machineFieldValueId": "a95d38d1-14d9-484b-b6d9-5156cbc5b233",
+            "reviewActionId": "1a1375b6-1fd9-48da-b33d-5facbd6ae572",
+            "page": 1,
+            "quote": "2625.00"
+          },
+          {
+            "id": "39deb4a4-41e6-485e-be4b-81fd66bb0060",
+            "key": "line_unit_price",
+            "occurrence": 1,
+            "valueType": "Decimal",
+            "value": "6000.00",
+            "machineFieldValueId": "e10609aa-85e4-4fb1-9985-bd0bd5eae738",
+            "reviewActionId": "7e8277a9-5231-4c83-b33f-a206c2cdc723",
+            "page": 1,
+            "quote": "6000.00"
+          },
+          {
+            "id": "77aeeb4f-2a5c-44c1-b9b3-a944d90c8205",
+            "key": "line_unit_price",
+            "occurrence": 2,
+            "valueType": "Decimal",
+            "value": "1250.00",
+            "machineFieldValueId": "b9df76a2-078c-408a-ac24-5155871bc86d",
+            "reviewActionId": "7ac91ba8-e0e6-4bdb-927e-4f01674cef08",
+            "page": 1,
+            "quote": "1250.00"
+          },
+          {
+            "id": "0c472aa5-8ab4-410d-9d50-e95c6910662c",
+            "key": "subtotal",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "8500.00",
+            "machineFieldValueId": "29979e26-4bab-460f-a1cd-6a341ab85fe7",
+            "reviewActionId": "1eca7909-0f54-427e-ac7f-629f24bffd0b",
+            "page": 1,
+            "quote": "8500.00"
+          },
+          {
+            "id": "8396550a-1b1c-4e6f-b5aa-dd812e9e0c63",
+            "key": "supplier_trn",
+            "occurrence": 0,
+            "valueType": "Identifier",
+            "value": "000000000000701",
+            "machineFieldValueId": "e7c6241e-3176-4744-abf0-2b0a0981146d",
+            "reviewActionId": "e77eef04-8f1d-4cae-aa19-3911778f8853",
+            "page": 1,
+            "quote": "000000000000701"
+          },
+          {
+            "id": "052cf9c4-3963-47b0-ada2-b2d4f8e228c3",
+            "key": "total",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "8925.00",
+            "machineFieldValueId": "84813131-cb9c-4752-bc73-93bba9c27b22",
+            "reviewActionId": "c991c585-10a6-49f5-bbe3-281f7e950876",
+            "page": 1,
+            "quote": "8925.00"
+          },
+          {
+            "id": "24208f0c-a967-409f-bb49-fa1f81a0c290",
+            "key": "vat",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "425.00",
+            "machineFieldValueId": "03356072-549f-4758-a313-41cd29ffe34b",
+            "reviewActionId": "2b52be39-256b-45a2-865b-e35c9c17f084",
+            "page": 1,
+            "quote": "425.00"
+          },
+          {
+            "id": "3b7aaa55-40e9-44e8-85af-e03f57173de7",
+            "key": "currency",
+            "occurrence": 0,
+            "valueType": "Currency",
+            "value": "AED",
+            "machineFieldValueId": "f453e759-17ba-4396-b5ad-eacc99be917f",
+            "reviewActionId": "27819f7a-d7a2-4c13-8de5-e267ada19a8e",
+            "page": 1,
+            "quote": "AED"
+          },
+          {
+            "id": "59ce25b6-2fa1-4250-8cfa-ae94494e8283",
+            "key": "document_number",
+            "occurrence": 0,
+            "valueType": "String",
+            "value": "AR-2026-101",
+            "machineFieldValueId": "74aaa95e-ca6f-4690-bbcf-7b7b344f41e5",
+            "reviewActionId": "6ec7d074-785a-4b99-b190-042b56f68d2d",
+            "page": 1,
+            "quote": "AR-2026-101"
+          },
+          {
+            "id": "d1a7654b-31df-4c9b-9793-bc167b57aaec",
+            "key": "due_date",
+            "occurrence": 0,
+            "valueType": "Date",
+            "value": "2026-10-22",
+            "machineFieldValueId": "49b4db84-a892-4829-8cb7-38573e526cd9",
+            "reviewActionId": "e387d642-683e-4be3-ba3d-4c9209d17651",
+            "page": 1,
+            "quote": "2026-10-22"
+          },
+          {
+            "id": "959c0fcd-e9de-4e87-9082-470ee828e650",
+            "key": "invoice_date",
+            "occurrence": 0,
+            "valueType": "Date",
+            "value": "2026-09-22",
+            "machineFieldValueId": "a8074b9e-f196-465e-8375-5d7f41927159",
+            "reviewActionId": "c7154b23-3dbe-4953-b96c-bebdda53b673",
+            "page": 1,
+            "quote": "2026-09-22"
+          },
+          {
+            "id": "591bafc4-23c8-43d2-8ac1-5ccd3041f34e",
+            "key": "payment_terms",
+            "occurrence": 0,
+            "valueType": "String",
+            "value": "خلال 30 يوماً",
+            "machineFieldValueId": "cc6d8d93-be4f-4837-8086-1ef9834a91c5",
+            "reviewActionId": "3df5f88e-93f2-4755-9d5c-3d21991f3455",
+            "page": 2,
+            "quote": "خلال 30 يوما"
+          },
+          {
+            "id": "b284ac65-d331-4d35-85ac-9e861f1a4462",
+            "key": "subtotal",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "1200.00",
+            "machineFieldValueId": "08b5f08f-567b-4840-8197-9a165a066e07",
+            "reviewActionId": "9a7ef8c6-689b-447d-93cc-0c3fc2d8e315",
+            "page": 2,
+            "quote": "1200.00"
+          },
+          {
+            "id": "f42c5c86-3651-47f6-b774-9152d31f9e58",
+            "key": "supplier_trn",
+            "occurrence": 0,
+            "valueType": "Identifier",
+            "value": "000000000000701",
+            "machineFieldValueId": "531ede19-43b6-459c-b7a9-fabec6f77099",
+            "reviewActionId": "5fda5575-10c8-4e93-b440-bc14ae2e98fe",
+            "page": 1,
+            "quote": "000000000000701"
+          },
+          {
+            "id": "4730a7f7-f495-46c3-973a-550f59de6a4f",
+            "key": "total",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "1260.00",
+            "machineFieldValueId": "9e8c77a4-b332-48d8-8ef4-3fbda2d96a7d",
+            "reviewActionId": "7ce479ba-5105-4e58-b289-e978f5897673",
+            "page": 2,
+            "quote": "1260.00"
+          },
+          {
+            "id": "a6de13ff-fef9-4931-99b4-0ba48722038c",
+            "key": "vat",
+            "occurrence": 0,
+            "valueType": "Decimal",
+            "value": "60.00",
+            "machineFieldValueId": "bc82ea48-e242-40b1-bd08-c31c62582429",
+            "reviewActionId": "25a53e8c-6327-4f85-aa00-aca3568b155c",
+            "page": 2,
+            "quote": "60.00"
+          }
+        ],
+        "findings": [
+          {
+            "id": "35b2c453-ae87-4992-9d62-bb8c27b34b12",
+            "ruleCode": "AMT-001",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "Quotation",
+            "rightRole": "PurchaseOrder",
+            "fieldKey": "total",
+            "occurrence": 0,
+            "leftFieldSnapshotId": "441f14a7-ce78-4e8f-a5de-681e00e6be14",
+            "rightFieldSnapshotId": "052cf9c4-3963-47b0-ada2-b2d4f8e228c3",
+            "leftValue": "8820.00",
+            "rightValue": "8925.00",
+            "difference": 105.0,
+            "tolerance": 0.01,
+            "explanation": "total differs by 105; the allowed absolute tolerance is 0.01. quotation is 8820.00 and purchase order is 8925.00.",
+            "resolutions": []
+          },
+          {
+            "id": "7a13c438-76d9-4483-8eef-08d8f33e8cb1",
+            "ruleCode": "TAX-001",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "PurchaseOrder",
+            "rightRole": "Invoice",
+            "fieldKey": "vat",
+            "occurrence": 0,
+            "leftFieldSnapshotId": "24208f0c-a967-409f-bb49-fa1f81a0c290",
+            "rightFieldSnapshotId": "a6de13ff-fef9-4931-99b4-0ba48722038c",
+            "leftValue": "425.00",
+            "rightValue": "60.00",
+            "difference": 365.0,
+            "tolerance": 0.01,
+            "explanation": "vat differs by 365; the allowed absolute tolerance is 0.01. purchase order is 425.00 and invoice is 60.00.",
+            "resolutions": []
+          },
+          {
+            "id": "7a57ef1a-2a68-4e08-8390-ba4717bd34de",
+            "ruleCode": "LINE-005",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "Quotation",
+            "rightRole": "PurchaseOrder",
+            "fieldKey": "line_total",
+            "occurrence": 2,
+            "leftFieldSnapshotId": "594abb8f-36dc-46a4-910e-d59dbad79d1a",
+            "rightFieldSnapshotId": "51cbdd1d-ba3c-46d2-824b-9b6618a887b5",
+            "leftValue": "2520.00",
+            "rightValue": "2625.00",
+            "difference": 105.0,
+            "tolerance": 0.01,
+            "explanation": "line total differs by 105; the allowed absolute tolerance is 0.01. quotation is 2520.00 and purchase order is 2625.00.",
+            "resolutions": []
+          },
+          {
+            "id": "8bd72217-3a41-42c0-a179-9e7eb266dd79",
+            "ruleCode": "LINE-004",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "Quotation",
+            "rightRole": "PurchaseOrder",
+            "fieldKey": "line_tax",
+            "occurrence": 2,
+            "leftFieldSnapshotId": "8442dde3-7a4b-4a6f-aae8-da2cc554e33e",
+            "rightFieldSnapshotId": "93254ae9-068c-4182-bf2e-eeafffc97eb5",
+            "leftValue": "120.00",
+            "rightValue": "125.00",
+            "difference": 5.0,
+            "tolerance": 0.01,
+            "explanation": "line tax differs by 5; the allowed absolute tolerance is 0.01. quotation is 120.00 and purchase order is 125.00.",
+            "resolutions": []
+          },
+          {
+            "id": "a540c102-9c23-4495-81d9-b325473c80bc",
+            "ruleCode": "LINE-003",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "Quotation",
+            "rightRole": "PurchaseOrder",
+            "fieldKey": "line_unit_price",
+            "occurrence": 2,
+            "leftFieldSnapshotId": "2de41853-7328-4ba4-ba06-3f0263cc861d",
+            "rightFieldSnapshotId": "77aeeb4f-2a5c-44c1-b9b3-a944d90c8205",
+            "leftValue": "1200.00",
+            "rightValue": "1250.00",
+            "difference": 50.0,
+            "tolerance": 0.01,
+            "explanation": "line unit price differs by 50; the allowed absolute tolerance is 0.01. quotation is 1200.00 and purchase order is 1250.00.",
+            "resolutions": []
+          },
+          {
+            "id": "cb3f2338-dfbb-4c3c-a7ce-f1698296ddf3",
+            "ruleCode": "LINE-001",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "PurchaseOrder",
+            "rightRole": "Invoice",
+            "fieldKey": "line_item_code",
+            "occurrence": 1,
+            "leftFieldSnapshotId": "d75dfaee-9af6-4497-ac68-40de7ba7ec7d",
+            "rightFieldSnapshotId": null,
+            "leftValue": "DOC-WORKFLOW",
+            "rightValue": null,
+            "difference": null,
+            "tolerance": null,
+            "explanation": "Line 'DOC-WORKFLOW' from purchase order is missing from invoice.",
+            "resolutions": []
+          },
+          {
+            "id": "e3daf5c2-7442-434a-b8ba-b1f1f0a954cf",
+            "ruleCode": "AMT-002",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "PurchaseOrder",
+            "rightRole": "Invoice",
+            "fieldKey": "total",
+            "occurrence": 0,
+            "leftFieldSnapshotId": "052cf9c4-3963-47b0-ada2-b2d4f8e228c3",
+            "rightFieldSnapshotId": "4730a7f7-f495-46c3-973a-550f59de6a4f",
+            "leftValue": "8925.00",
+            "rightValue": "1260.00",
+            "difference": 7665.0,
+            "tolerance": 0.01,
+            "explanation": "total differs by 7665; the allowed absolute tolerance is 0.01. purchase order is 8925.00 and invoice is 1260.00.",
+            "resolutions": [
+              {
+                "id": "d1d02371-a86c-4da2-a88a-f481ded11630",
+                "sequenceNumber": 1,
+                "action": "Dismissed",
+                "actorId": "22222222-2222-2222-2222-222222222222",
+                "reason": "اختبار عرض فقط — AED 7665.00 / PO-260801 / 2026-09-22",
+                "createdAt": "2026-09-22T17:16:03.670223+00:00"
+              }
+            ]
+          },
+          {
+            "id": "eecb933a-752d-4bf8-ba95-5ecbac0ac9c0",
+            "ruleCode": "LINE-001",
+            "ruleVersion": "1.0",
+            "severity": "Error",
+            "leftRole": "PurchaseOrder",
+            "rightRole": "Invoice",
+            "fieldKey": "line_item_code",
+            "occurrence": 2,
+            "leftFieldSnapshotId": "0381bab4-75a8-4815-8b7e-ddc012d81193",
+            "rightFieldSnapshotId": null,
+            "leftValue": "TRAINING",
+            "rightValue": null,
+            "difference": null,
+            "tolerance": null,
+            "explanation": "Line 'TRAINING' from purchase order is missing from invoice.",
+            "resolutions": []
+          }
+        ]
+      }
+    ]
+  },
+  "browserHistoryDownloadVerified": false,
+  "limits": [
+    "Fictional development samples, not a production failure-rate estimate",
+    "Mixed PDFs represent the same invoice",
+    "Scanned invoice review not completed in this run",
+    "Quotation and purchase-order reviews prepared through HTTP; invoice reviews completed in browser",
+    "Reconciliation combines deliberately different fixtures for UI validation",
+    "History API works; automatic and explicit browser download events timed out"
+  ]
+}

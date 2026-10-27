@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="680" viewBox="0 0 1040 680" role="img" aria-labelledby="title desc">
+<title id="title">Check one value at a time</title>
+<desc id="desc">Illustration of the G01 guided review: a suggested invoice total and its source quote, with Keep this value, Change it and I can't tell. Uncertainty requires an explicit choice to leave the value out; it is never automatically confirmed.</desc>
+<style>text{font-family:Segoe UI,Arial,sans-serif}</style>
+<rect width="1040" height="680" fill="#f6f8fb"/>
+<text x="40" y="42" font-size="13" fill="#176b5b" font-weight="700">G01 / BUILT SCREEN BEHAVIOR · ILLUSTRATION WITH MADE-UP DATA</text>
+<text x="40" y="88" font-size="30" fill="#17283d" font-weight="700">Check a value. Type only if it needs changing.</text>
+<rect x="40" y="116" width="960" height="320" rx="14" fill="white" stroke="#c8d3df"/>
+<text x="65" y="153" font-size="15" fill="#56667a">2 values need your review.</text>
+<text x="65" y="190" font-size="23" fill="#17283d" font-weight="700">Total</text>
+<text x="65" y="221" font-size="16" fill="#56667a">Read the source beside this value. Does it say the same thing?</text>
+<text x="85" y="270" font-size="14" fill="#56667a">VALUE TO CHECK</text>
+<text x="85" y="309" font-size="30" fill="#17283d">4400.00</text>
+<text x="85" y="336" font-size="14" fill="#56667a">Not yet saved as checked</text>
+<rect x="515" y="247" width="455" height="105" rx="8" fill="#f0f5f8"/>
+<text x="535" y="274" font-size="14" fill="#56667a">FROM THE DOCUMENT · PAGE 1</text>
+<text x="535" y="311" font-size="22" fill="#17283d">Total: AED 4400.00</text>
+<rect x="65" y="373" width="210" height="42" rx="7" fill="#176b5b"/>
+<text x="170" y="400" text-anchor="middle" font-size="16" fill="white">Keep this value</text>
+<rect x="290" y="373" width="160" height="42" rx="7" fill="#eef2f6" stroke="#c8d3df"/>
+<text x="370" y="400" text-anchor="middle" font-size="16" fill="#17283d">Change it</text>
+<rect x="465" y="373" width="160" height="42" rx="7" fill="#eef2f6" stroke="#c8d3df"/>
+<text x="545" y="400" text-anchor="middle" font-size="16" fill="#17283d">I can't tell</text>
+<text x="40" y="480" font-size="20" fill="#17283d" font-weight="700">What happens next?</text>
+<text x="40" y="517" font-size="16" fill="#17283d">Keep → save this decision, then show the next value.</text>
+<text x="40" y="548" font-size="16" fill="#17283d">Change → show the value and reason boxes. Save when ready.</text>
+<text x="40" y="579" font-size="16" fill="#17283d">Can't tell → explain the gap. Only “Leave this value out” saves an exclusion.</text>
+<text x="40" y="624" font-size="16" fill="#176b5b" font-weight="600">Missing values stay visible. A finished review does not mean a complete match.</text>
+<text x="40" y="654" font-size="13" fill="#56667a">G01 changes value checking only. Pair versions and invoice scope remain until later batches.</text>
+</svg>

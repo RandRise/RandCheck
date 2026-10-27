@@ -13,7 +13,7 @@ public sealed partial class PostgresPersistenceTests
     [Fact]
     public async Task Phase6_api_tenant_upload_cancel_and_reprocess_preserve_foreign_jobs()
     {
-        using var a = await SourceFixtureAsync("Operator"); using var b = await SourceFixtureAsync("Operator");
+        using var a = await SourceFixtureAsync("Staff"); using var b = await SourceFixtureAsync("Staff");
         await using var role = await ApiRoleAsync(); using var host = role.Host(a.Host);
         using var userA = WithAuthority(host, a.User); using var userB = WithAuthority(host, b.User);
         await using var db = _database.CreateContext();
@@ -76,9 +76,10 @@ public sealed partial class PostgresPersistenceTests
         Assert.Equal(HttpStatusCode.NotFound, (await Versioned(userB, HttpMethod.Put, $"/api/reconciliation-cases/{caseB}/documents/Invoice", caseBResponse.Headers.ETag!.ToString(), bodyA)).StatusCode);
         var link = await Versioned(userA, HttpMethod.Put, $"/api/reconciliation-cases/{caseA}/documents/Invoice", caseAResponse.Headers.ETag!.ToString(), bodyA);
         Assert.Equal(HttpStatusCode.OK, link.StatusCode);
-        // Replacing a link must retain snapshots and record both link transitions.
+        // Repeating the same pin is an idempotent read, not an unlink/link mutation.
         var replacement = await Versioned(userA, HttpMethod.Put, $"/api/reconciliation-cases/{caseA}/documents/Invoice", link.Headers.ETag!.ToString(), bodyA);
         Assert.Equal(HttpStatusCode.OK, replacement.StatusCode);
+        Assert.Equal(link.Headers.ETag, replacement.Headers.ETag);
         var evaluateBody = new { quantityTolerance = 0m, unitPriceTolerance = 0m, taxTolerance = 0m, lineTotalTolerance = 0m, documentTotalTolerance = 0m };
         Assert.Equal(HttpStatusCode.NotFound, (await Versioned(userB, HttpMethod.Post, $"/api/reconciliation-cases/{caseA}/evaluations", replacement.Headers.ETag!.ToString(), evaluateBody)).StatusCode);
         var evaluation = await Versioned(userA, HttpMethod.Post, $"/api/reconciliation-cases/{caseA}/evaluations", replacement.Headers.ETag!.ToString(), evaluateBody);
@@ -92,6 +93,9 @@ public sealed partial class PostgresPersistenceTests
         var snapshotsBefore = await db.ReconciliationDocumentSnapshots.AsNoTracking().Select(x => x.Id).ToArrayAsync();
         var currentCase = await userA.GetAsync($"/api/reconciliation-cases/{caseA}");
         var linkBefore = await db.ReconciliationDocumentLinks.Select(x => x.Id).SingleAsync();
+        // A different reviewed invoice exercises the real unlink audit and rollback.
+        var nextInvoice = await SeedReplacementInvoiceAsync(s);
+        var replacementBody = new { documentId = nextInvoice.DocumentId, reviewSessionId = nextInvoice.ReviewId };
         await ExecuteAsync("""
             CREATE FUNCTION api_unlink_audit_outage() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
               IF NEW.action='reconciliation.document-unlinked' THEN RAISE EXCEPTION 'test outage'; END IF; RETURN NEW; END $$;
@@ -99,11 +103,12 @@ public sealed partial class PostgresPersistenceTests
             """);
         try
         {
-            Assert.Equal(HttpStatusCode.Conflict, (await Versioned(userA, HttpMethod.Put, $"/api/reconciliation-cases/{caseA}/documents/Invoice", currentCase.Headers.ETag!.ToString(), bodyA)).StatusCode);
+            Assert.Equal(HttpStatusCode.Conflict, (await Versioned(userA, HttpMethod.Put, $"/api/reconciliation-cases/{caseA}/documents/Invoice", currentCase.Headers.ETag!.ToString(), replacementBody)).StatusCode);
             Assert.Equal(linkBefore, await db.ReconciliationDocumentLinks.Select(x => x.Id).SingleAsync());
         }
         finally { await ExecuteAsync("DROP TRIGGER api_unlink_audit_outage ON security_audit_events; DROP FUNCTION api_unlink_audit_outage()"); }
-        Assert.Equal(HttpStatusCode.OK, (await Versioned(userA, HttpMethod.Put, $"/api/reconciliation-cases/{caseA}/documents/Invoice", currentCase.Headers.ETag!.ToString(), bodyA)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await Versioned(userA, HttpMethod.Put, $"/api/reconciliation-cases/{caseA}/documents/Invoice", currentCase.Headers.ETag!.ToString(), replacementBody)).StatusCode);
+        Assert.Equal(nextInvoice.DocumentId, await db.ReconciliationDocumentLinks.Select(x => x.DocumentId).SingleAsync());
         Assert.Equal(snapshotsBefore, await db.ReconciliationDocumentSnapshots.AsNoTracking().Select(x => x.Id).ToArrayAsync());
         var linkedB = await Versioned(userB, HttpMethod.Put, $"/api/reconciliation-cases/{caseB}/documents/Invoice", caseBResponse.Headers.ETag!.ToString(),
             new { documentId = s.DocumentB, reviewSessionId = reviewB.Session.Id });
@@ -133,6 +138,28 @@ public sealed partial class PostgresPersistenceTests
         Assert.Contains(await db.SecurityAuditEvents.ToArrayAsync(), e => e.Action == "reconciliation.document-unlinked" && e.OrganizationId == s.OrganizationA);
     }
 
+    private async Task<(Guid DocumentId, Guid ReviewId)> SeedReplacementInvoiceAsync(SeedData seed)
+    {
+        var documentId = Guid.NewGuid();
+        var runId = Guid.NewGuid();
+        var fieldId = Guid.NewGuid();
+        var reviewId = Guid.NewGuid();
+
+        await ExecuteAsync(InsertDocumentSql,
+            DocumentParameters(seed.OrganizationA, seed.ActorA, documentId, "replacement-invoice.pdf", ValidSha));
+        await ExecuteAsync(InsertRunSql, RunParameters(seed.OrganizationA, documentId, runId, 1, "replacement-invoice"));
+        await ExecuteAsync(InsertPageSql, PageParameters(seed.OrganizationA, runId, Guid.NewGuid()));
+        await ExecuteAsync(InsertFieldSql, FieldParameters(seed.OrganizationA, runId, fieldId, "total", 0));
+        await ExecuteAsync(InsertEvidenceSql, EvidenceParameters(seed.OrganizationA, runId, fieldId, Guid.NewGuid()));
+        await ExecuteAsync(InsertReviewSessionSql, ReviewSessionParameters(seed.OrganizationA, documentId, runId, reviewId, 1));
+        await ExecuteAsync(InsertReviewActionSql,
+            ReviewActionParameters(seed.OrganizationA, reviewId, runId, fieldId, seed.ActorA, Guid.NewGuid(), "total", 1));
+        await ExecuteAsync("UPDATE review_sessions SET status='Completed',completed_at_utc=@now WHERE id=@id",
+            ("now", DateTimeOffset.UtcNow), ("id", reviewId));
+
+        return (documentId, reviewId);
+    }
+
     [Theory]
     [InlineData("vector")]
     [InlineData("hybrid")]
@@ -144,7 +171,10 @@ public sealed partial class PostgresPersistenceTests
         await using var db = _database.CreateContext();
         var actor = await (from m in db.OrganizationMemberships join i in db.EnterpriseIdentities on m.IdentityId equals i.Id where i.ObjectId == subject select m.ActorId).SingleAsync();
         g = g with { Seed = g.Seed with { ActorA = actor } };
-        await using var seedServices = CitedServices(g.Seed.OrganizationA, actor, "http://127.0.0.1:1"); await SemanticSeed(seedServices, g);
+        // The synthetic prepared query needs pilot writes; the HTTP host below
+        // remains ordinary application registration with generation disabled.
+        await using (var seedServices = CitedPilotServices(g.Seed.OrganizationA, actor, "http://127.0.0.1:1"))
+            await SemanticSeed(seedServices, g);
         var reservationCount = await db.CitedSpendReservations.CountAsync(); var events = await db.CitedSpendEvents.CountAsync();
         await using var python = await PrivateCitedServer.StartAsync(); await using var role = await ApiRoleAsync();
         using var original = SecurityHost(python.Url); using var host = role.Host(original); using var owner = SecurityHttp(host, subject);

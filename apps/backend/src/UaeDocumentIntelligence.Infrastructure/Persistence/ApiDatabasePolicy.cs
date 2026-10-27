@@ -8,17 +8,17 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence;
 public static class ApiDatabasePolicy
 {
     private static readonly HashSet<string> ReadTables = ["organizations", "actors", "enterprise_identities", "organization_memberships",
-        "organization_capacity_policies", "organization_retention_policies", "retention_holds", "document_deletions", "security_audit_events", "documents",
+        "organization_capacity_policies", "organization_retention_policies", "retention_holds", "document_deletions", "security_audit_events", "documents", "document_processing_requests",
         "extraction_jobs", "extraction_runs", "extraction_pages", "machine_field_values", "field_evidence", "extraction_warnings",
-        "review_sessions", "review_actions", "reconciliation_cases", "reconciliation_document_links", "reconciliation_runs",
-        "reconciliation_document_snapshots", "reconciliation_field_snapshots", "reconciliation_findings", "finding_resolutions",
+        "review_sessions", "review_actions", "reconciliation_cases", "reconciliation_draft_requests", "reconciliation_document_links", "reconciliation_runs",
+        "reconciliation_document_snapshots", "reconciliation_field_snapshots", "reconciliation_findings", "reconciliation_checks", "finding_resolutions",
         "cited_document_indexes", "document_chunks", "chunk_evidence_spans", "cited_retrieval_runs", "retrieval_sources", "retrieval_hits",
         "cited_answers", "answer_claims", "answer_citations", "cited_chunk_embeddings", "cited_pilot_budgets",
         "cited_spend_reservations", "cited_generation_artifacts"];
     private static readonly HashSet<string> InsertTables = ["actors", "enterprise_identities", "organization_memberships",
-        "organization_retention_policies", "retention_holds", "document_deletions", "security_audit_events", "documents",
-        "extraction_jobs", "extraction_runs", "review_sessions", "review_actions", "reconciliation_cases", "reconciliation_document_links",
-        "reconciliation_runs", "reconciliation_document_snapshots", "reconciliation_field_snapshots", "reconciliation_findings",
+        "organization_retention_policies", "retention_holds", "document_deletions", "security_audit_events", "documents", "document_processing_requests",
+        "extraction_jobs", "extraction_runs", "review_sessions", "review_actions", "reconciliation_cases", "reconciliation_draft_requests", "reconciliation_document_links",
+        "reconciliation_runs", "reconciliation_document_snapshots", "reconciliation_field_snapshots", "reconciliation_findings", "reconciliation_checks",
         "finding_resolutions", "cited_document_indexes", "document_chunks", "chunk_evidence_spans", "cited_retrieval_runs",
         "retrieval_sources", "retrieval_hits", "cited_answers", "answer_claims", "answer_citations"];
     private static readonly HashSet<string> DeleteTables = ["documents", "extraction_jobs", "extraction_runs", "reconciliation_document_links"];
@@ -30,7 +30,7 @@ public static class ApiDatabasePolicy
         ["organizations"] = ["display_name"], ["actors"] = ["display_name"],
         // The singleton CHECK(id=1) permits locking without changing any budget values.
         ["cited_pilot_budgets"] = ["id"],
-        ["organization_memberships"] = ["role", "can_manage_members", "is_active", "version", "updated_at_utc"],
+        ["organization_memberships"] = ["role", "is_active", "version", "updated_at_utc"],
         ["organization_retention_policies"] = ["document_days", "quarantine_hours", "version", "updated_at_utc"],
         ["retention_holds"] = ["released_at_utc", "version"], ["document_deletions"] = ["completed_at_utc"],
         ["documents"] = ["processing_status", "updated_at_utc", "concurrency_token"],
@@ -38,7 +38,8 @@ public static class ApiDatabasePolicy
             "last_error_code", "last_safe_error_summary", "result_outcome", "updated_at_utc", "completed_at_utc"],
         ["extraction_runs"] = ["status", "completed_at_utc", "duration_ms", "failure_code", "safe_failure_summary"],
         ["review_sessions"] = ["status", "assigned_actor_id", "started_at_utc", "completed_at_utc", "concurrency_token"],
-        ["reconciliation_cases"] = ["status", "updated_at_utc", "closed_at_utc", "concurrency_token"],
+        ["reconciliation_cases"] = ["name", "category", "status", "updated_at_utc", "closed_at_utc", "concurrency_token",
+            "draft_invoice_document_id", "draft_purchase_order_document_id", "draft_invoice_version", "draft_purchase_order_version"],
         ["reconciliation_runs"] = ["status", "completed_at_utc"],
         ["cited_document_indexes"] = ["status", "concurrency_token"],
         ["cited_retrieval_runs"] = ["status", "concurrency_token", "completed_at_utc", "retrieval_duration_ms", "failure_code"]

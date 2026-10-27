@@ -29,7 +29,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Semantic_retrieval_persists_scores_policy_evidence_and_replays_without_spend(string mode)
     {
         var g = await SeedCitedGraphAsync();
-        await using var services = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var q = await SemanticSeed(services, g);
         var store = services.GetRequiredService<ICitedSemanticRetrievalStore>();
         var first = await store.RetrieveAsync(q.Operation, "semantic", mode, 5, mode != "vector" ? SemanticPlan() : null, default);
@@ -65,8 +65,8 @@ public sealed partial class PostgresPersistenceTests
     public async Task Semantic_retrieval_same_key_race_has_one_run_and_rejects_changed_inputs()
     {
         var g = await SeedCitedGraphAsync();
-        await using var a = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var q = await SemanticSeed(a, g);
         var ca = a.GetRequiredService<ICitedSemanticRetrievalStore>();
         var cb = b.GetRequiredService<ICitedSemanticRetrievalStore>();
@@ -83,12 +83,12 @@ public sealed partial class PostgresPersistenceTests
     public async Task Semantic_retrieval_rejects_wrong_question_missing_coverage_and_foreign_caller_without_run()
     {
         var g = await SeedCitedGraphAsync();
-        await using var a = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var q = await SemanticSeed(a, g, false);
         var store = a.GetRequiredService<ICitedSemanticRetrievalStore>();
         await SpendDenied("invalid_search_plan", () => store.RetrieveAsync(q.Operation, "bad", "hybrid", 5, SemanticPlan("different"), default));
         await SpendDenied("embedding_corpus_incomplete", () => store.RetrieveAsync(q.Operation, "bad", "vector", 5, null, default));
-        await using var b = CitedServices(g.Seed.OrganizationB, g.Seed.ActorB, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(g.Seed.OrganizationB, g.Seed.ActorB, "http://127.0.0.1:1");
         await SpendDenied("embedding_operation_not_found", () => b.GetRequiredService<ICitedSemanticRetrievalStore>()
             .RetrieveAsync(q.Operation, "bad", "vector", 5, null, default));
         Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM cited_retrieval_runs WHERE request_key='bad'"));
@@ -100,7 +100,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Semantic_retrieval_rechecks_eligibility_on_replay(string change)
     {
         var g = await SeedCitedGraphAsync();
-        await using var a = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var q = await SemanticSeed(a, g);
         var store = a.GetRequiredService<ICitedSemanticRetrievalStore>();
         await store.RetrieveAsync(q.Operation, "retire", "vector", 5, null, default);
@@ -115,7 +115,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Semantic_retrieval_failure_rolls_back_run_sources_and_hits()
     {
         var g = await SeedCitedGraphAsync();
-        await using var a = CitedServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(g.Seed.OrganizationA, g.Seed.ActorA, "http://127.0.0.1:1");
         var q = await SemanticSeed(a, g);
         var runs = await ScalarAsync<long>("SELECT count(*) FROM cited_retrieval_runs");
         var sources = await ScalarAsync<long>("SELECT count(*) FROM retrieval_sources");

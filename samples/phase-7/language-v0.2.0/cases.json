@@ -1,0 +1,121 @@
+{
+  "version": "language-v0.2.0",
+  "provenance": "Original fictional development fixtures authored for this project. No real invoices or personal data. No external document text.",
+  "rights": "Project-authored synthetic test data; may be used, modified and redistributed with this project. This statement does not choose the repository software license.",
+  "cases": [
+    {
+      "id": "ar-basic",
+      "language": "ar",
+      "text": "فاتورة تجريبية\nرقم الفاتورة: 001\nتاريخ الفاتورة: 2026-09-21\nالعملة: درهم\nالمجموع الفرعي: 1,000.00\nضريبة القيمة المضافة: 50.00\nالإجمالي: 1,050.00\n",
+      "expected": {
+        "invoice_number": "001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      }
+    },
+    {
+      "id": "mixed-identifiers",
+      "language": "ar-en",
+      "text": "SYNTHETIC / فاتورة تجريبية\nInvoice Number: INV-007\nالرقم الضريبي للمورد: 000000000000701\nCurrency: AED\nالإجمالي: 210.50\nشروط الدفع: خلال 30 يوماً\n",
+      "expected": {
+        "invoice_number": "INV-007",
+        "supplier_trn": "000000000000701",
+        "currency": "AED",
+        "total": "210.50",
+        "payment_terms": "خلال 30 يوماً"
+      }
+    },
+    {
+      "id": "ar-diacritics",
+      "language": "ar",
+      "text": "رقم الفاتورة: 002\nالإِجْمَالِي: 105.00\nالعملة: درهم إماراتي\n",
+      "expected": {
+        "invoice_number": "002",
+        "total": "105.00",
+        "currency": "AED"
+      }
+    },
+    {
+      "id": "ar-tatweel",
+      "language": "ar",
+      "text": "رقم الفاتورة: 003\nالإجـمالي: 315.00\nالعملة: د.إ\n",
+      "expected": {
+        "invoice_number": "003",
+        "total": "315.00",
+        "currency": "AED"
+      }
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "language": "ar-en",
+      "text": "Invoice Number: MIX-2\nالمجموع الفرعي: 100.00 | ضريبة القيمة المضافة: 5.00 | الإجمالي: 105.00\nCurrency: AED\n",
+      "expected": {
+        "invoice_number": "MIX-2",
+        "subtotal": "100.00",
+        "vat": "5.00",
+        "total": "105.00",
+        "currency": "AED"
+      }
+    },
+    {
+      "id": "ar-due-date",
+      "language": "ar",
+      "text": "رقم الفاتورة: 004\nتاريخ الفاتورة: 2026-09-21\nتاريخ الاستحقاق: 2026-10-21\nالإجمالي: 500.00\n",
+      "expected": {
+        "invoice_number": "004",
+        "invoice_date": "2026-09-21",
+        "due_date": "2026-10-21",
+        "total": "500.00"
+      }
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "language": "ar",
+      "text": "رقم الفاتورة: 005\nتاريخ الاستحقاق: 21/10/2026\nشروط الدفع: خلال 30 يوماً\nالإجمالي: 500.00\n",
+      "expected": {
+        "invoice_number": "005",
+        "payment_terms": "خلال 30 يوماً",
+        "total": "500.00"
+      },
+      "absent": [
+        "due_date"
+      ],
+      "warnings": [
+        "due_date_requires_review"
+      ]
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "language": "ar-en",
+      "text": "Invoice Number: MIX-3\nDue Date: 2026-10-21\nتاريخ الاستحقاق: 2026-10-22\nTotal: 100.00\n",
+      "expected": {
+        "invoice_number": "MIX-3",
+        "total": "100.00"
+      },
+      "absent": [
+        "due_date"
+      ],
+      "warnings": [
+        "due_date_conflicting"
+      ]
+    },
+    {
+      "id": "en-control",
+      "language": "en",
+      "text": "SYNTHETIC INVOICE\nInvoice Number: INV-001\nInvoice Date: 2026-09-21\nCurrency: AED\nSubtotal: 1,000.00\nVAT: 50.00\nTotal: 1,050.00\n",
+      "expected": {
+        "invoice_number": "INV-001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      }
+    }
+  ],
+  "scope": "Required scope: Arabic labels/text with Western digits, Gregorian ISO dates and ordinary numeric amounts. Arabic-Indic source numeral recognition is optional, not a completion gate.",
+  "derivedFrom": "language-v0.1.0: user-requested scope change; source and expected numeral characters converted together before evaluation. Original fixtures and failed receipts remain unchanged."
+}

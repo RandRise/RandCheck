@@ -3,7 +3,9 @@
 The Phase 8 CI increment uses the same PowerShell entry point in a GitHub-hosted
 Ubuntu job and in an isolated local Windows source copy. GitHub execution is not
 yet verified: this work does not commit, push, dispatch or publish anything.
-Phase 7 Arabic support remains pending.
+Bounded local Arabic checks are recorded separately in the
+[October verification](local-language-security-20261027.md); general OCR accuracy
+and live Microsoft sign-in are not established by CI.
 
 For a local credential review of the newly built browser, pass
 `-ExportBrowserReview` with `-Group web` or `-Group all`. The Locked build's static
@@ -18,7 +20,7 @@ default and this directory is excluded from the workflow's artifact allowlist.
 | `workflow` | SHA-256-pinned actionlint 1.7.12 validates the workflow; five demo database-health classification checks | Public linter download |
 | `backend` | Release build; six .NET test projects, including PostgreSQL migrations, snapshot drift, security and recovery | Private disposable PostgreSQL only |
 | `web` | ESLint with zero warnings; Vitest and Node tests; production Locked build; VitePress build | Internal Docker network, no external route |
-| `python` | Ruff correctness rules and compile checks; application, native and OCR test groups; fixture-preservation and credential-scanner regression tests | Internal Docker network, no external route |
+| `python` | Ruff correctness rules and compile checks; application, native, OCR and pytest-native groups; fixture-preservation, runner-discovery and credential-scanner regression tests | Internal Docker network, no external route |
 | `fixture` | Seven legacy fixture-generator tests in their separate pinned environment | Internal Docker network, no external route |
 | `audits` | Fresh NuGet audit (all transitive dependencies/severities); npm audits for browser/docs; pip-audit of installed default service dependencies | Public package/advisory services |
 

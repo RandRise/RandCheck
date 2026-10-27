@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="400" viewBox="0 0 1040 400" role="img" aria-labelledby="title desc">
+  <title id="title">Only two roles: Staff and Admin</title>
+  <desc id="desc">Staff does document work. Admin has the same tools plus user and system settings. Disabled accounts have no access; their history stays saved.</desc>
+  <rect width="1040" height="400" rx="24" fill="#f3f6fa"/>
+  <g font-family="Arial, sans-serif" fill="#172638">
+    <text x="48" y="55" font-size="27" font-weight="700">Choose the access a person needs</text>
+    <rect x="48" y="86" width="450" height="210" rx="18" fill="#fff" stroke="#a9c5cf" stroke-width="2"/>
+    <rect x="542" y="86" width="450" height="210" rx="18" fill="#fff" stroke="#a9c5cf" stroke-width="2"/>
+    <text x="78" y="132" font-size="30" font-weight="700" fill="#136b70">Staff</text>
+    <text x="78" y="175" font-size="22">Upload and check documents</text>
+    <text x="78" y="212" font-size="22">Compare invoices with orders</text>
+    <text x="78" y="249" font-size="22">Read results and record decisions</text>
+    <text x="572" y="132" font-size="30" font-weight="700" fill="#136b70">Admin</text>
+    <text x="572" y="175" font-size="22">Everything Staff can do</text>
+    <text x="572" y="212" font-size="22">Manage people and their access</text>
+    <text x="572" y="249" font-size="22">Manage audit and retention settings</text>
+    <text x="48" y="345" font-size="21" font-weight="700">Active = can work. Disabled = no access.</text>
+    <text x="48" y="377" font-size="19">Disabling an account keeps its earlier work and audit history.</text>
+  </g>
+</svg>

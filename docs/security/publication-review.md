@@ -1,5 +1,48 @@
 # Local publication review
 
+## Current preparation — October 27, 2026
+
+The owner explicitly chose **keep the software unlicensed until he decides**.
+No application LICENSE is being added. At milestone closure, the owner explicitly
+authorized GitHub upload. Sample and dependency terms remain separate; see
+[third-party notices](third-party-notices.md).
+
+The current local product uses invoice/PO reviews, Staff/Admin, AED-only checks
+and readable HTML/CSV exports. Bounded Arabic/native/scanned and local signed
+identity evidence is recorded in the
+[language and security report](../testing/local-language-security-20261027.md).
+This supersedes older “Arabic planned” summaries without claiming arbitrary
+Arabic layout accuracy, live Entra verification or production readiness.
+
+The delivery inventory now explicitly records already-pending tracked deletions.
+Its secret review still scans reachable historical blobs, including deleted files.
+The generated `apps/web/tsconfig.tsbuildinfo` cache was removed from Git's index
+and ignored; its working bytes were preserved. No document, historical result,
+audit record or useful test was removed by this cleanup.
+
+All 32 candidate documentation screenshots were visually inspected: 19 current
+guide images independently, 13 historical Phase 7/8 images by the implementation
+agent. They show fictional/local application states. Historical controls and
+labels remain dated evidence, not current interface promises. Metadata inspection
+of all 36 candidate raster images found no EXIF; other fields were image format,
+density and an sRGB profile. Ordinary readable PDF metadata identifies synthetic
+generators or generic library defaults. Corrupt/encrypted fixtures intentionally
+cannot be read normally. Local hashes and metadata are in
+`outputs/local-completion-20261027/l3/binary-metadata.json`. This is bounded visual
+and metadata inspection, not proof that all possible hidden payloads are absent.
+
+Declared CI groups pass across the recorded runs and targeted rechecks, including
+the updated Python runtime. The selected source/history/log/Locked-bundle scan
+completed with zero unresolved findings and zero errors after individual review.
+Refresh the inventory and scan for the exact staged checkpoint. Hosted CI and
+deployment remain unverified; final guide build and the updated packaged-runtime
+Arabic repetition are explicit follow-ups. Verify the actual upload separately.
+
+## Historical September checkpoint
+
+The following records describe their dates; the license decision and current
+capability summary above supersede their older status statements.
+
 The user authorized a GitHub checkpoint save on September 21. Prefer a private
 repository for this backup; public-release clearance remains incomplete and the
 project license is undecided. This checklist does not itself grant publication

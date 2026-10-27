@@ -15,7 +15,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_execute_default_denies_active_requester_without_changing_the_ledger()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var r = await services.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default);
         await SpendDenied("recovery_forbidden", () => services.GetRequiredService<ICitedRecoveryExecutor>().ExecuteAsync(CancelRecovery(r.Id), default));
         Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM cited_recovery_audits"));
@@ -26,7 +26,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_execute_preserves_original_actor_and_attributes_operator_with_stable_replay()
     {
         var seed = await SeedGraphAsync();
-        await using var owner = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var owner = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var r = await owner.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default);
         var operatorId = await RecoveryOperator(seed.OrganizationA);
         await ExecuteAsync("UPDATE actors SET is_active=false WHERE id=@id", ("id", seed.ActorA));
@@ -77,7 +77,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Recovery_execute_duplicate_operators_share_one_committed_outcome()
     {
         var seed = await SeedGraphAsync();
-        await using var owner = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var owner = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var r = await owner.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default);
         var other = await RecoveryOperator(seed.OrganizationA);
         var command = CancelRecovery(r.Id);
@@ -254,7 +254,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         { ["ConnectionStrings:Database"] = _database.TestConnectionString }).Build();
-        var services = new ServiceCollection().AddInfrastructure(config);
+        var services = new ServiceCollection().AddInfrastructure(config).AddCitedPilotInfrastructure(config);
         services.AddSingleton<IExecutionContext>(new CitedExecution(organizationId, actorId));
         services.AddSingleton(authorization ?? new ExecutionAuthorization());
         if (verifier is not null) services.AddSingleton(verifier);

@@ -1,9 +1,139 @@
 # UAE Enterprise Document Intelligence Platform
 
-**Delivery target:** an independent GitHub portfolio project with a reproducible
-local demo, documented architecture, security tests and screenshots. No domain or
-cloud account is required for completion. The [portfolio delivery plan](docs/design/github-portfolio-delivery.md)
-tracks the remaining work; hosted deployment is optional.
+**Status:** current local-development milestone completed on October 27, 2026.
+The owner closed this checkpoint and authorized GitHub upload. Remaining checks
+and production limits are explicit in the [acceptance map](docs/testing/local-delivery-acceptance-20261027.md).
+The application remains unlicensed.
+
+Check a supplier invoice against its purchase order, with the source evidence
+beside the results. The main workflow stays on one page:
+
+**Add invoice + PO → Check details → See results**
+
+1. **Add both files.** Upload PDF, PNG, JPEG or TXT, or choose saved documents.
+   One file can wait in the library. A check is created only after both choices
+   are saved.
+2. **Check details.** Read the extracted values and evidence. Confirm what is
+   correct, fix mistakes with a reason, and leave missing facts explicit.
+3. **See results.** The backend compares the exact saved review versions. Read
+   **Differences found**, **Checks incomplete**, or **All required checks passed**.
+   Record decisions and download a readable HTML report or CSV spreadsheet.
+
+Completing a review does not mean the invoice matches. Recording a decision never
+turns an unperformed check into a passed check. Later edits do not rewrite earlier
+reviews, comparisons or audit records. New checks use AED only; there is no silent
+currency conversion. Quotations remain accessible for history but are not part of
+new checks. Goods receipts are outside scope.
+
+![Actual local results from a fictional invoice/PO pair](docs/public/workflow-review/fresh-pair-results-20261027.png)
+
+*Actual local-system screenshot with fictional documents: matching totals still
+leave missing item checks incomplete.*
+
+## Run the real local demo
+
+Use **Windows with PowerShell 7, Git and Docker Desktop with Linux containers**. Initial
+builds download public dependencies and need several GB of free disk space. No
+cloud account, paid AI provider or Microsoft sign-in is needed for this demo.
+
+From the repository root in PowerShell 7:
+
+```powershell
+$demo = ./tools/prepare-local-demo.ps1
+Set-Location $demo
+./tools/local-demo.ps1 up
+```
+
+Open <http://127.0.0.1:3308>. Start with
+`samples/supplier-invoice/v0.1.0/english-invoice.pdf` and `english-po.pdf` inside
+the copy. The [demo guide](docs/local-demo.md) explains the expected incomplete
+result, startup, shutdown, health check and guarded reset. The first page visit
+can be slow while the development server compiles it.
+
+```powershell
+./tools/local-demo.ps1 down   # Stop; keep saved work
+./tools/local-demo.ps1 up     # Start again
+./tools/local-demo.ps1 reset  # Remove only this disposable demo's data
+```
+
+The helper creates an isolated source copy and binds the web/API to loopback
+ports 3308/8308. It does not use a retained development database. Reset is for
+that disposable copy only. The default application security mode remains Locked;
+the demo explicitly uses a clearly labelled Development Staff identity.
+
+For quick design work, **Start preview.cmd** opens the separate
+[synthetic UI preview](docs/ui-preview.md). Its simulated results are not backend
+or OCR verification. **Stop preview.cmd** stops that preview. The
+[advanced developer setup](docs/setup.md) is a separate configuration.
+
+## Other screens and access
+
+- **Document library:** 10 files per page; search filenames, suppliers and printed
+  invoice/PO references. Open saved values and evidence without starting a review.
+- **Earlier cases and history:** read saved comparisons, evidence and decisions.
+- **Ask about documents:** choose completed reviews and ask supported questions.
+  Missing or unsupported facts remain unanswered; normal use needs no paid model.
+- **Administration:** People & access, Activity history and Document storage.
+  Staff handles documents; Admin also manages people and settings. Existing
+  accounts require a reviewed role migration—no silent access expansion.
+
+Real organization sign-in and first-Admin provisioning belong to the separate
+enterprise setup. The local demo does not create a real Microsoft account or
+promote its Staff identity to Admin. See the
+[Admin verification and limits](docs/testing/local-language-security-20261027.md).
+
+## Architecture and checks
+
+Next.js provides the workspace. ASP.NET Core owns authorization, business rules,
+versions and audit. Its Application layer uses repository interfaces implemented
+in Infrastructure with EF Core/PostgreSQL. A durable .NET worker calls the private
+Python/FastAPI extractor; original values, page evidence and human decisions stay
+separate. See the [architecture](docs/architecture.md) and [contributor guide](AGENTS.md).
+
+The [workflow guide](docs/workflow-review.md) explains the screens and decisions
+in plain language. Fresh dated evidence is separate from older receipts:
+
+| Area | Current evidence |
+| --- | --- |
+| Actual upload, extraction, review, comparison, decision, retry and reopen | [Fresh local journey](docs/testing/local-journey-20261027.md) |
+| Coherent HTML/CSV downloads and preserved saved versions | [Results export](docs/testing/results-export-20261027.md) |
+| Real local Admin API, permissions and bounded Arabic/scanned checks | [Language and security](docs/testing/local-language-security-20261027.md) |
+| Clean source, complete test discovery, restart and CI progress | [Delivery verification](docs/testing/clean-source-delivery-20261027.md) |
+
+Use the [CI guide](docs/testing/ci.md) for containerized checks and the
+[Python runtime guide](docs/testing/python-runtimes.md) for its separate test
+groups. The [completion ledger](docs/tasks/local-completion-20261027.md) records
+what is implemented, verified and still open. No historical test total below is
+a claim that the same checks ran today. The
+[local acceptance map](docs/testing/local-delivery-acceptance-20261027.md) connects
+each supported claim to its evidence and remaining limits.
+
+## Limits and delivery scope
+
+This is a supported local portfolio project, not a production deployment.
+Extraction is bounded: sample success does not prove accuracy on every supplier
+layout. Arabic/mixed-language OCR remains experimental; English digits are used,
+and missing marks or uncertain document types require review. Incomplete checks
+must stay incomplete. Optional paid semantic experiments remain disabled and
+separate from the normal workflow.
+
+Local offline-token tests do not establish real Entra sign-in, production scanner
+operation, TLS/key delivery, cloud hosting or production recovery. Hosted CI and
+publication also need their own evidence and authorization.
+
+**Software license:** intentionally unlicensed until the owner decides, confirmed
+October 27, 2026. Sample-specific and third-party licenses remain separate. See
+the [publication review](docs/security/publication-review.md) and
+[third-party notices](docs/security/third-party-notices.md) for provenance,
+terms and the source inventory. Nothing has been published by this completion
+work.
+
+
+<details>
+<summary>Historical verification checkpoints</summary>
+
+These dated receipts preserve earlier implementation and acceptance evidence.
+Statements about outstanding work and test totals apply to those checkpoints.
 
 **Phase 6 local security complete — September 16, 2026:** [Acceptance evidence](docs/evidence/phase-6/P6-local-acceptance-20260916.md) covers membership, roles, tenant isolation, audit, protected sources and local recovery. The default remains Locked. Real Entra and production infrastructure remain unverified.
 
@@ -20,23 +150,7 @@ retained reviewer decision. See the [walkthrough and screenshots](docs/evidence/
 
 **September 11, 2026:** [Phase 5 development acceptance](docs/evidence/phase-5/P5-development-acceptance-20260911.md) is complete for bounded reviewed answers, case selection and prepared-query semantic evidence search. Full regression and snapshots are recorded; optional model answers remain disabled. Earlier implementation bullets below are historical checkpoints.
 
-This is a portfolio-grade document review and reconciliation platform for UAE businesses. Its enterprise API is ASP.NET Core, its private AI service is Python/FastAPI, and its review workspace is Next.js. The product name is intentionally undecided while Phase 0 is under review.
-
-## Review the plan first
-
-The product plan is a local VitePress site sourced entirely from Markdown:
-
-```powershell
-./tools/install-project-runtimes.ps1
-. ./tools/use-project-runtimes.ps1
-cd docs
-npm ci
-npm run dev
-```
-
-The planning site covers the [product specification](docs/product-spec.md), [delivery phases](docs/phases/index.md), [roadmap](docs/roadmap.md), [architecture](docs/architecture.md), and [decision log](docs/decisions.md). Phase status does not authorize implementation by itself.
-
-## Current verified foundation
+### Earlier foundation checkpoints
 
 - Upload PDF, PNG, JPEG, or text documents (10 MB limit)
 - ASP.NET modular monolith with Domain, Application, Infrastructure, and API boundaries
@@ -70,100 +184,7 @@ The planning site covers the [product specification](docs/product-spec.md), [del
 
 Migration `20260811131151_AddDurableExtractionQueue`, asynchronous `202` upload, PostgreSQL `extraction_jobs`, the .NET worker, authenticated private Python route, scoped storage/cleanup, fencing/cancellation/reprocess primitives, and Activity/Meter hooks are complete. Real local Compose demonstrations reached `Ready` for one synthetic native PDF and one synthetic scanned PDF. See the [P2-T06 verification](docs/evidence/phase-2/P2-T06-queue-worker-verification.md).
 
-## Quick start
-
-Use the [disposable local demo](docs/local-demo.md) for the Phase 8 walkthrough.
-It includes the current source, automatic migrations, local PDF extraction, review,
-restart persistence and safe reset, with browser/API ports bound to loopback.
-Windows PowerShell 7 and Docker Desktop (Linux containers) are required:
-
-```powershell
-$demo = ./tools/prepare-local-demo.ps1
-Set-Location $demo
-./tools/local-demo.ps1 up
-```
-
-Open [the local workspace](http://127.0.0.1:3308). Use only the included synthetic
-PDF. The guide covers verification, shutdown and reset. The following manual setup
-is retained as historical developer context; the default Compose file is not the
-isolated demo profile.
-
-Prerequisites: the [reviewed runtime baseline](docs/design/phase-6-runtime-baseline.md)
-(.NET SDK 8.0.425 / runtime 8.0.31, Node 24.21.0, and the Python 3.11.16 service image),
-plus Docker Desktop. On Windows, run the bootstrap and dot-source the runtime selector
-above in every build/test shell. System runtime installations are not replaced.
-
-PostgreSQL is exposed on host port `55432`. See the [local setup guide](docs/setup.md) for the complete port map, development-seed behavior, and limitations.
-
-Start PostgreSQL and apply the Code First migration:
-
-```powershell
-docker compose up -d db
-$env:MIGRATION_DATABASE_URL='Host=localhost;Port=55432;Database=document_intelligence;Username=document_intelligence;Password=local_development_only'
-dotnet ef database update --project apps/backend/src/UaeDocumentIntelligence.Infrastructure --startup-project apps/backend/src/UaeDocumentIntelligence.Api
-```
-
-### Inspect PostgreSQL with DBeaver
-
-Create a PostgreSQL connection using these development-only values:
-
-| Setting | Value |
-| --- | --- |
-| Host | `localhost` |
-| Port | `55432` |
-| Database | `document_intelligence` |
-| Username | `document_intelligence` |
-| Password | `local_development_only` |
-| Schema | `public` |
-
-After migrations run, refresh **Schemas → public → Tables** in DBeaver. Useful tables include `documents`, `extraction_runs`, `machine_field_values`, `review_sessions`, `review_actions`, and `__EFMigrationsHistory`. These credentials are strictly for local development and must not be reused in deployed environments.
-
-Start the private AI service:
-
-```powershell
-Copy-Item .env.example .env
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"
-uvicorn app.main:app --app-dir apps/api --reload --port 8001
-```
-
-In a second terminal:
-
-```powershell
-dotnet run --project apps/backend/src/UaeDocumentIntelligence.Api
-```
-
-In a third terminal:
-
-```powershell
-cd apps/web
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000`. ASP.NET API docs are shown at its `/swagger` URL in development; private AI docs are at `http://localhost:8001/docs`.
-
-After the database is migrated, the application services are configured for Compose:
-
-```powershell
-docker compose up --build
-```
-
-`docker compose config --quiet`, the current AI/backend image builds, and synthetic native/scanned end-to-end flows are verified. These local synthetic demonstrations are not production or accuracy claims.
-
-## Verification
-
-```powershell
-python -m unittest discover -s apps/api/tests
-dotnet test apps/backend/UaeDocumentIntelligence.sln
-cd apps/web
-npm test
-npm run lint
-npm run build
-cd ../../docs
-npm run build
-```
+### Earlier phase acceptance receipts
 
 The completed Phase 1 result is recorded in the [P1-T08 acceptance verification](docs/evidence/phase-1/P1-T08-acceptance-verification.md), with the earlier database checkpoint preserved in [P1-T04 evidence](docs/evidence/phase-1/P1-T04-database-verification.md). The completed local Phase 2 outcome is recorded in [P2-T08 acceptance verification](docs/evidence/phase-2/P2-T08-acceptance-verification.md), with durable workflow details in [P2-T06 verification](docs/evidence/phase-2/P2-T06-queue-worker-verification.md).
 
@@ -182,6 +203,5 @@ extraction-accuracy claims.
 
 See the [product specification](docs/product-spec.md), [architecture](docs/architecture.md), and [roadmap](docs/roadmap.md).
 
-## Data and claims
 
-The bundled documents are synthetic and contain no personal or client data. Current fixtures verify deterministic contracts and failure behavior; they do not prove production English OCR or Arabic/bilingual accuracy. Authentication and tenant-aware authorization, production OCR, Arabic support, RAG, reconciliation, cloud deployment, client usage, extraction accuracy, time saved, and financial impact are not claimed.
+</details>

@@ -260,11 +260,16 @@ public sealed class CitedWorkflowLoggingTests
         public Task<CitedRetrievalRun?> GetRunAsync(Guid org, Guid id, CancellationToken ct)
         { FailAt("load"); return Task.FromResult(Runs.SingleOrDefault(x => x.OrganizationId == org && x.Id == id)); }
         public Task<CitedQuestionSaveOutcome> SaveChangesAsync(CancellationToken ct) => Task.FromResult(CitedQuestionSaveOutcome.Saved);
-        public Task<ReviewedSourcesView> ListSourcesAsync(Guid org, int offset, CancellationToken ct)
+        public Task<ReviewedSourcesView> ListSourcesAsync(Guid org, int offset, CancellationToken ct, string? search = null)
         {
             FailAt("catalog");
             return Task.FromResult(new ReviewedSourcesView([new(Index.DocumentId, Index.Filename, Index.ReviewSessionId, Index.ExtractionRunId, 1, DateTimeOffset.UtcNow)], null));
         }
+        public Task<ReviewedSourceView?> GetReviewedSourceAsync(Guid org, Guid documentId, Guid reviewId, CancellationToken ct) =>
+            Task.FromResult<ReviewedSourceView?>(org == OrganizationId && documentId == Index.DocumentId && reviewId == Index.ReviewSessionId
+                ? new(Index.DocumentId, Index.Filename, Index.ReviewSessionId, Index.ExtractionRunId, 1, DateTimeOffset.UtcNow) : null);
+        public Task<RecentQuestionsView> ListRecentQuestionsAsync(Guid org, Guid actor, CancellationToken ct) =>
+            Task.FromResult(new RecentQuestionsView([]));
         public Task<ExtractionPage?> GetPageAsync(Guid org, Guid run, int page, CancellationToken ct)
         { FailAt("page"); return Task.FromResult<ExtractionPage?>(Page); }
         public Task<ReviewAction?> GetActionAsync(Guid org, Guid review, Guid action, CancellationToken ct) => Task.FromResult<ReviewAction?>(Action);

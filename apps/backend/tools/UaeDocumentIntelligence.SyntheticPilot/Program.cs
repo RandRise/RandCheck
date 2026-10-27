@@ -58,7 +58,7 @@ var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<str
     ["ConnectionStrings:Database"] = "Host=127.0.0.1;Port=25434;Database=phase5_e2e_20260908;Username=document_intelligence;Password=local_development_only",
     ["AiService:BaseUrl"] = "http://127.0.0.1:28157", ["AiService:WorkerToken"] = token
 }).Build();
-var collection = new ServiceCollection().AddInfrastructure(config);
+var collection = new ServiceCollection().AddInfrastructure(config).AddCitedPilotInfrastructure(config);
 collection.AddSingleton<IExecutionContext>(new PilotIdentity(org, actor));
 collection.AddSingleton(new CitedGenerationSettings(true, CitedOpenAiPilot.Rate, true, lowReasoning, sourceAware));
 if (typed || replayOnly || retainLow || retainSource || retainCount) collection.AddSingleton<ICitedAnswerClient, OfflineAnswerClient>();

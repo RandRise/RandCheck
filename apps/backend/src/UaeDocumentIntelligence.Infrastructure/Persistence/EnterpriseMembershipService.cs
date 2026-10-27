@@ -11,7 +11,7 @@ public sealed class MembershipException(string code, int status) : Exception(cod
 }
 
 public sealed record MembershipView(Guid Id, Guid ActorId, Guid TenantId, Guid ObjectId,
-    string DisplayName, string Role, bool CanManageMembers, bool IsActive, Guid Version);
+    string DisplayName, string Role, bool IsActive, Guid Version);
 public sealed record BootstrapOrganization(Guid OrganizationId, Guid AdministratorActorId, Guid MembershipId);
 
 public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionContext execution, SecurityAuditContext audit)
@@ -25,11 +25,11 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
             where m.OrganizationId == execution.OrganizationId
             orderby m.Id
             select new MembershipView(m.Id, a.Id, i.TenantId, i.ObjectId, a.DisplayName, m.Role.ToString(),
-                m.CanManageMembers, m.IsActive, m.Version)).Take(500).ToArrayAsync(ct);
+                m.IsActive, m.Version)).Take(500).ToArrayAsync(ct);
     }
 
     public async Task<MembershipView> AddAsync(Guid tenant, Guid subject, string displayName,
-        OrganizationAccessRole role, bool manage, CancellationToken ct)
+        OrganizationAccessRole role, CancellationToken ct)
     {
         Validate(tenant, subject, role);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -44,7 +44,7 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
         var actor = new Actor(Guid.NewGuid(), execution.OrganizationId, ActorKind.Human, displayName,
             DateTimeOffset.UtcNow, $"entra:{tenant:D}:{subject:D}");
         var membership = new OrganizationMembership(Guid.NewGuid(), execution.OrganizationId, identity.Id, actor.Id,
-            role, manage, DateTimeOffset.UtcNow);
+            role, DateTimeOffset.UtcNow);
         db.Actors.Add(actor); db.OrganizationMemberships.Add(membership);
         await Save(ct);
         await transaction.CommitAsync(ct);
@@ -52,7 +52,7 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
     }
 
     public async Task<MembershipView> ChangeAsync(Guid id, Guid expectedVersion, OrganizationAccessRole role,
-        bool manage, bool active, CancellationToken ct)
+        bool active, CancellationToken ct)
     {
         if (expectedVersion == Guid.Empty || !Enum.IsDefined(role)) throw new MembershipException("invalid_membership_request", 400);
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -61,19 +61,19 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
         var member = await db.OrganizationMemberships.SingleOrDefaultAsync(x => x.Id == id && x.OrganizationId == execution.OrganizationId, ct)
             ?? throw new MembershipException("membership_not_found", 404);
         if (member.Version != expectedVersion) throw new MembershipException("membership_version_conflict", 409);
-        if (member.IsActive && member.CanManageMembers && (!active || !manage))
+        if (member.IsActive && member.Role == OrganizationAccessRole.Admin && (!active || role != OrganizationAccessRole.Admin))
         {
             var administrators = await (from m in db.OrganizationMemberships
                 join a in db.Actors on m.ActorId equals a.Id
-                where m.OrganizationId == execution.OrganizationId && m.IsActive && m.CanManageMembers && a.IsActive && a.Kind == ActorKind.Human
+                where m.OrganizationId == execution.OrganizationId && m.IsActive && m.Role == OrganizationAccessRole.Admin && a.IsActive && a.Kind == ActorKind.Human
                 select m.Id).CountAsync(ct);
             if (administrators <= 1) throw new MembershipException("last_administrator_required", 409);
         }
         if (active && await db.OrganizationMemberships.AnyAsync(x => x.IdentityId == member.IdentityId && x.Id != id && x.IsActive, ct))
             throw new MembershipException("identity_has_active_organization", 409);
-        if (member.Role == role && member.CanManageMembers == manage && member.IsActive == active)
+        if (member.Role == role && member.IsActive == active)
             throw new MembershipException("membership_unchanged", 409);
-        member.ChangeAccess(role, manage, active, DateTimeOffset.UtcNow);
+        member.ChangeAccess(role, active, DateTimeOffset.UtcNow);
         await Save(ct);
         await transaction.CommitAsync(ct);
         var identity = await db.EnterpriseIdentities.SingleAsync(x => x.Id == member.IdentityId, ct);
@@ -94,7 +94,7 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
     public async Task<BootstrapOrganization> BootstrapAsync(string slug, string name, Guid tenant, Guid subject,
         string administratorName, string requestId, CancellationToken ct)
     {
-        Validate(tenant, subject, OrganizationAccessRole.None);
+        Validate(tenant, subject, OrganizationAccessRole.Admin);
         if (!db.Database.IsNpgsql()) throw new InvalidOperationException("Enterprise provisioning requires PostgreSQL.");
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var identity = await db.EnterpriseIdentities.SingleOrDefaultAsync(x => x.TenantId == tenant && x.ObjectId == subject, ct);
@@ -107,7 +107,7 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
         identity ??= new EnterpriseIdentity(Guid.NewGuid(), tenant, subject, now);
         if (db.Entry(identity).State == EntityState.Detached) db.EnterpriseIdentities.Add(identity);
         var membership = new OrganizationMembership(Guid.NewGuid(), organization.Id, identity.Id, administrator.Id,
-            OrganizationAccessRole.None, true, now);
+            OrganizationAccessRole.Admin, now);
         audit.Bind(organization.Id, system.Id, "System", requestId);
         db.Organizations.Add(organization); db.Actors.AddRange(system, administrator); db.OrganizationMemberships.Add(membership);
         await Save(ct);
@@ -121,7 +121,7 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
             !await (from m in db.OrganizationMemberships.AsNoTracking()
                 join a in db.Actors.AsNoTracking() on m.ActorId equals a.Id
                 where m.OrganizationId == execution.OrganizationId && m.ActorId == execution.ActorId &&
-                    m.IsActive && m.CanManageMembers && a.IsActive && a.Kind == ActorKind.Human
+                    m.IsActive && m.Role == OrganizationAccessRole.Admin && a.IsActive && a.Kind == ActorKind.Human
                 select m.Id).AnyAsync(ct)) throw new MembershipException("membership_administration_denied", 403);
     }
     private async Task LockOrganization(Guid id, CancellationToken ct)
@@ -145,5 +145,5 @@ public sealed class EnterpriseMembershipService(AppDbContext db, IExecutionConte
         if (tenant == Guid.Empty || subject == Guid.Empty || !Enum.IsDefined(role)) throw new MembershipException("invalid_membership_request", 400);
     }
     private static MembershipView View(OrganizationMembership m, EnterpriseIdentity i, Actor a) =>
-        new(m.Id, a.Id, i.TenantId, i.ObjectId, a.DisplayName, m.Role.ToString(), m.CanManageMembers, m.IsActive, m.Version);
+        new(m.Id, a.Id, i.TenantId, i.ObjectId, a.DisplayName, m.Role.ToString(), m.IsActive, m.Version);
 }

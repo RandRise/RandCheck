@@ -204,7 +204,7 @@ class LocalProviderSelectionTests(unittest.TestCase):
 
     def test_local_configuration_fails_fast_for_invalid_settings(self):
         invalid_settings = (
-            ({"OCR_LANGUAGE": "ara"}, "OCR_LANGUAGE=eng"),
+            ({"OCR_LANGUAGE": "fra"}, "OCR_LANGUAGE must be"),
             ({"OCR_TIMEOUT_SECONDS": "not-a-number"}, "must be numeric"),
             ({"OCR_TIMEOUT_SECONDS": "0"}, "between 1 and 120"),
             ({"OCR_RENDER_DPI": "149"}, "between 150 and 400"),
@@ -227,17 +227,19 @@ class LocalProviderSelectionTests(unittest.TestCase):
             "pdfminer.six": PDFMINER_VERSION,
             "pypdfium2": "5.12.1",
             "pytesseract": "0.3.13",
-            "Pillow": "12.3.0",
+            "Pillow": "13.0.0",
         }
         with patch("app.local_extraction.version", side_effect=expected.__getitem__):
             LocalInvoiceExtractor._verify_python_runtime()
 
-        mismatched = expected | {"pdfplumber": "0.0.0"}
-        with patch("app.local_extraction.version", side_effect=mismatched.__getitem__):
-            with self.assertRaises(ExtractionError) as captured:
-                LocalInvoiceExtractor._verify_python_runtime()
-        self.assertEqual("ocr_unavailable", captured.exception.code)
-        self.assertFalse(captured.exception.retryable)
+        for change in ({"pdfplumber": "0.0.0"}, {"Pillow": "12.3.0"}):
+            with self.subTest(change=change):
+                mismatched = expected | change
+                with patch("app.local_extraction.version", side_effect=mismatched.__getitem__):
+                    with self.assertRaises(ExtractionError) as captured:
+                        LocalInvoiceExtractor._verify_python_runtime()
+                self.assertEqual("ocr_unavailable", captured.exception.code)
+                self.assertFalse(captured.exception.retryable)
 
     def test_ocr_engine_and_required_models_fail_fast_when_unpinned_or_missing(self):
         cases = (

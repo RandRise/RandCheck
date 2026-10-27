@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="250" viewBox="0 0 1000 250" role="img" aria-labelledby="title desc">
+  <title id="title">Example: checking details in the invoice workflow</title>
+  <desc id="desc">Step 1 files saved is green with a check. Step 2 check details is purple and current. Step 3 see results is grey and next. Saved steps do not mean the documents match.</desc>
+  <rect width="1000" height="250" rx="12" fill="#26272d"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="30" y="38" font-size="19" fill="#f3f3f7">Example: you are checking the values</text>
+    <path d="M105 110H410M445 110H750" stroke="#858692" stroke-width="2"/>
+    <circle cx="70" cy="110" r="24" fill="#243a34" stroke="#a5d6c0"/>
+    <text x="70" y="117" text-anchor="middle" font-size="21" fill="#a5d6c0">1</text>
+    <path d="m36 167 5 5 10-12" fill="none" stroke="#a5d6c0" stroke-width="2"/>
+    <text x="65" y="173" font-size="17" fill="#a5d6c0">Files saved</text>
+    <circle cx="410" cy="110" r="24" fill="#39334f" stroke="#d5ccff" stroke-width="2"/>
+    <text x="410" y="117" text-anchor="middle" font-size="21" fill="#d5ccff">2</text>
+    <text x="355" y="173" font-size="17" fill="#d5ccff">Current: check details</text>
+    <circle cx="750" cy="110" r="24" fill="#313239" stroke="#858692"/>
+    <text x="750" y="117" text-anchor="middle" font-size="21" fill="#bfc0cd">3</text>
+    <text x="690" y="173" font-size="17" fill="#bfc0cd">Next: see results</text>
+    <text x="30" y="221" font-size="15" fill="#bfc0cd">Saved means your work is kept. It does not mean every comparison check passed.</text>
+  </g>
+</svg>

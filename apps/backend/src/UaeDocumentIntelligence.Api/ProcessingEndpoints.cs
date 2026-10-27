@@ -26,15 +26,21 @@ public static class ProcessingEndpoints
     {
         try
         {
-            var queued = await handler.HandleAsync(documentId, context.TraceIdentifier, cancellationToken);
+            var requestKey = context.Request.Headers.TryGetValue("X-Operation-Key", out var operationKey) ? operationKey.ToString() : null;
+            var queued = await handler.HandleAsync(documentId, context.TraceIdentifier, cancellationToken, requestKey);
             return queued is null
                 ? Results.Conflict(new { code = "reprocess_not_available", detail = "The document was not found or already has active processing." })
                 : Results.Accepted($"/api/documents/{documentId}/processing", new
                 {
-                    queued.JobId, queued.ExtractionRunId, queued.RunNumber, status = "Queued"
+                    queued.JobId, queued.ExtractionRunId, queued.RunNumber, queued.Status, queued.Replayed
                 });
         }
         catch (OrganizationCapacityException error) { return CapacityResponse.Problem(error); }
+        catch (ProcessingIntentException error)
+        {
+            return Results.Problem(error.Message, statusCode: error.Conflict ? 409 : 400, title: error.Code,
+                extensions: new Dictionary<string, object?> { ["code"] = error.Code });
+        }
     }
 
     private static async Task<IResult> CancelAsync(Guid jobId, CancelExtractionHandler handler,

@@ -1,0 +1,358 @@
+{
+  "schema_version": "2.0",
+  "outcome": "Partial",
+  "document_type": "invoice",
+  "language": "ar-en",
+  "provider": {
+    "alias": "local",
+    "adapter_version": "local-1.5.0",
+    "model": "tesseract-eng+ara-osd",
+    "model_version": "5.3.0/eng+ara-osd-4.1.0/ara-best/layout-lines-v1"
+  },
+  "metrics": {
+    "provider_duration_ms": 26839,
+    "page_count": 2,
+    "estimated_cost": null,
+    "cost_currency": null,
+    "price_basis": null
+  },
+  "pages": [
+    {
+      "page_number": 1,
+      "canonical_text": "SYNTHETIC DEVELOPMENT DOCUMENT - NOT A REAL TAX INVOICE\nTraining invoice / two-page development sample\nSupplier TRN: 000000000000701\nInvoice number: AR-2026-101\nInvoice date: 2026-09-22\nDue date: 2026-10-22\nCurrency: AED\nBILL TO\nOasis Demo Customer LLC (fictional)\nTraining District, Dubai, United Arab Emirates\nDescription Qty Unit price Net AED\nDocument review training 2 400.00 800.00\nWorkflow configuration session 1 400.00 400.00\nAmounts are in AED. VAT rate: 5%.\nInvoice totals and payment information continue on page 2.\nNo banking details are included in this fictional sample.\nFictional parties and tax identifier. For local development only. Page 1 of 2\n",
+      "rotation_degrees": 0
+    },
+    {
+      "page_number": 2,
+      "canonical_text": "SYNTHETIC DEVELOPMENT DOCUMENT - NOT A REAL TAX INVOICE\nAR-2026-101 / continued\n3) ملخص الفاتو‎\nالمجموع الفرعي: 1200.00\nضريبة القيمة المضافة: 60.00\nالإجمالي: 1260.00\nAED العملة:‎\nشروط الدفع: خلال 30 يوما‎\nيرجى مراجعة البيانات قبل اعتماد الفاتورة.‎\nReview note: dates and amounts use Western digits.\nThis document is a workflow fixture, not a production accuracy benchmark.\nFictional parties and tax identifier. For local development only. Page 2 of 2\n",
+      "rotation_degrees": 0
+    }
+  ],
+  "fields": [
+    {
+      "key": "invoice_number",
+      "occurrence": 0,
+      "value_type": "String",
+      "value": "AR-2026-101",
+      "normalized_value": "AR-2026-101",
+      "confidence": 0.92,
+      "evidence": [
+        {
+          "page_number": 1,
+          "quote": "AR-2026-101",
+          "start_utf8": 149,
+          "end_utf8": 160,
+          "polygon": [
+            [
+              0.203547,
+              0.174458
+            ],
+            [
+              0.309956,
+              0.174458
+            ],
+            [
+              0.309956,
+              0.184151
+            ],
+            [
+              0.203547,
+              0.184151
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "invoice_date",
+      "occurrence": 0,
+      "value_type": "Date",
+      "value": "2026-09-22",
+      "normalized_value": "2026-09-22",
+      "confidence": 0.96,
+      "evidence": [
+        {
+          "page_number": 1,
+          "quote": "2026-09-22",
+          "start_utf8": 175,
+          "end_utf8": 185,
+          "polygon": [
+            [
+              0.177348,
+              0.201824
+            ],
+            [
+              0.270455,
+              0.201824
+            ],
+            [
+              0.270455,
+              0.211517
+            ],
+            [
+              0.177348,
+              0.211517
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "due_date",
+      "occurrence": 0,
+      "value_type": "Date",
+      "value": "2026-10-22",
+      "normalized_value": "2026-10-22",
+      "confidence": 0.96,
+      "evidence": [
+        {
+          "page_number": 1,
+          "quote": "2026-10-22",
+          "start_utf8": 196,
+          "end_utf8": 206,
+          "polygon": [
+            [
+              0.152761,
+              0.22919
+            ],
+            [
+              0.245869,
+              0.22919
+            ],
+            [
+              0.245869,
+              0.238883
+            ],
+            [
+              0.152761,
+              0.238883
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "supplier_trn",
+      "occurrence": 0,
+      "value_type": "Identifier",
+      "value": "000000000000701",
+      "normalized_value": "000000000000701",
+      "confidence": 0.91,
+      "evidence": [
+        {
+          "page_number": 1,
+          "quote": "000000000000701",
+          "start_utf8": 117,
+          "end_utf8": 132,
+          "polygon": [
+            [
+              0.189037,
+              0.147092
+            ],
+            [
+              0.338573,
+              0.147092
+            ],
+            [
+              0.338573,
+              0.156784
+            ],
+            [
+              0.189037,
+              0.156784
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "currency",
+      "occurrence": 0,
+      "value_type": "Currency",
+      "value": "AED",
+      "normalized_value": "AED",
+      "confidence": 0.96,
+      "evidence": [
+        {
+          "page_number": 1,
+          "quote": "AED",
+          "start_utf8": 217,
+          "end_utf8": 220,
+          "polygon": [
+            [
+              0.152358,
+              0.256271
+            ],
+            [
+              0.18944,
+              0.256271
+            ],
+            [
+              0.18944,
+              0.265678
+            ],
+            [
+              0.152358,
+              0.265678
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "subtotal",
+      "occurrence": 0,
+      "value_type": "Decimal",
+      "value": "1200.00",
+      "normalized_value": "1200.00",
+      "confidence": 0.96,
+      "evidence": [
+        {
+          "page_number": 2,
+          "quote": "1200.00",
+          "start_utf8": 137,
+          "end_utf8": 144,
+          "polygon": [
+            [
+              0.15397,
+              0.267674
+            ],
+            [
+              0.246675,
+              0.267674
+            ],
+            [
+              0.246675,
+              0.281642
+            ],
+            [
+              0.15397,
+              0.281642
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "vat",
+      "occurrence": 0,
+      "value_type": "Decimal",
+      "value": "60.00",
+      "normalized_value": "60.00",
+      "confidence": 0.95,
+      "evidence": [
+        {
+          "page_number": 2,
+          "quote": "60.00",
+          "start_utf8": 185,
+          "end_utf8": 190,
+          "polygon": [
+            [
+              0.151955,
+              0.326967
+            ],
+            [
+              0.216848,
+              0.326967
+            ],
+            [
+              0.216848,
+              0.340935
+            ],
+            [
+              0.151955,
+              0.340935
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "total",
+      "occurrence": 0,
+      "value_type": "Decimal",
+      "value": "1260.00",
+      "normalized_value": "1260.00",
+      "confidence": 0.95,
+      "evidence": [
+        {
+          "page_number": 2,
+          "quote": "1260.00",
+          "start_utf8": 209,
+          "end_utf8": 216,
+          "polygon": [
+            [
+              0.15397,
+              0.38626
+            ],
+            [
+              0.245869,
+              0.38626
+            ],
+            [
+              0.245869,
+              0.400228
+            ],
+            [
+              0.15397,
+              0.400228
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    },
+    {
+      "key": "payment_terms",
+      "occurrence": 0,
+      "value_type": "String",
+      "value": "خلال 30 يوما",
+      "normalized_value": "خلال 30 يوما",
+      "confidence": 0.944,
+      "evidence": [
+        {
+          "page_number": 2,
+          "quote": "خلال 30 يوما",
+          "start_utf8": 259,
+          "end_utf8": 279,
+          "polygon": [
+            [
+              0.363563,
+              0.529647
+            ],
+            [
+              0.488916,
+              0.529647
+            ],
+            [
+              0.488916,
+              0.551026
+            ],
+            [
+              0.363563,
+              0.551026
+            ]
+          ],
+          "coordinate_unit": "normalized"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "arabic_ocr_requires_review",
+      "severity": "degraded",
+      "safe_summary": "Arabic OCR is experimental. Verify values against the original source.",
+      "page_number": null,
+      "field_key": null,
+      "occurrence": null
+    }
+  ]
+}

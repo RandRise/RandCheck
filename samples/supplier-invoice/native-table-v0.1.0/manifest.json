@@ -1,0 +1,10 @@
+{
+  "fixture": "native-table-v0.1.0",
+  "file": "native-table.pdf",
+  "sha256": "4ebe43bcac1fedca8de1d7dbf9d8aeda4032efab5d5094e7d081bec7fa6bfe2d",
+  "pages": 1,
+  "rights": "Project-authored fictional fixture, CC0-1.0. PDF core Helvetica; no embedded font program.",
+  "truth": "../v0.1.0/source-truth.json#rows",
+  "historicalLayoutSource": "Phase 7 mixed-native-two-page.pdf, first-page English table",
+  "historicalSourceSha256": "e6dc0255c374659712e66b04da33bc6333712148fab1aef1ec63e62bee60a990"
+}

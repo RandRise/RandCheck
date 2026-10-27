@@ -4,7 +4,7 @@ using UaeDocumentIntelligence.Domain.Model;
 
 namespace UaeDocumentIntelligence.Application.Tests;
 
-public sealed class ReconciliationHandlerTests
+public sealed partial class ReconciliationHandlerTests
 {
     private const string ValidSha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     private static readonly DateTimeOffset Now = new(2026, 8, 19, 11, 0, 0, TimeSpan.Zero);
@@ -215,7 +215,13 @@ public sealed class ReconciliationHandlerTests
     private sealed class FakeReconciliationRepository(ReconciliationCase? item = null)
         : IReconciliationRepository
     {
+        public Task<IReadOnlyList<ReconciliationCaseSummary>> ListAsync(Guid organizationId,
+            int offset, int limit, CancellationToken token, ReconciliationCaseFilter? filter = null) =>
+            Task.FromResult<IReadOnlyList<ReconciliationCaseSummary>>([]);
         public ReconciliationCase? Item { get; private set; } = item;
+        public Task<ReconciliationCase?> GetByCreationRequestAsync(Guid organizationId, Guid actorId,
+            string key, CancellationToken token) => Task.FromResult(Item is not null && Item.OrganizationId == organizationId &&
+                Item.CreatedByActorId == actorId && Item.CreationRequestKey == key ? Item : null);
         public int SaveCount { get; private set; }
         public ReconciliationSaveOutcome Outcome { get; init; } = ReconciliationSaveOutcome.Saved;
         public Task AddAsync(ReconciliationCase value, CancellationToken token)

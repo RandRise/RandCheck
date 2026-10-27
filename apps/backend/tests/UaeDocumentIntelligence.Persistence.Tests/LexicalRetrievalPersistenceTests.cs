@@ -152,7 +152,7 @@ public sealed partial class PostgresPersistenceTests
     }
 
     private ServiceProvider CitedServices(Guid organizationId, Guid actorId, string url, ILoggerProvider? logCapture = null,
-        bool openAi = false, bool pilotClock = false)
+        bool openAi = false, bool pilotClock = false, bool registerPilot = false)
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -160,6 +160,7 @@ public sealed partial class PostgresPersistenceTests
             ["AiService:BaseUrl"] = url, ["AiService:WorkerToken"] = "test-only-cited-token"
         }).Build();
         var services = new ServiceCollection().AddInfrastructure(config);
+        if (registerPilot) services.AddCitedPilotInfrastructure(config);
         if (openAi)
         {
             services.AddSingleton(new CitedGenerationSettings(true, CitedOpenAiPilot.Rate, true));
@@ -178,6 +179,9 @@ public sealed partial class PostgresPersistenceTests
         services.AddSingleton<IExecutionContext>(new CitedExecution(organizationId, actorId));
         return services.BuildServiceProvider();
     }
+    private ServiceProvider CitedPilotServices(Guid organizationId, Guid actorId, string url, ILoggerProvider? logCapture = null,
+        bool openAi = false, bool pilotClock = false) =>
+        CitedServices(organizationId, actorId, url, logCapture, openAi, pilotClock, registerPilot: true);
     private sealed record CitedExecution(Guid OrganizationId, Guid ActorId) : IExecutionContext;
     private static LexicalPlan Plan(string question, string text) => new("1.0", LexicalPlan.CurrentVersion,
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(question))).ToLowerInvariant(), "english", text, 5);

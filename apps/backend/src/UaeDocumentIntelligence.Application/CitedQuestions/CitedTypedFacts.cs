@@ -29,7 +29,7 @@ public sealed record CitedFactAnswer(string Status, string? ReasonCode, CitedFac
     IReadOnlyList<string> MissingParts, CitedFactCalculation? Calculation)
 {
     public string PolicyVersion => "reviewed-fact-answer-v1.2";
-    public string QuestionPolicyVersion => "bounded-english-fact-intents-v1.2";
+    public string QuestionPolicyVersion => "bounded-ar-en-fact-intents-v1.3";
     public bool PublicationAllowed => false;
     public bool GeneralSemanticSupportEstablished => false;
     public bool ModelInvoked => false;

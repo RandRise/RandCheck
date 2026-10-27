@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="410" viewBox="0 0 1100 410" role="img" aria-labelledby="title desc">
+<title id="title">Document storage: keep, protect, inspect</title><desc id="desc">Saving settings does not delete files. Protect files from removal. Optional removal requires preview, confirmation and fresh backend checks; saved history remains protected.</desc>
+<rect width="1100" height="410" rx="20" fill="#202126"/>
+<g font-family="Arial,sans-serif" fill="#f4f4f6"><text x="32" y="44" font-size="25" font-weight="700">Document storage</text><text x="32" y="76" font-size="17">Admin controls. Saving settings never deletes a document.</text>
+<g fill="#2d2e36" stroke="#777384"><rect x="32" y="105" width="320" height="135" rx="12"/><rect x="390" y="105" width="320" height="135" rx="12"/><rect x="748" y="105" width="320" height="135" rx="12"/></g>
+<g font-size="20" font-weight="700"><text x="52" y="140">Keep files</text><text x="410" y="140">Protect files</text><text x="768" y="140">Inspect before removal</text></g>
+<g font-size="17"><text x="52" y="175">Blank means no time limit.</text><text x="52" y="204">Save when files can be checked.</text><text x="410" y="175">Protect all files or one file.</text><text x="410" y="204">Release needs confirmation.</text><text x="768" y="175">Preview what is eligible.</text><text x="768" y="204">Confirm the exact action.</text></g>
+<path d="M908 242v35H192v-35" fill="none" stroke="#afa4ff" stroke-width="2"/>
+<rect x="32" y="300" width="1036" height="78" rx="12" fill="#353044" stroke="#afa4ff"/>
+<text x="52" y="330" font-size="19" font-weight="700">The backend checks permissions, versions and protection again.</text><text x="52" y="357" font-size="17">An unclear result stops the next action. Refresh and inspect history; never retry a removal blindly.</text></g></svg>

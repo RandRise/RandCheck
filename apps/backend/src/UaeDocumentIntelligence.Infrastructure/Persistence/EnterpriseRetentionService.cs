@@ -135,7 +135,7 @@ public sealed partial class EnterpriseRetentionService(AppDbContext db, IExecuti
     {
         if (!audit.IsBound || audit.ActorKind != "Human" || audit.OrganizationId != execution.OrganizationId || audit.ActorId != execution.ActorId ||
             !await (from m in db.OrganizationMemberships.AsNoTracking() join a in db.Actors.AsNoTracking() on m.ActorId equals a.Id
-                where m.OrganizationId == execution.OrganizationId && m.ActorId == execution.ActorId && m.IsActive && m.CanManageMembers &&
+                where m.OrganizationId == execution.OrganizationId && m.ActorId == execution.ActorId && m.IsActive && m.Role == OrganizationAccessRole.Admin &&
                     a.OrganizationId == execution.OrganizationId && a.IsActive && a.Kind == ActorKind.Human select m.Id).AnyAsync(ct))
             throw new RetentionException("retention_administration_denied", 403);
     }

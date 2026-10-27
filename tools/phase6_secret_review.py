@@ -14,7 +14,7 @@ import subprocess
 
 TEXT = {'.cs', '.py', '.ts', '.tsx', '.js', '.mjs', '.json', '.yaml', '.yml', '.toml',
         '.md', '.ps1', '.sql', '.txt', '.log', '.trx', '.xml', '.html', '.css', '.sh',
-        '.props', '.csproj', '.sln', '.config', '.conf', '.example', '.map', '.env'}
+        '.props', '.csproj', '.sln', '.config', '.conf', '.example', '.map', '.env', '.tsbuildinfo', '.svg'}
 RULES = {
     'private-key': re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----'),
     'provider-key': re.compile(r'\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{24,}\b'),
@@ -97,8 +97,15 @@ def review(root, bundle, log_roots):
             report['errors'].append({'scope': scope, 'reason': 'unreadable-or-outside-root'})
 
     candidates = set(git(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard').decode().split('\0')) - {''}
+    deleted = set(git(root, 'ls-files', '-z', '--deleted').decode().split('\0')) - {''}
+    report['pendingTrackedDeletions'] = []
     for name in sorted(candidates):
         path = root / name
+        # A pending tracked deletion has no prospective checkout contents. Keep
+        # its path explicit and still inspect all reachable historical blobs.
+        if name in deleted and not path.exists() and not path.is_symlink():
+            report['pendingTrackedDeletions'].append(name)
+            continue
         if text_path(path):
             inspect_file(path, 'checkout')
         else:

@@ -4,6 +4,8 @@ namespace UaeDocumentIntelligence.Application.Documents.Queries;
 
 public sealed class DocumentQueries(IDocumentRepository documents, IExecutionContext execution)
 {
+    public Task<IReadOnlyList<DocumentWorkItem>> WorkListAsync(CancellationToken cancellationToken) =>
+        documents.ListWorkAsync(execution.OrganizationId, cancellationToken);
     public async Task<IReadOnlyList<DocumentView>> ListAsync(CancellationToken cancellationToken) =>
         (await documents.ListAsync(execution.OrganizationId, cancellationToken)).Select(DocumentView.From).ToList();
 

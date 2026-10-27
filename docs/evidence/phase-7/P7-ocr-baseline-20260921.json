@@ -1,0 +1,787 @@
+{
+  "dataset": "language-v0.1.0",
+  "datasetSha256": "6a9835bc799f0f967ca01644c18690b479dcc60e18a48b85656abe20d30903eb",
+  "fontSha256": "abdc775b21b1bc470d50c97e790d276f2054b7504e56e5bd3e64f48d68582322",
+  "fixtures": [
+    {
+      "id": "ar-basic",
+      "sha256": "48e84791e9750172ca40ea8e0e7e08450b923d8b350318626a5f9163609c01ef"
+    },
+    {
+      "id": "mixed-identifiers",
+      "sha256": "88b59569be5d50044153393a70f1507be821df25f5fa21796271b8ec2529fc59"
+    },
+    {
+      "id": "ar-diacritics",
+      "sha256": "671e34a9aff67abb6dd0ee4ffdb3a014b761b56306745d7c5f9dbea9a141f538"
+    },
+    {
+      "id": "ar-tatweel",
+      "sha256": "84b59f95cff4ee1f136bfd99208ad298124ccd46866039ac9d2656701fa372d7"
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "sha256": "57722b2e532799ccc3c319a9648788d24448e645bf8fcdeb6f7de0e271d3872b"
+    },
+    {
+      "id": "ar-due-date",
+      "sha256": "75faf6d75c360ceba8cf3f477d23ebed73343913810480f524856bf157c0c676"
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "sha256": "cfce72e1dfc190966d84763efaba0b60f510f81c89e0bd7d8307404ee506389c"
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "sha256": "09c24edcdf25ce37d7d48e6bf13aeb1019bcce4fcb0d8f5e7b5d1d0579efa850"
+    },
+    {
+      "id": "en-control",
+      "sha256": "3c63b98ff8e3c9a459b3d180f75629a65f1fb84f9b382db39afa8d4b25df4004"
+    }
+  ],
+  "scope": "synthetic raster images; no real-invoice accuracy claim",
+  "cases": [
+    {
+      "id": "ar-basic",
+      "language": "ar",
+      "mode": "eng",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "ar-basic",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "invoice_date": false,
+        "currency": true,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "٠٠0١‏",
+        "invoice_date": "1-19-7771‏",
+        "currency": "AED",
+        "subtotal": "00ر 01001‏",
+        "vat": "00ر00‏",
+        "total": "00ر:0110‏"
+      },
+      "evidenceSpans": 6,
+      "mode": "ara",
+      "provider": "tesseract-ara-osd",
+      "canonicalText": [
+        "فاتورة تجريبية\nرقم الفاتورة: ٠٠0١‏\nتاريخ الفاتورة: 1-١9-7771‏\nالعملة: درهم\nالمجموع الفرعي: ٠٠ر ٠١٠٠١‏\nضريبة القيمة المضافة: ٠٠ر٠0‏\nالإجمالي: ٠٠ر:0١١٠‏\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-basic",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "invoice_date": false,
+        "currency": true,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "٠٠0١‏",
+        "invoice_date": "1-19-7771‏",
+        "currency": "AED",
+        "subtotal": "00ر 01001‏",
+        "total": "00ر:0110‏"
+      },
+      "evidenceSpans": 5,
+      "mode": "ara+eng",
+      "provider": "tesseract-ara+eng-osd",
+      "canonicalText": [
+        "فاتورة تجريبية\nرقم الفاتورة: ٠٠0١‏\nتاريخ الفاتورة: 1-١9-7771‏\nالعملة: درهم\nالمجموع الفرعي: ٠٠ر ٠١٠٠١‏\nay pio‏ القيمة المضافة: ٠٠ر٠0‏\nالإجمالي: ٠٠ر:0١١٠‏\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-basic",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "invoice_date": false,
+        "currency": true,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "٠٠0١‏",
+        "invoice_date": "1-19-7771‏",
+        "currency": "AED",
+        "subtotal": "00ر 01001‏",
+        "total": "00ر:0110‏"
+      },
+      "evidenceSpans": 5,
+      "mode": "eng+ara",
+      "provider": "tesseract-eng+ara-osd",
+      "canonicalText": [
+        "فاتورة تجريبية\nرقم الفاتورة: ٠٠0١‏\nتاريخ الفاتورة: 1-١9-7771‏\nالعملة: درهم\nالمجموع الفرعي: ٠٠ر ٠١٠٠١‏\nay pio‏ القيمة المضافة: ٠٠ر٠0‏\nالإجمالي: ٠٠ر:0١١٠‏\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-identifiers",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "supplier_trn": false,
+        "currency": true,
+        "total": false,
+        "payment_terms": false,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-007",
+        "currency": "AED"
+      },
+      "evidenceSpans": 2,
+      "mode": "eng",
+      "provider": "tesseract-eng-osd",
+      "canonicalText": [
+        "dau p25 6 ygils / SYNTHETIC\nInvoice Number: INV-007\nPete Dy gol Gu ual od Jl\nCurrency: AED\nY\\-30- Weyl\nlog: ¥- JMS redo bog pu\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-identifiers",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "supplier_trn": false,
+        "currency": false,
+        "total": false,
+        "payment_terms": false,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "supplier_trn": "0.000000000:1:1...",
+        "total": "00ر11‏",
+        "payment_terms": "خلال \"١‏ يوماً"
+      },
+      "evidenceSpans": 3,
+      "mode": "ara",
+      "provider": "tesseract-ara-osd",
+      "canonicalText": [
+        "51118110 / فاتورة تجريبية\n7/الخاا عطصبلة ععامناما\nالرقم الضريبي للمورد: 0.000000000:1:1...\nرماعقة :لاعصع انان\nالإجمالي: ٠0ر١١‏\nشروط الدفع: خلال \"١‏ يوماً\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-identifiers",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "supplier_trn": false,
+        "currency": true,
+        "total": false,
+        "payment_terms": false,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-007",
+        "supplier_trn": "‎",
+        "currency": "AED",
+        "total": "00ر11‏",
+        "payment_terms": "خلال log: \"١‏"
+      },
+      "evidenceSpans": 5,
+      "mode": "ara+eng",
+      "provider": "tesseract-ara+eng-osd",
+      "canonicalText": [
+        "SYNTHETIC‏ / فاتورة تجريبية\nInvoice Number: INV-007\nPete الرقم الضريبي للمورد:‎\nCurrency: AED\nالإجمالي: ٠0ر١١‏\nشروط الدفع: خلال log: \"١‏\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-identifiers",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "supplier_trn": false,
+        "currency": true,
+        "total": false,
+        "payment_terms": false,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-007",
+        "supplier_trn": "‎",
+        "currency": "AED",
+        "total": "00ر11‏",
+        "payment_terms": "خلال log: \"١‏"
+      },
+      "evidenceSpans": 5,
+      "mode": "eng+ara",
+      "provider": "tesseract-eng+ara-osd",
+      "canonicalText": [
+        "SYNTHETIC‏ / فاتورة تجريبية\nInvoice Number: INV-007\nPete الرقم الضريبي للمورد:‎\nCurrency: AED\nالإجمالي: ٠0ر١١‏\nشروط الدفع: خلال log: \"١‏\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-diacritics",
+      "language": "ar",
+      "mode": "eng",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "ar-diacritics",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "total": false,
+        "currency": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "ا",
+        "currency": "AED",
+        "total": "101000‏"
+      },
+      "evidenceSpans": 3,
+      "mode": "ara",
+      "provider": "tesseract-ara-osd",
+      "canonicalText": [
+        "رقم الفاتورة: ا\nالإِجْمَالِي: ١٠١0٠٠‏\nالعملة: درهم إماراتي\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-diacritics",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "total": false,
+        "currency": true,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "VY‏",
+        "currency": "AED",
+        "total": "101000‏"
+      },
+      "evidenceSpans": 3,
+      "mode": "ara+eng",
+      "provider": "tesseract-ara+eng-osd",
+      "canonicalText": [
+        "رقم الفاتورة: VY‏\nالإِجْمَالِي: ١٠١0٠٠‏\nالعملة: درهم إماراتي\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-diacritics",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "total": false,
+        "currency": true,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "VY‏",
+        "currency": "AED",
+        "total": "101000‏"
+      },
+      "evidenceSpans": 3,
+      "mode": "eng+ara",
+      "provider": "tesseract-eng+ara-osd",
+      "canonicalText": [
+        "رقم الفاتورة: VY‏\nالإِجْمَالِي: ١٠١0٠٠‏\nالعملة: درهم إماراتي\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-tatweel",
+      "language": "ar",
+      "mode": "eng",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "ar-tatweel",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "total": false,
+        "currency": false,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "7..",
+        "currency": "د.!",
+        "total": "0‏ :رهام"
+      },
+      "evidenceSpans": 3,
+      "mode": "ara",
+      "provider": "tesseract-ara-osd",
+      "canonicalText": [
+        "رقم الفاتورة: 7..\nالإجمالي: ٠‏ :رهام\nالعملة: د.!\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-tatweel",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "total": false,
+        "currency": false,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "77“",
+        "currency": "د.!",
+        "total": "0‏ :)110"
+      },
+      "evidenceSpans": 3,
+      "mode": "ara+eng",
+      "provider": "tesseract-ara+eng-osd",
+      "canonicalText": [
+        "رقم الفاتورة: 77“\nالإجمالي: ٠‏ :)110\nالعملة: د.!\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-tatweel",
+      "language": "ar",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "total": false,
+        "currency": false,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "77“",
+        "currency": "د.!",
+        "total": "0‏ :)110"
+      },
+      "evidenceSpans": 3,
+      "mode": "eng+ara",
+      "provider": "tesseract-eng+ara-osd",
+      "canonicalText": [
+        "رقم الفاتورة: 77“\nالإجمالي: ٠‏ :)110\nالعملة: د.!\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "currency": true,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "MIX-2",
+        "currency": "AED"
+      },
+      "evidenceSpans": 2,
+      "mode": "eng",
+      "provider": "tesseract-eng-osd",
+      "canonicalText": [
+        "Invoice Number: MIX-2\nV:00-+ tpdlosyl | Oo: + tadbacd| acral au pio | Vso: + tncypall Egaroll\nCurrency: AED\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": false,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "currency": false,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "subtotal": "00ر 001‏",
+        "vat": "000‏",
+        "total": "00ر0101‏"
+      },
+      "evidenceSpans": 3,
+      "mode": "ara",
+      "provider": "tesseract-ara-osd",
+      "canonicalText": [
+        "17-2/ا تع صابلا ععأم/اما\nالمجموع الفرعي: ٠٠ر ٠٠١‏ | ضريبة القيمة المضافة: 0,٠٠‏ | الإجمالي: ٠٠ر0١٠١‏\nرماعقة :لاعصع انان\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "currency": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "MIX-2",
+        "currency": "AED",
+        "subtotal": "‎",
+        "total": "‎"
+      },
+      "evidenceSpans": 4,
+      "mode": "ara+eng",
+      "provider": "tesseract-ara+eng-osd",
+      "canonicalText": [
+        "Invoice Number: MIX-2\n١٠١0ر٠٠ الإجمالي:‎ | 0,٠٠ القيمة المضافة:‎ au pio | ٠٠١ ر٠٠ المجموع الفرعي:‎\nCurrency: AED\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-neighbor-fields",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "subtotal": false,
+        "vat": false,
+        "total": false,
+        "currency": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "MIX-2",
+        "currency": "AED",
+        "subtotal": "‎",
+        "total": "‎"
+      },
+      "evidenceSpans": 4,
+      "mode": "eng+ara",
+      "provider": "tesseract-eng+ara-osd",
+      "canonicalText": [
+        "Invoice Number: MIX-2\n١٠١0ر٠٠ الإجمالي:‎ | 0,٠٠ القيمة المضافة:‎ au pio | ٠٠١ ر٠٠ المجموع الفرعي:‎\nCurrency: AED\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "ar-due-date",
+      "language": "ar",
+      "mode": "eng",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "ar-due-date",
+      "language": "ar",
+      "mode": "ara",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "ar-due-date",
+      "language": "ar",
+      "mode": "ara+eng",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "ar-due-date",
+      "language": "ar",
+      "mode": "eng+ara",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "language": "ar",
+      "mode": "eng",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "language": "ar",
+      "mode": "ara",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "language": "ar",
+      "mode": "ara+eng",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "ar-ambiguous-date",
+      "language": "ar",
+      "mode": "eng+ara",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "language": "ar-en",
+      "passed": false,
+      "checks": {
+        "invoice_number": true,
+        "total": true,
+        "absent:due_date": false,
+        "warning:due_date_conflicting": false,
+        "language": false,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "MIX-3",
+        "due_date": "2026-10-21",
+        "total": "100.00"
+      },
+      "evidenceSpans": 3,
+      "mode": "eng",
+      "provider": "tesseract-eng-osd",
+      "canonicalText": [
+        "Invoice Number: MIX-3\nDue Date: 2026-10-21\nYY-)--¥-1 1 G2xw Yl ab\nTotal: 100.00\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "language": "ar-en",
+      "mode": "ara",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "language": "ar-en",
+      "mode": "ara+eng",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "mixed-conflicting-due",
+      "language": "ar-en",
+      "mode": "eng+ara",
+      "passed": false,
+      "error": "internal_extraction_error"
+    },
+    {
+      "id": "en-control",
+      "language": "en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      },
+      "evidenceSpans": 6,
+      "mode": "eng",
+      "provider": "tesseract-eng-osd",
+      "canonicalText": [
+        "SYNTHETIC INVOICE\nInvoice Number: INV-001\nInvoice Date: 2026-09-21\nCurrency: AED\nSubtotal: 1,000.00\nVAT: 50.00\nTotal: 1,050.00\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "en-control",
+      "language": "en",
+      "mode": "ara",
+      "passed": false,
+      "error": "unsupported_document"
+    },
+    {
+      "id": "en-control",
+      "language": "en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      },
+      "evidenceSpans": 6,
+      "mode": "ara+eng",
+      "provider": "tesseract-ara+eng-osd",
+      "canonicalText": [
+        "SYNTHETIC INVOICE\nInvoice Number: INV-001\nInvoice Date: 2026-09-21\nCurrency: AED\nSubtotal: 1,000.00\nVAT: 50.00\nTotal: 1,050.00\n"
+      ],
+      "pipelineExactEvidence": true
+    },
+    {
+      "id": "en-control",
+      "language": "en",
+      "passed": true,
+      "checks": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat": true,
+        "total": true,
+        "language": true,
+        "exact_evidence": true
+      },
+      "actual": {
+        "invoice_number": "INV-001",
+        "invoice_date": "2026-09-21",
+        "currency": "AED",
+        "subtotal": "1000.00",
+        "vat": "50.00",
+        "total": "1050.00"
+      },
+      "evidenceSpans": 6,
+      "mode": "eng+ara",
+      "provider": "tesseract-eng+ara-osd",
+      "canonicalText": [
+        "SYNTHETIC INVOICE\nInvoice Number: INV-001\nInvoice Date: 2026-09-21\nCurrency: AED\nSubtotal: 1,000.00\nVAT: 50.00\nTotal: 1,050.00\n"
+      ],
+      "pipelineExactEvidence": true
+    }
+  ],
+  "groups": [
+    {
+      "mode": "eng",
+      "language": "ar",
+      "passed": 0,
+      "total": 5
+    },
+    {
+      "mode": "eng",
+      "language": "ar-en",
+      "passed": 0,
+      "total": 3
+    },
+    {
+      "mode": "eng",
+      "language": "en",
+      "passed": 1,
+      "total": 1
+    },
+    {
+      "mode": "ara",
+      "language": "ar",
+      "passed": 0,
+      "total": 5
+    },
+    {
+      "mode": "ara",
+      "language": "ar-en",
+      "passed": 0,
+      "total": 3
+    },
+    {
+      "mode": "ara",
+      "language": "en",
+      "passed": 0,
+      "total": 1
+    },
+    {
+      "mode": "ara+eng",
+      "language": "ar",
+      "passed": 0,
+      "total": 5
+    },
+    {
+      "mode": "ara+eng",
+      "language": "ar-en",
+      "passed": 0,
+      "total": 3
+    },
+    {
+      "mode": "ara+eng",
+      "language": "en",
+      "passed": 1,
+      "total": 1
+    },
+    {
+      "mode": "eng+ara",
+      "language": "ar",
+      "passed": 0,
+      "total": 5
+    },
+    {
+      "mode": "eng+ara",
+      "language": "ar-en",
+      "passed": 0,
+      "total": 3
+    },
+    {
+      "mode": "eng+ara",
+      "language": "en",
+      "passed": 1,
+      "total": 1
+    }
+  ],
+  "imageId": "sha256:235ca09593f7e88a21362b966d881478415513d5df2d66d620d4908f9c3ba3b5",
+  "arabicModelSha256": "e3206d3dc87fd50c24a0fb9f01838615911d25168f4e64415244b67d2bb3e729",
+  "baselineNote": "Recorded before adding the explicit arabic_ocr_requires_review warning; do not treat these failed results as acceptance."
+}

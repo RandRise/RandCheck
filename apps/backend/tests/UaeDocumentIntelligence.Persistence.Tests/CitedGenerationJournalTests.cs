@@ -24,13 +24,13 @@ public sealed partial class PostgresPersistenceTests
         var bytes = PreparationArtifact();
         var command = ArtifactCommand(bytes);
         CitedSpendView spend;
-        await using (var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1"))
+        await using (var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1"))
         {
             var journal = services.GetRequiredService<ICitedGenerationJournal>();
             spend = await journal.ReservePreparedAsync(command, bytes, true, default);
             Assert.Equal(bytes, (await journal.GetSavedAsync(command.OperationId, default))!.PreparationUtf8);
         }
-        await using var restarted = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var restarted = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var replay = await restarted.GetRequiredService<ICitedGenerationJournal>().ReservePreparedAsync(command, bytes, true, default);
         Assert.Equal(spend.Id, replay.Id);
         Assert.True(replay.Replayed);
@@ -48,7 +48,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Journal_outcome_settlement_is_atomic_idempotent_and_preserves_freezes(string amountKind, bool freeze)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var bytes = PreparationArtifact();
@@ -76,7 +76,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Journal_unknown_usage_is_saved_without_releasing_hold(bool alreadyUncertain)
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var bytes = PreparationArtifact();
@@ -97,7 +97,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Journal_failed_artifact_insert_rolls_back_reservation_and_outcome_accounting()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var bytes = PreparationArtifact();
@@ -122,12 +122,12 @@ public sealed partial class PostgresPersistenceTests
     public async Task Journal_foreign_and_inactive_actors_cannot_read_or_mutate_saved_content()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         var bytes = PreparationArtifact();
         var command = ArtifactCommand(bytes);
         var spend = await journal.ReservePreparedAsync(command, bytes, true, default);
-        await using var foreign = CitedServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
+        await using var foreign = CitedPilotServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
         var other = foreign.GetRequiredService<ICitedGenerationJournal>();
         Assert.Null(await other.GetSavedAsync(command.OperationId, default));
         await SpendDenied("reservation_not_found", () => other.RecordOutcomeAsync(spend.Id, OutcomeArtifact(), .001m, "test", false, default));
@@ -145,7 +145,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Journal_database_and_ef_reject_artifact_edits_and_reapply_preserves_saved_bytes()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         var bytes = PreparationArtifact();
         var command = ArtifactCommand(bytes);
@@ -165,7 +165,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Journal_disabled_malformed_oversized_and_unbound_inputs_have_no_effect()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var journal = services.GetRequiredService<ICitedGenerationJournal>();
         await SpendDenied("generation_disabled", () => journal.ReservePreparedAsync(ArtifactCommand(PreparationArtifact()), PreparationArtifact(), false, default));
         foreach (var bytes in new[] { Array.Empty<byte>(), "[]"u8.ToArray(), "{\"a\":1,\"a\":2}"u8.ToArray(), new byte[98305] })
@@ -179,7 +179,7 @@ public sealed partial class PostgresPersistenceTests
     {
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         var client = new AnswerReply();
         await Coordinator(services, client).ProposeAsync(runId, default);
         client.ChangePreparation = _ => throw new InvalidOperationException("Should not remeasure");

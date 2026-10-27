@@ -39,9 +39,8 @@ public sealed partial class PostgresPersistenceTests
     }
 
     [Theory]
-    [InlineData("Viewer")]
-    [InlineData("Reviewer")]
-    [InlineData("Operator")]
+    [InlineData("Staff")]
+    [InlineData("Admin")]
     public async Task Phase6_source_download_has_current_access_attachment_headers_and_safe_audit(string role)
     {
         using var fixture = await SourceFixtureAsync(role);
@@ -101,7 +100,7 @@ public sealed partial class PostgresPersistenceTests
 
     [Theory]
     [InlineData("expired", HttpStatusCode.NotFound)]
-    [InlineData("role", HttpStatusCode.Forbidden)]
+    [InlineData("role", HttpStatusCode.NotFound)]
     [InlineData("revoked", HttpStatusCode.Forbidden)]
     [InlineData("reactivated", HttpStatusCode.NotFound)]
     [InlineData("expired-during-scan", HttpStatusCode.NotFound)]
@@ -110,20 +109,22 @@ public sealed partial class PostgresPersistenceTests
     {
         using var fixture = await SourceFixtureAsync(); var grant = await SourceGrantAsync(fixture);
         if (change == "expired") fixture.Clock.UtcNow = grant.ExpiresAtUtc;
-        if (change == "role") Assert.Equal(HttpStatusCode.OK, (await SecurityChange(fixture.Admin, fixture.Member, "None", false, true)).StatusCode);
+        // Both roles may read sources, but a role change invalidates old grants
+        // through their pinned membership version even while access stays active.
+        if (change == "role") Assert.Equal(HttpStatusCode.OK, (await SecurityChange(fixture.Admin, fixture.Member, "Admin", false, true)).StatusCode);
         if (change is "revoked" or "reactivated")
         {
-            var changed = await SecurityChange(fixture.Admin, fixture.Member, "Viewer", false, false);
+            var changed = await SecurityChange(fixture.Admin, fixture.Member, "Staff", false, false);
             Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
             if (change == "reactivated")
             {
                 var revoked = (await changed.Content.ReadFromJsonAsync<MembershipView>())!;
-                Assert.Equal(HttpStatusCode.OK, (await SecurityChange(fixture.Admin, revoked, "Viewer", false, true)).StatusCode);
+                Assert.Equal(HttpStatusCode.OK, (await SecurityChange(fixture.Admin, revoked, "Staff", false, true)).StatusCode);
             }
         }
         if (change == "expired-during-scan") fixture.Scanner.AfterScan = () => { fixture.Clock.UtcNow = grant.ExpiresAtUtc; return Task.CompletedTask; };
         if (change == "revoked-during-scan") fixture.Scanner.AfterScan = async () =>
-            Assert.Equal(HttpStatusCode.OK, (await SecurityChange(fixture.Admin, fixture.Member, "Viewer", false, false)).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await SecurityChange(fixture.Admin, fixture.Member, "Staff", false, false)).StatusCode);
         using var request = SourceRequest(grant); var response = await fixture.User.SendAsync(request);
         Assert.Equal(expected, response.StatusCode); Assert.DoesNotContain(SourceFixture.Content, await response.Content.ReadAsStringAsync());
         Assert.Equal(change.EndsWith("during-scan") ? 1 : 0, fixture.Scanner.Calls);
@@ -190,26 +191,27 @@ public sealed partial class PostgresPersistenceTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<DocumentSourceEndpoints.AccessGrant>())!;
     }
-    private async Task<SourceFixture> SourceFixtureAsync(string role = "Viewer")
+    private async Task<SourceFixture> SourceFixtureAsync(string role = "Staff",
+        WebApplicationFactory<global::Program>? securityFactory = null)
     {
         var fixture = new SourceFixture();
         try
         {
             var bootstrap = await SecurityBootstrap();
-            fixture.Host = SecurityHost().WithWebHostBuilder(b => b.UseSetting("Storage:SecurityMode", "Enforced")
+            fixture.Host = SecurityHost(factory: securityFactory).WithWebHostBuilder(b => b.UseSetting("Storage:SecurityMode", "Enforced")
                 .UseSetting("Storage:UploadDirectory", Path.Combine(fixture.Root, "uploads"))
                 .UseSetting("Storage:QuarantineDirectory", Path.Combine(fixture.Root, "quarantine"))
                 .ConfigureServices(s => { s.RemoveAll<IMalwareScanner>(); s.AddSingleton<IMalwareScanner>(fixture.Scanner);
                     s.RemoveAll<IClock>(); s.AddSingleton<IClock>(fixture.Clock); }));
             fixture.Admin = SecurityHttp(fixture.Host, bootstrap.Subject);
-            var subject = Guid.NewGuid(); fixture.Member = await SecurityAdd(fixture.Admin, subject, "Operator");
+            var subject = Guid.NewGuid(); fixture.Member = await SecurityAdd(fixture.Admin, subject, "Staff");
             fixture.User = SecurityHttp(fixture.Host, subject);
             using var form = new MultipartFormDataContent(); var content = new StringContent(SourceFixture.Content);
             content.Headers.ContentType = new("text/plain"); form.Add(content, "file", "PRIVATE FILENAME.txt");
             var response = await fixture.User.PostAsync("/api/documents", form); Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             fixture.DocumentId = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.GetProperty("id").GetGuid();
             fixture.File = Directory.GetFiles(Path.Combine(fixture.Root, "uploads"), "*", SearchOption.AllDirectories).Single();
-            if (role != "Operator")
+            if (role != "Staff")
             {
                 var changed = await SecurityChange(fixture.Admin, fixture.Member, role, false, true);
                 Assert.Equal(HttpStatusCode.OK, changed.StatusCode); fixture.Member = (await changed.Content.ReadFromJsonAsync<MembershipView>())!;

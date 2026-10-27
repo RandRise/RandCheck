@@ -43,7 +43,7 @@ internal static class RetrievalEvaluation
                 ["ConnectionStrings:Database"] = "Host=127.0.0.1;Port=25434;Database=phase5_e2e_20260908;Username=document_intelligence;Password=local_development_only",
                 ["AiService:BaseUrl"] = "http://127.0.0.1:28158", ["AiService:WorkerToken"] = token
             }).Build();
-            var collection = new ServiceCollection().AddInfrastructure(config);
+            var collection = new ServiceCollection().AddInfrastructure(config).AddCitedPilotInfrastructure(config);
             collection.AddSingleton<IExecutionContext>(new Identity(Org, Actor));
             collection.AddSingleton(new CitedEmbeddingSettings(true, new("openai", CitedEmbeddingStorage.Model,
                 CitedEmbeddingStorage.Model, "openai-embedding-small-standard-usd-2026-09-10",

@@ -4,6 +4,8 @@ namespace UaeDocumentIntelligence.Persistence.Tests;
 
 public sealed partial class PostgresPersistenceTests
 {
+    // Prompt preparation belongs to the standalone pilot. Its ledger must be
+    // explicitly registered here; ordinary application services keep it disabled.
     [Theory]
     [InlineData("zero")]
     [InlineData("oversized")]
@@ -31,7 +33,7 @@ public sealed partial class PostgresPersistenceTests
                 _ => receipt with { PromptSha256 = "private-invalid-hash" }
             })
         };
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("invalid_prompt_preparation", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal(0, client.Calls);
         Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM cited_spend_reservations"));
@@ -43,7 +45,7 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         var client = new AnswerReply { ChangePreparation = _ => throw new TimeoutException("SECRET INVOICE") };
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("prompt_preparation_failed", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal(1, client.Preparations);
         Assert.Equal(0, client.Calls);
@@ -60,7 +62,7 @@ public sealed partial class PostgresPersistenceTests
             await ExecuteAsync("UPDATE cited_document_indexes SET status='Quarantined' WHERE id=@id", ("id", graph.Index.Id));
             return receipt;
         } };
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("evidence_unavailable", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal(0, client.Calls);
         Assert.Equal(0, await ScalarAsync<long>("SELECT count(*) FROM cited_spend_reservations"));
@@ -73,7 +75,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         var settings = new CitedGenerationSettings(true, SpendCommand().Rate);
         var client = new AnswerReply();
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await Coordinator(services, client, settings).ProposeAsync(runId, default);
         client.ChangePreparation = receipt => Task.FromResult(receipt with { InputTokens = 1001 });
         Assert.True((await Coordinator(services, client, settings).ProposeAsync(runId, default)).Replayed);
@@ -88,7 +90,7 @@ public sealed partial class PostgresPersistenceTests
         var graph = await SeedCitedGraphAsync();
         var runId = await GenerationRun(graph);
         var client = new AnswerReply((result, _) => Task.FromResult(result with { InputTokens = 1001 }));
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await SpendDenied("generation_outcome_uncertain", () => Coordinator(services, client).ProposeAsync(runId, default));
         Assert.Equal("Uncertain", await ScalarAsync<string>("SELECT state FROM cited_spend_reservations"));
         Assert.Equal(0m, await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));
@@ -101,7 +103,7 @@ public sealed partial class PostgresPersistenceTests
         var runId = await GenerationRun(graph);
         await ExecuteAsync("UPDATE cited_pilot_budgets SET settled_usd=7.9983");
         var client = new AnswerReply();
-        await using var services = CitedServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(graph.Seed.OrganizationA, graph.Seed.ActorA, "http://127.0.0.1:1");
         await Coordinator(services, client).ProposeAsync(runId, default);
         Assert.Equal(0.00165m, await ScalarAsync<decimal>("SELECT reserved_usd FROM cited_spend_reservations"));
         Assert.Equal(7.998325m, await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));

@@ -25,6 +25,7 @@ tmp/phase2-fixture-runtime-20260910/
 tmp/dotnet-diagnostics/
 __pycache__/
 .pytest_cache/
+.ruff_cache/
 *.py[cod]
 *.db
 *.db-shm
@@ -41,3 +42,4 @@ docs/.vitepress/cache/
 docs/.vitepress/dist/
 
 .next-*/
+*.tsbuildinfo

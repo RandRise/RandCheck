@@ -1,0 +1,18 @@
+.guided-review { margin-block: 24px; }
+.guided-count { font-weight: 600; }
+.guided-value { padding: 24px; border: 1px solid var(--app-border); border-radius: 12px; }
+.guided-value h3 { margin-block: 0 12px; }
+.guided-value h3:focus { outline: 2px solid var(--app-accent); outline-offset: 6px; }
+.guided-value p { line-height: 1.6; overflow-wrap: anywhere; }
+.guided-suggested-value { padding: 16px; }
+.guided-suggested-value > p { font-size: 24px; margin-block: 12px; white-space: pre-wrap; }
+.guided-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 16px; }
+.guided-edit { display: grid; gap: 16px; }
+.guided-edit label { display: grid; gap: 8px; }
+.guided-edit input { width: 100%; min-width: 0; }
+.guided-gaps { padding: 16px; margin-block: 20px; border-inline-start: 3px solid var(--app-border); }
+.guided-gaps li { margin-block: 8px; }
+@media (max-width: 600px) {
+  .guided-value { padding: 16px; }
+  .guided-actions { flex-direction: column; align-items: stretch; }
+}

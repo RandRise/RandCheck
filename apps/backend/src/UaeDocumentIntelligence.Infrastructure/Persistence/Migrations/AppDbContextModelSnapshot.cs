@@ -17,7 +17,7 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.31")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1142,6 +1142,61 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.DocumentProcessingRequest", b =>
+                {
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("request_key");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<Guid>("ExtractionRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("extraction_run_id");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("job_id");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasColumnType("character(64)")
+                        .HasColumnName("payload_hash");
+
+                    b.Property<int>("RunNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("run_number");
+
+                    b.HasKey("OrganizationId", "ActorId", "Kind", "Key");
+
+                    b.ToTable("document_processing_requests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_document_processing_requests_hash", "payload_hash ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("ck_document_processing_requests_key", "request_key ~ '^[A-Za-z0-9._:-]{1,100}$'");
+
+                            t.HasCheckConstraint("ck_document_processing_requests_kind", "kind IN ('Upload','Reprocess')");
+
+                            t.HasCheckConstraint("ck_document_processing_requests_run", "run_number > 0");
+                        });
+                });
+
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.EnterpriseIdentity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1812,10 +1867,6 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("actor_id");
 
-                    b.Property<bool>("CanManageMembers")
-                        .HasColumnType("boolean")
-                        .HasColumnName("can_manage_members");
-
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
@@ -1863,7 +1914,7 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                     b.ToTable("organization_memberships", null, t =>
                         {
-                            t.HasCheckConstraint("ck_membership_role", "role IN ('None','Viewer','Reviewer','Operator')");
+                            t.HasCheckConstraint("ck_membership_role", "role IN ('Staff','Admin')");
                         });
                 });
 
@@ -1906,6 +1957,14 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("Uncategorized")
+                        .HasColumnName("category");
+
                     b.Property<DateTimeOffset?>("ClosedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("closed_at_utc");
@@ -1923,6 +1982,32 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_actor_id");
 
+                    b.Property<string>("CreationPayloadHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("creation_payload_hash");
+
+                    b.Property<string>("CreationRequestKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("creation_request_key");
+
+                    b.Property<Guid?>("DraftInvoiceDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("draft_invoice_document_id");
+
+                    b.Property<Guid?>("DraftInvoiceVersion")
+                        .HasColumnType("uuid")
+                        .HasColumnName("draft_invoice_version");
+
+                    b.Property<Guid?>("DraftPurchaseOrderDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("draft_purchase_order_document_id");
+
+                    b.Property<Guid?>("DraftPurchaseOrderVersion")
+                        .HasColumnType("uuid")
+                        .HasColumnName("draft_purchase_order_version");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1932,6 +2017,13 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid")
                         .HasColumnName("organization_id");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(28)
+                        .HasColumnType("character varying(28)")
+                        .HasColumnName("reference");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1943,16 +2035,182 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at_utc");
 
+                    b.Property<string>("WorkflowKind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("Legacy")
+                        .HasColumnName("workflow_kind");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrganizationId", "CreatedByActorId");
 
+                    b.HasIndex("OrganizationId", "DraftInvoiceDocumentId");
+
+                    b.HasIndex("OrganizationId", "DraftPurchaseOrderDocumentId");
+
+                    b.HasIndex("OrganizationId", "Reference")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reconciliation_cases_org_reference");
+
+                    b.HasIndex("OrganizationId", "Category", "CreatedAtUtc")
+                        .HasDatabaseName("ix_reconciliation_cases_org_category_created");
+
+                    b.HasIndex("OrganizationId", "CreatedAtUtc", "Id")
+                        .HasDatabaseName("ix_reconciliation_cases_org_created_id");
+
+                    b.HasIndex("OrganizationId", "CreatedByActorId", "CreationRequestKey")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reconciliation_cases_creation_request")
+                        .HasFilter("creation_request_key IS NOT NULL");
+
                     b.HasIndex("OrganizationId", "Status", "UpdatedAtUtc")
                         .HasDatabaseName("ix_reconciliation_cases_org_status_updated");
 
+                    b.HasIndex("OrganizationId", "WorkflowKind", "CreatedAtUtc", "Id")
+                        .HasDatabaseName("ix_reconciliation_cases_workflow_created");
+
                     b.ToTable("reconciliation_cases", null, t =>
                         {
+                            t.HasCheckConstraint("ck_reconciliation_cases_category", "category IN ('Uncategorized','OfficeSupplies','Services','Equipment')");
+
+                            t.HasCheckConstraint("ck_reconciliation_cases_creation_request", "(creation_request_key IS NULL AND creation_payload_hash IS NULL) OR (creation_request_key IS NOT NULL AND length(btrim(creation_request_key)) > 0 AND creation_payload_hash IS NOT NULL AND creation_payload_hash ~ '^[0-9a-f]{64}$')");
+
+                            t.HasCheckConstraint("ck_reconciliation_cases_drafts", "(workflow_kind = 'InvoicePurchaseOrder' OR (draft_invoice_document_id IS NULL AND draft_purchase_order_document_id IS NULL AND draft_invoice_version IS NULL AND draft_purchase_order_version IS NULL)) AND (draft_invoice_document_id IS NULL OR draft_purchase_order_document_id IS NULL OR draft_invoice_document_id <> draft_purchase_order_document_id) AND (draft_invoice_document_id IS NULL OR draft_invoice_version IS NOT NULL) AND (draft_purchase_order_document_id IS NULL OR draft_purchase_order_version IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_reconciliation_cases_reference", "reference ~ '^REC-[0-9]{4}-[0-9]{6,19}$'");
+
                             t.HasCheckConstraint("ck_reconciliation_cases_status", "status IN ('Draft','Evaluated','Closed')");
+
+                            t.HasCheckConstraint("ck_reconciliation_cases_workflow", "workflow_kind IN ('Legacy','InvoicePurchaseOrder')");
+                        });
+                });
+
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationCheck", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Basis")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("basis");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("Currency")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Explanation")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("explanation");
+
+                    b.Property<string>("FieldKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("field_key");
+
+                    b.Property<Guid?>("FindingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("finding_id");
+
+                    b.Property<Guid?>("LeftFieldSnapshotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("left_field_snapshot_id");
+
+                    b.Property<string>("LeftValue")
+                        .HasColumnType("text")
+                        .HasColumnName("left_value");
+
+                    b.Property<string>("LineIdentity")
+                        .HasColumnType("text")
+                        .HasColumnName("line_identity");
+
+                    b.Property<int?>("OccurrenceIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("occurrence_index");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<Guid>("ReconciliationRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reconciliation_run_id");
+
+                    b.Property<Guid?>("RightFieldSnapshotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("right_field_snapshot_id");
+
+                    b.Property<string>("RightValue")
+                        .HasColumnType("text")
+                        .HasColumnName("right_value");
+
+                    b.Property<decimal?>("SignedDifference")
+                        .HasPrecision(24, 6)
+                        .HasColumnType("numeric(24,6)")
+                        .HasColumnName("signed_difference");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal?>("Tolerance")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("tolerance");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("unit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "ReconciliationRunId", "FindingId");
+
+                    b.HasIndex("OrganizationId", "ReconciliationRunId", "Id")
+                        .HasDatabaseName("IX_reconciliation_checks_organization_id_reconciliation_run_i~1");
+
+                    b.HasIndex("OrganizationId", "ReconciliationRunId", "LeftFieldSnapshotId")
+                        .HasDatabaseName("IX_reconciliation_checks_organization_id_reconciliation_run_i~2");
+
+                    b.HasIndex("OrganizationId", "ReconciliationRunId", "RightFieldSnapshotId")
+                        .HasDatabaseName("IX_reconciliation_checks_organization_id_reconciliation_run_i~3");
+
+                    b.ToTable("reconciliation_checks", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_reconciliation_checks_finding", "status = 'NoDifference' OR finding_id IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_reconciliation_checks_numeric", "(tolerance IS NULL OR tolerance >= 0) AND (status <> 'CouldNotCheck' OR signed_difference IS NULL)");
+
+                            t.HasCheckConstraint("ck_reconciliation_checks_occurrence", "occurrence_index IS NULL OR occurrence_index >= 0");
+
+                            t.HasCheckConstraint("ck_reconciliation_checks_status", "status IN ('NoDifference','DifferenceFound','CouldNotCheck')");
                         });
                 });
 
@@ -2030,6 +2288,10 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("document_id");
 
+                    b.Property<int?>("ExtractedRowCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("extracted_row_count");
+
                     b.Property<Guid>("ExtractionRunId")
                         .HasColumnType("uuid")
                         .HasColumnName("extraction_run_id");
@@ -2052,11 +2314,45 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("role");
 
+                    b.Property<string>("RowCoverageStatus")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("row_coverage_status");
+
                     b.Property<string>("Sha256")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("sha256");
+
+                    b.Property<string>("SourceAdapterVersion")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source_adapter_version");
+
+                    b.Property<string>("SourceModelName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source_model_name");
+
+                    b.Property<string>("SourceModelVersion")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source_model_version");
+
+                    b.Property<string>("SourceOutcome")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("source_outcome");
+
+                    b.Property<string>("SourceProvider")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source_provider");
+
+                    b.Property<string>("SourceWarningsJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("source_warnings_json");
 
                     b.HasKey("Id");
 
@@ -2074,6 +2370,76 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_reconciliation_document_snapshots_role", "role IN ('Quotation','PurchaseOrder','Invoice')");
 
                             t.HasCheckConstraint("ck_reconciliation_document_snapshots_sha256", "sha256 ~ '^[0-9a-f]{64}$'");
+                        });
+                });
+
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationDraftRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<Guid?>("DraftVersion")
+                        .HasColumnType("uuid")
+                        .HasColumnName("draft_version");
+
+                    b.Property<Guid>("ExpectedVersion")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expected_version");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("payload_hash");
+
+                    b.Property<Guid>("ReconciliationCaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reconciliation_case_id");
+
+                    b.Property<string>("RequestKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("request_key");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("role");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "ReconciliationCaseId");
+
+                    b.HasIndex("OrganizationId", "ActorId", "RequestKey")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reconciliation_draft_requests_intent");
+
+                    b.ToTable("reconciliation_draft_requests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_reconciliation_draft_requests_hash", "payload_hash ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("ck_reconciliation_draft_requests_key", "length(btrim(request_key)) > 0 AND request_key = btrim(request_key)");
+
+                            t.HasCheckConstraint("ck_reconciliation_draft_requests_role", "role IN ('Invoice','PurchaseOrder')");
                         });
                 });
 
@@ -2125,6 +2491,11 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("review_action_id");
 
+                    b.Property<string>("SourceKind")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("source_kind");
+
                     b.Property<string>("ValueText")
                         .IsRequired()
                         .HasColumnType("text")
@@ -2154,6 +2525,8 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_reconciliation_field_snapshots_source", "machine_field_value_id IS NOT NULL OR review_action_id IS NOT NULL");
 
+                            t.HasCheckConstraint("ck_reconciliation_field_snapshots_source_kind", "source_kind IS NULL OR source_kind IN ('Unchecked','Confirmed','Corrected','Added','Cleared')");
+
                             t.HasCheckConstraint("ck_reconciliation_field_snapshots_value_type", "value_type IN ('String','Decimal','Date','Currency','Identifier')");
                         });
                 });
@@ -2169,8 +2542,8 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_at_utc");
 
                     b.Property<decimal?>("Difference")
-                        .HasPrecision(18, 6)
-                        .HasColumnType("numeric(18,6)")
+                        .HasPrecision(24, 6)
+                        .HasColumnType("numeric(24,6)")
                         .HasColumnName("difference");
 
                     b.Property<string>("Explanation")
@@ -2247,8 +2620,6 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAlternateKey("OrganizationId", "ReconciliationRunId", "Id");
-
                     b.HasIndex("OrganizationId", "ReconciliationRunId", "LeftFieldSnapshotId");
 
                     b.HasIndex("OrganizationId", "ReconciliationRunId", "RightFieldSnapshotId")
@@ -2283,15 +2654,30 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<decimal?>("CreationTransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("creation_transaction_id")
+                        .HasDefaultValueSql("(pg_catalog.pg_current_xact_id()::text::numeric)");
+
                     b.Property<decimal>("DocumentTotalTolerance")
                         .HasPrecision(18, 6)
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("document_total_tolerance");
 
+                    b.Property<Guid?>("EvaluationActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("evaluation_actor_id");
+
                     b.Property<decimal>("LineTotalTolerance")
                         .HasPrecision(18, 6)
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("line_total_tolerance");
+
+                    b.Property<string>("OrderScope")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("order_scope");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid")
@@ -2336,6 +2722,8 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("OrganizationId", "ReconciliationCaseId", "Id");
 
+                    b.HasIndex("OrganizationId", "EvaluationActorId");
+
                     b.HasIndex("OrganizationId", "ReconciliationCaseId")
                         .IsUnique()
                         .HasDatabaseName("ux_reconciliation_runs_one_running")
@@ -2348,6 +2736,8 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                     b.ToTable("reconciliation_runs", null, t =>
                         {
                             t.HasCheckConstraint("ck_reconciliation_runs_number", "run_number > 0");
+
+                            t.HasCheckConstraint("ck_reconciliation_runs_pair_context", "(rule_set_version NOT IN ('invoice-po-1.0', 'invoice-po-2.0') AND order_scope IS NULL AND evaluation_actor_id IS NULL) OR (rule_set_version = 'invoice-po-1.0' AND order_scope IS NOT NULL AND order_scope IN ('Unknown','FullOrder','Partial') AND evaluation_actor_id IS NOT NULL) OR (rule_set_version = 'invoice-po-2.0' AND order_scope = 'Unknown' AND order_scope IS NOT NULL AND evaluation_actor_id IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_reconciliation_runs_status", "status IN ('Running','Completed')");
 
@@ -2971,6 +3361,22 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.DocumentProcessingRequest", b =>
+                {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.Actor", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ActorId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ExtractionJob", b =>
                 {
                     b.HasOne("UaeDocumentIntelligence.Domain.Model.ExtractionRun", null)
@@ -3115,6 +3521,47 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .HasPrincipalKey("OrganizationId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.Document", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "DraftInvoiceDocumentId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.Document", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "DraftPurchaseOrderDocumentId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationCheck", b =>
+                {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ReconciliationRun", null)
+                        .WithMany("Checks")
+                        .HasForeignKey("OrganizationId", "ReconciliationRunId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ReconciliationFinding", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ReconciliationRunId", "FindingId")
+                        .HasPrincipalKey("OrganizationId", "ReconciliationRunId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ReconciliationFieldSnapshot", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ReconciliationRunId", "LeftFieldSnapshotId")
+                        .HasPrincipalKey("OrganizationId", "ReconciliationRunId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ReconciliationFieldSnapshot", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ReconciliationRunId", "RightFieldSnapshotId")
+                        .HasPrincipalKey("OrganizationId", "ReconciliationRunId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_reconciliation_checks_reconciliation_field_snapshots_organ~1");
                 });
 
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationDocumentLink", b =>
@@ -3179,6 +3626,23 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationDraftRequest", b =>
+                {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.Actor", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ActorId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.ReconciliationCase", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "ReconciliationCaseId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationFieldSnapshot", b =>
                 {
                     b.HasOne("UaeDocumentIntelligence.Domain.Model.MachineFieldValue", null)
@@ -3226,6 +3690,12 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationRun", b =>
                 {
+                    b.HasOne("UaeDocumentIntelligence.Domain.Model.Actor", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId", "EvaluationActorId")
+                        .HasPrincipalKey("OrganizationId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("UaeDocumentIntelligence.Domain.Model.ReconciliationCase", null)
                         .WithMany("Runs")
                         .HasForeignKey("OrganizationId", "ReconciliationCaseId")
@@ -3419,6 +3889,8 @@ namespace UaeDocumentIntelligence.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("UaeDocumentIntelligence.Domain.Model.ReconciliationRun", b =>
                 {
+                    b.Navigation("Checks");
+
                     b.Navigation("DocumentSnapshots");
 
                     b.Navigation("Findings");

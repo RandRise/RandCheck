@@ -108,8 +108,9 @@ public sealed class PrivateServiceSecurityTests
     public void Every_registered_private_transport_disables_redirects_proxy_cookies_and_http_logging(string name)
     {
         var services = new ServiceCollection();
-        services.AddInfrastructure(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
-        { ["ConnectionStrings:Database"] = "Data Source=:memory:" }).Build());
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        { ["ConnectionStrings:Database"] = "Data Source=:memory:" }).Build();
+        services.AddInfrastructure(config).AddCitedPilotInfrastructure(config);
         using var provider = services.BuildServiceProvider();
         var current = provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler(name);
         while (current is DelegatingHandler wrapper)

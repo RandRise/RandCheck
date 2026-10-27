@@ -1,0 +1,16 @@
+{
+  "version": "language-v0.1.0",
+  "provenance": "Original fictional development fixtures authored for this project. No real invoices or personal data. No external document text.",
+  "rights": "Project-authored synthetic test data; may be used, modified and redistributed with this project. This statement does not choose the repository software license.",
+  "cases": [
+    {"id":"ar-basic","language":"ar","text":"فاتورة تجريبية\nرقم الفاتورة: ٠٠١\nتاريخ الفاتورة: ٢٠٢٦-٠٩-٢١\nالعملة: درهم\nالمجموع الفرعي: ١٬٠٠٠٫٠٠\nضريبة القيمة المضافة: ٥٠٫٠٠\nالإجمالي: ١٬٠٥٠٫٠٠\n","expected":{"invoice_number":"٠٠١","invoice_date":"2026-09-21","currency":"AED","subtotal":"1000.00","vat":"50.00","total":"1050.00"}},
+    {"id":"mixed-identifiers","language":"ar-en","text":"SYNTHETIC / فاتورة تجريبية\nInvoice Number: INV-007\nالرقم الضريبي للمورد: ٠٠٠٠٠٠٠٠٠٠٠٠٧٠١\nCurrency: AED\nالإجمالي: ٢١٠٫٥٠\nشروط الدفع: خلال ٣٠ يوماً\n","expected":{"invoice_number":"INV-007","supplier_trn":"000000000000701","currency":"AED","total":"210.50","payment_terms":"خلال ٣٠ يوماً"}},
+    {"id":"ar-diacritics","language":"ar","text":"رقم الفاتورة: ٠٠٢\nالإِجْمَالِي: ١٠٥٫٠٠\nالعملة: درهم إماراتي\n","expected":{"invoice_number":"٠٠٢","total":"105.00","currency":"AED"}},
+    {"id":"ar-tatweel","language":"ar","text":"رقم الفاتورة: ٠٠٣\nالإجـمالي: ۳۱۵٫۰۰\nالعملة: د.إ\n","expected":{"invoice_number":"٠٠٣","total":"315.00","currency":"AED"}},
+    {"id":"mixed-neighbor-fields","language":"ar-en","text":"Invoice Number: MIX-2\nالمجموع الفرعي: ١٠٠٫٠٠ | ضريبة القيمة المضافة: ٥٫٠٠ | الإجمالي: ١٠٥٫٠٠\nCurrency: AED\n","expected":{"invoice_number":"MIX-2","subtotal":"100.00","vat":"5.00","total":"105.00","currency":"AED"}},
+    {"id":"ar-due-date","language":"ar","text":"رقم الفاتورة: ٠٠٤\nتاريخ الفاتورة: ٢٠٢٦-٠٩-٢١\nتاريخ الاستحقاق: ٢٠٢٦-١٠-٢١\nالإجمالي: ٥٠٠٫٠٠\n","expected":{"invoice_number":"٠٠٤","invoice_date":"2026-09-21","due_date":"2026-10-21","total":"500.00"}},
+    {"id":"ar-ambiguous-date","language":"ar","text":"رقم الفاتورة: ٠٠٥\nتاريخ الاستحقاق: ٢١/١٠/٢٠٢٦\nشروط الدفع: خلال ٣٠ يوماً\nالإجمالي: ٥٠٠٫٠٠\n","expected":{"invoice_number":"٠٠٥","payment_terms":"خلال ٣٠ يوماً","total":"500.00"},"absent":["due_date"],"warnings":["due_date_requires_review"]},
+    {"id":"mixed-conflicting-due","language":"ar-en","text":"Invoice Number: MIX-3\nDue Date: 2026-10-21\nتاريخ الاستحقاق: ٢٠٢٦-١٠-٢٢\nTotal: 100.00\n","expected":{"invoice_number":"MIX-3","total":"100.00"},"absent":["due_date"],"warnings":["due_date_conflicting"]},
+    {"id":"en-control","language":"en","text":"SYNTHETIC INVOICE\nInvoice Number: INV-001\nInvoice Date: 2026-09-21\nCurrency: AED\nSubtotal: 1,000.00\nVAT: 50.00\nTotal: 1,050.00\n","expected":{"invoice_number":"INV-001","invoice_date":"2026-09-21","currency":"AED","subtotal":"1000.00","vat":"50.00","total":"1050.00"}}
+  ]
+}

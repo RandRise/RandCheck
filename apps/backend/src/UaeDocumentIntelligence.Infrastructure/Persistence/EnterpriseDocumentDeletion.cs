@@ -105,6 +105,7 @@ public sealed partial class EnterpriseRetentionService
         if (await db.ReviewSessions.AnyAsync(x => x.OrganizationId == org && x.DocumentId == d.Id, ct) ||
             await db.CitedDocumentIndexes.AnyAsync(x => x.OrganizationId == org && x.DocumentId == d.Id, ct) ||
             await db.ReconciliationDocumentLinks.AnyAsync(x => x.OrganizationId == org && x.DocumentId == d.Id, ct) ||
+            await db.ReconciliationCases.AnyAsync(x => x.OrganizationId == org && (x.DraftInvoiceDocumentId == d.Id || x.DraftPurchaseOrderDocumentId == d.Id), ct) ||
             await db.ReconciliationDocumentSnapshots.AnyAsync(x => x.OrganizationId == org && x.DocumentId == d.Id, ct)) blockers.Add("historical_dependencies");
         if (await db.ExtractionRuns.AnyAsync(x => x.OrganizationId == org && x.DocumentId == d.Id &&
                 (x.ProviderName != "local" || x.EstimatedCost != null || x.CostCurrency != null || x.PriceBasis != null || x.ModelName != null), ct)) blockers.Add("accounting_dependencies");

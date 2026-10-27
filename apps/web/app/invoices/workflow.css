@@ -1,0 +1,9 @@
+.invoice-workflow section { margin-block: 1.5rem; padding: 1.25rem; border: 1px solid var(--border, #d7dfe3); border-radius: 12px; }
+.invoice-workflow form, .invoice-workflow article { display: grid; gap: .8rem; }
+.invoice-workflow label { display: grid; gap: .4rem; }
+.invoice-workflow input, .invoice-workflow select { width: 100%; max-width: 36rem; }
+.invoice-workflow button { width: fit-content; }
+.invoice-workflow .invoice-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.invoice-workflow .invoice-pair article { min-width: 0; align-content: start; }
+.invoice-workflow bdi { overflow-wrap: anywhere; }
+@media (max-width: 760px) { .invoice-workflow .invoice-pair { grid-template-columns: 1fr; } }

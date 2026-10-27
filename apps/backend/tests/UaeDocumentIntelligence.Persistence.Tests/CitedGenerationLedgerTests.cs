@@ -16,7 +16,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_disabled_calls_and_invalid_requests_do_not_write()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         await SpendDenied("generation_disabled", () => ledger.ReserveAsync(SpendCommand(), false, default));
         await SpendDenied("generation_disabled", () => ledger.TryMarkDispatchedAsync(Guid.NewGuid(), false, default));
@@ -31,9 +31,9 @@ public sealed partial class PostgresPersistenceTests
         var seed = await SeedGraphAsync();
         var command = SpendCommand();
         CitedSpendView first;
-        await using (var original = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1"))
+        await using (var original = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1"))
             first = await original.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(command, true, default);
-        await using var restarted = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var restarted = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = restarted.GetRequiredService<ICitedGenerationLedger>();
         var replay = await ledger.ReserveAsync(command, true, default);
         Assert.Equal(first.Id, replay.Id);
@@ -50,7 +50,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_concurrent_identical_reservations_share_one_durable_record()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var command = SpendCommand();
         var results = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => ledger.ReserveAsync(command, true, default)));
@@ -63,8 +63,8 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_concurrent_organizations_share_one_pending_slot_and_allowance()
     {
         var seed = await SeedGraphAsync();
-        await using var a = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
-        await using var b = CitedServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
         async Task<bool> Attempt(IServiceProvider services)
         {
             try { await services.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default); return true; }
@@ -80,7 +80,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_dispatch_has_one_winner_and_uncertain_cost_remains_reserved()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         var outcomes = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => ledger.TryMarkDispatchedAsync(reservation.Id, true, default)));
@@ -89,7 +89,7 @@ public sealed partial class PostgresPersistenceTests
         await ledger.MarkUncertainAsync(reservation.Id, default);
         await SpendDenied("invalid_spend_transition", () => ledger.CancelBeforeDispatchAsync(reservation.Id, default));
         await SpendDenied("budget_reconciliation_required", () => ledger.ReserveAsync(SpendCommand(), true, default));
-        await using var restarted = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var restarted = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var fresh = restarted.GetRequiredService<ICitedGenerationLedger>();
         Assert.Equal(CitedSpendState.Uncertain, (await fresh.GetAsync(reservation.Id, default)).State);
         await fresh.SettleAsync(reservation.Id, 0.001m, "verified-test-usage", default);
@@ -109,12 +109,12 @@ public sealed partial class PostgresPersistenceTests
         var seed = await SeedGraphAsync();
         // Controlled near-limit fixture; this is not a public balance-adjustment API.
         await ExecuteAsync("UPDATE cited_pilot_budgets SET settled_usd=7.998 WHERE id=1");
-        await using var a = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = a.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         Assert.True(await ledger.TryMarkDispatchedAsync(reservation.Id, true, default));
         await ledger.SettleAsync(reservation.Id, 0.002m, "verified-test-usage", default);
-        await using var b = CitedServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
+        await using var b = CitedPilotServices(seed.OrganizationB, seed.ActorB, "http://127.0.0.1:1");
         await SpendDenied("pilot_budget_exhausted", () => b.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default));
         Assert.Equal(8m, await ScalarAsync<decimal>("SELECT settled_usd FROM cited_pilot_budgets"));
     }
@@ -123,7 +123,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_foreign_organization_actor_and_inactive_actor_cannot_read_or_mutate()
     {
         var seed = await SeedGraphAsync();
-        await using var a = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var a = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var owner = a.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await owner.ReserveAsync(SpendCommand(), true, default);
         var otherActor = Guid.NewGuid();
@@ -131,7 +131,7 @@ public sealed partial class PostgresPersistenceTests
             ("id", otherActor), ("org", seed.OrganizationA), ("now", DateTimeOffset.UtcNow));
         foreach (var identity in new[] { (seed.OrganizationB, seed.ActorB), (seed.OrganizationA, seed.ActorB), (seed.OrganizationA, otherActor) })
         {
-            await using var foreign = CitedServices(identity.Item1, identity.Item2, "http://127.0.0.1:1");
+            await using var foreign = CitedPilotServices(identity.Item1, identity.Item2, "http://127.0.0.1:1");
             var ledger = foreign.GetRequiredService<ICitedGenerationLedger>();
             await SpendDenied("reservation_not_found", () => ledger.GetAsync(reservation.Id, default));
             await SpendDenied("reservation_not_found", () => ledger.TryMarkDispatchedAsync(reservation.Id, true, default));
@@ -147,7 +147,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_actual_cost_above_quote_is_recorded_and_freezes_further_admission()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         await ledger.TryMarkDispatchedAsync(reservation.Id, true, default);
@@ -161,7 +161,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_expired_rates_fail_before_reservation_and_before_dispatch()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var command = SpendCommand();
         await SpendDenied("rate_or_model_expired", () => ledger.ReserveAsync(command with
@@ -179,7 +179,7 @@ public sealed partial class PostgresPersistenceTests
         var seed = await SeedGraphAsync();
         await AssertSqlStateAsync(PostgresErrorCodes.CheckViolation,
             "INSERT INTO cited_pilot_budgets (id,ceiling_usd,settled_usd,requires_reconciliation) VALUES (2,8,0,false)");
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var first = await services.GetRequiredService<ICitedGenerationLedger>().ReserveAsync(SpendCommand(), true, default);
         await using (var db = _database.CreateContext())
         {
@@ -202,7 +202,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_failed_event_write_rolls_back_dispatch_and_settlement_together()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         var reservation = await ledger.ReserveAsync(SpendCommand(), true, default);
         await ExecuteAsync("ALTER TABLE cited_spend_events ADD CONSTRAINT test_reject_event CHECK (sequence=1)");
@@ -221,7 +221,7 @@ public sealed partial class PostgresPersistenceTests
     public async Task Ledger_invalid_settlement_and_precancelled_requests_do_not_release_holds()
     {
         var seed = await SeedGraphAsync();
-        await using var services = CitedServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
+        await using var services = CitedPilotServices(seed.OrganizationA, seed.ActorA, "http://127.0.0.1:1");
         var ledger = services.GetRequiredService<ICitedGenerationLedger>();
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();

@@ -4,6 +4,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         tesseract-ocr=5.3.0-2 \
         tesseract-ocr-eng=1:4.1.0-2 \
+        tesseract-ocr-ara=1:4.1.0-2 \
         tesseract-ocr-osd=1:4.1.0-2 \
     && rm -rf /var/lib/apt/lists/*
 COPY pyproject.toml ./

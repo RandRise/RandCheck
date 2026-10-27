@@ -63,7 +63,7 @@ public sealed partial class PostgresPersistenceTests
     [Fact]
     public async Task Phase6_capacity_requires_provisioning_before_scan_and_existing_policy_cannot_be_disabled_by_API_config()
     {
-        using var source = await SourceFixtureAsync("Operator"); var organization = await SourceOrganization(source);
+        using var source = await SourceFixtureAsync("Staff"); var organization = await SourceOrganization(source);
         await using var role = await ApiRoleAsync(); using var restricted = role.Host(source.Host);
         using var host = restricted.WithWebHostBuilder(b => b.UseSetting("Capacity:RequirePolicy", "true"));
         using var user = WithAuthority(host, source.User);
@@ -86,7 +86,7 @@ public sealed partial class PostgresPersistenceTests
     [InlineData("storage", true)]
     public async Task Phase6_capacity_concurrent_uploads_across_hosts_admit_one_and_compensate_loser(string limit, bool repeatableReadDefault)
     {
-        using var source = await SourceFixtureAsync("Operator"); var organization = await SourceOrganization(source);
+        using var source = await SourceFixtureAsync("Staff"); var organization = await SourceOrganization(source);
         await CancelOrganizationJobs(source.User, organization);
         await SetCapacity(organization, limit == "queue" ? 1 : 10, limit == "storage" ? SourceFixture.Content.Length + 15 : 100000);
         var arrived = 0; var barrier = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -108,7 +108,7 @@ public sealed partial class PostgresPersistenceTests
     [Fact]
     public async Task Phase6_capacity_reprocess_race_preserves_history_and_worker_completion_frees_job_capacity()
     {
-        using var source = await SourceFixtureAsync("Operator"); var organization = await SourceOrganization(source);
+        using var source = await SourceFixtureAsync("Staff"); var organization = await SourceOrganization(source);
         Assert.Equal(HttpStatusCode.Accepted, (await CapacityUpload(source.User)).StatusCode);
         await CancelOrganizationJobs(source.User, organization); await SetCapacity(organization, 1, 1); // Below existing bytes; reprocessing still fits.
         await using var db = _database.CreateContext(); var documents = await db.Documents.Select(d => d.Id).ToArrayAsync();
@@ -156,7 +156,7 @@ public sealed partial class PostgresPersistenceTests
     [Fact]
     public async Task Phase6_capacity_organizations_are_independent_and_audit_outage_rolls_back_policy_update()
     {
-        using var a = await SourceFixtureAsync("Operator"); using var b = await SourceFixtureAsync("Operator");
+        using var a = await SourceFixtureAsync("Staff"); using var b = await SourceFixtureAsync("Staff");
         var orgA = await SourceOrganization(a); var orgB = await SourceOrganization(b);
         var policy = await SetCapacity(orgA, 1, 100000); await SetCapacity(orgB, 10, 100000);
         Assert.Equal(HttpStatusCode.Conflict, (await CapacityUpload(a.User)).StatusCode);

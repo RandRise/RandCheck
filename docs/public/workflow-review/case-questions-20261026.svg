@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="490" viewBox="0 0 1040 490" role="img" aria-labelledby="title desc">
+  <title id="title">Ask about the documents you need</title>
+  <desc id="desc">A case uses its saved documents together. Separate documents use filename search and ten reviews per page. Choose deliberately, ask, then read the evidence.</desc>
+  <rect width="1040" height="490" rx="20" fill="#202126"/>
+  <g font-family="Arial, sans-serif" fill="#f5f5f7">
+    <text x="40" y="54" font-size="28" font-weight="700">Ask about the documents you need</text>
+    <rect x="40" y="88" width="460" height="154" rx="12" fill="#30313a" stroke="#92909d"/>
+    <rect x="540" y="88" width="460" height="154" rx="12" fill="#30313a" stroke="#92909d"/>
+    <text x="64" y="124" font-size="22" font-weight="700">From a saved case</text>
+    <text x="64" y="163" font-size="19">Use this case's documents</text>
+    <text x="64" y="199" font-size="17" fill="#dddbe8">Keep its saved invoice and PO together.</text>
+    <text x="64" y="225" font-size="17" fill="#dddbe8">Older cases keep their earlier documents.</text>
+    <text x="564" y="124" font-size="22" font-weight="700">Choose other documents</text>
+    <text x="564" y="163" font-size="19">Search by filename</text>
+    <text x="564" y="199" font-size="17" fill="#dddbe8">Choose from 10 reviews per page.</text>
+    <text x="564" y="225" font-size="17" fill="#dddbe8">Searching keeps your selected documents.</text>
+    <path d="M270 252V272H770V252M520 272V303m-8-10 8 10 8-10" fill="none" stroke="#b9a9ef" stroke-width="3"/>
+    <rect x="260" y="315" width="520" height="100" rx="12" fill="#37314c" stroke="#b9a9ef"/>
+    <text x="284" y="352" font-size="22" font-weight="700">Ask your question</text>
+    <text x="284" y="389" font-size="18">Read the answer and check its evidence.</text>
+    <text x="40" y="458" font-size="18" fill="#dddbe8">Opening a page does not confirm values. Missing facts stay unanswered.</text>
+  </g>
+</svg>

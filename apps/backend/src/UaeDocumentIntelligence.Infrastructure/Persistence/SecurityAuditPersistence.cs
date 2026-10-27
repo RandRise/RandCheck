@@ -30,7 +30,7 @@ public sealed partial class AppDbContext
                 throw new InvalidOperationException("Security audit and enterprise identities are immutable.");
             if (e.Entity is OrganizationMembership && (e.State == EntityState.Deleted ||
                 e.Properties.Any(p => p.IsModified && p.Metadata.Name is not
-                    (nameof(OrganizationMembership.Role) or nameof(OrganizationMembership.CanManageMembers) or
+                    (nameof(OrganizationMembership.Role) or
                      nameof(OrganizationMembership.IsActive) or nameof(OrganizationMembership.Version) or nameof(OrganizationMembership.UpdatedAtUtc)))))
                 throw new InvalidOperationException("Membership identity and history cannot be replaced or deleted.");
         }
@@ -49,6 +49,13 @@ public sealed partial class AppDbContext
                 ExtractionJob x => (x.OrganizationId, x.Id, "extraction-job", e.State == EntityState.Added ? "processing.queued" : "processing.changed", "Status"),
                 ReviewSession x => (x.OrganizationId, x.Id, "review", e.State == EntityState.Added ? "review.started" : "review.changed", "Status"),
                 ReviewAction x => (x.OrganizationId, x.Id, "review-action", "review.action-recorded", "Action"),
+                ReconciliationCase x when e.State == EntityState.Modified &&
+                    (e.Property(nameof(ReconciliationCase.DraftInvoiceDocumentId)).IsModified || e.Property(nameof(ReconciliationCase.DraftPurchaseOrderDocumentId)).IsModified)
+                    => (x.OrganizationId, x.Id, "reconciliation-case", "reconciliation.draft-changed", "case-drafts"),
+                ReconciliationDraftRequest x => (x.OrganizationId, x.ReconciliationCaseId, "reconciliation-case", "reconciliation.draft-intent-recorded", (string?)null),
+                ReconciliationCase x when e.State == EntityState.Modified &&
+                    (e.Property(nameof(ReconciliationCase.Name)).IsModified || e.Property(nameof(ReconciliationCase.Category)).IsModified)
+                    => (x.OrganizationId, x.Id, "reconciliation-case", "reconciliation.metadata-changed", "case-metadata"),
                 ReconciliationCase x => (x.OrganizationId, x.Id, "reconciliation-case", "reconciliation.case-changed", "Status"),
                 ReconciliationDocumentLink x => (x.OrganizationId, x.Id, "reconciliation-link", e.State == EntityState.Deleted ? "reconciliation.document-unlinked" : "reconciliation.document-linked", "Role"),
                 ReconciliationRun x => (x.OrganizationId, x.Id, "reconciliation-run", "reconciliation.evaluated", "Status"),
@@ -76,7 +83,11 @@ public sealed partial class AppDbContext
     {
         object? Value(string name) => original ? entry.Property(name).OriginalValue : entry.Property(name).CurrentValue;
         if (property == "membership")
-            return $"{Value("Role")};manage={Value("CanManageMembers")};active={Value("IsActive")}";
+            return $"{Value("Role")};active={Value("IsActive")}";
+        if (property == "case-metadata")
+            return $"status={Value("Status")};category={Value("Category")};titleChanged={entry.Property(nameof(ReconciliationCase.Name)).IsModified}";
+        if (property == "case-drafts")
+            return $"invoice={Value(nameof(ReconciliationCase.DraftInvoiceDocumentId))};purchaseOrder={Value(nameof(ReconciliationCase.DraftPurchaseOrderDocumentId))}";
         if (property == "retention-policy")
             return $"documentDays={Value("DocumentDays") ?? "indefinite"};quarantineHours={Value("QuarantineHours") ?? "disabled"}";
         if (property == "retention-hold")

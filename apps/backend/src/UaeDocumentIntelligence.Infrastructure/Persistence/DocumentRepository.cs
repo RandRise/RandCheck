@@ -1,11 +1,41 @@
 using Microsoft.EntityFrameworkCore;
 using UaeDocumentIntelligence.Application.Abstractions;
 using UaeDocumentIntelligence.Domain.Model;
+using UaeDocumentIntelligence.Application.Documents;
 
 namespace UaeDocumentIntelligence.Infrastructure.Persistence;
 
-internal sealed class DocumentRepository(AppDbContext db) : IDocumentRepository
+internal sealed partial class DocumentRepository(AppDbContext db) : IDocumentRepository, IDocumentLibraryRepository
 {
+    public async Task<IReadOnlyList<DocumentWorkItem>> ListWorkAsync(Guid organizationId, CancellationToken ct)
+        => await ReadWorkItemsAsync(db.Documents.AsNoTracking().Where(d => d.OrganizationId == organizationId), ct);
+
+    private static async Task<IReadOnlyList<DocumentWorkItem>> ReadWorkItemsAsync(IQueryable<Document> documents, CancellationToken ct)
+    {
+        var rows = await documents
+            .OrderByDescending(d => d.CreatedAtUtc).ThenBy(d => d.Id)
+            .Select(d => new
+            {
+                d.Id, d.OriginalFilename, d.SizeBytes, d.ProcessingStatus, d.CreatedAtUtc,
+                Selected = d.ExtractionRuns.Where(r => r.Status == ExtractionRunStatus.Succeeded || r.Status == ExtractionRunStatus.Partial)
+                    .OrderByDescending(r => r.RunNumber).Select(r => new { r.Id, r.DocumentType, r.Language, r.ModelName, r.ProviderName }).FirstOrDefault(),
+                Latest = d.ExtractionRuns.OrderByDescending(r => r.RunNumber)
+                    .Select(r => new { r.Status, r.DurationMs, r.SafeFailureSummary }).FirstOrDefault(),
+                ActiveRun = d.ReviewSessions.Where(s => s.Status == ReviewStatus.Pending || s.Status == ReviewStatus.InProgress)
+                    .OrderByDescending(s => s.RevisionNumber).Select(s => (Guid?)s.ExtractionRunId).FirstOrDefault(),
+                CompletedSelected = d.ReviewSessions.Any(s => s.Status == ReviewStatus.Completed && s.ExtractionRunId ==
+                    d.ExtractionRuns.Where(r => r.Status == ExtractionRunStatus.Succeeded || r.Status == ExtractionRunStatus.Partial)
+                        .OrderByDescending(r => r.RunNumber).Select(r => r.Id).FirstOrDefault()),
+                LatestCompleted = d.ReviewSessions.Where(s => s.Status == ReviewStatus.Completed)
+                    .OrderByDescending(s => s.RevisionNumber).Select(s => (Guid?)s.Id).FirstOrDefault()
+            }).ToListAsync(ct);
+        return rows.Select(x => new DocumentWorkItem(x.Id, x.OriginalFilename, x.SizeBytes,
+            DocumentWorkItem.ProcessingState(x.ProcessingStatus), x.Selected?.DocumentType, x.Selected?.Language,
+            x.Selected?.ModelName ?? x.Selected?.ProviderName, x.Latest?.DurationMs, x.Latest?.SafeFailureSummary,
+            x.CreatedAtUtc, x.Selected is null ? null : x.ActiveRun.HasValue ? "InProgress" : x.CompletedSelected ? "Reviewed" : "NeedsReview",
+            x.Selected?.Id, x.ActiveRun ?? x.Selected?.Id, x.LatestCompleted, x.ActiveRun.HasValue && x.ActiveRun != x.Selected?.Id,
+            x.Latest is null ? null : DocumentWorkItem.ExtractionState(x.Latest.Status))).ToArray();
+    }
     public async Task AddAsync(Document document, CancellationToken cancellationToken) =>
         await db.Documents.AddAsync(document, cancellationToken);
 
@@ -90,5 +120,6 @@ internal sealed class DocumentRepository(AppDbContext db) : IDocumentRepository
     private IQueryable<Document> ReviewQuery() => db.Documents
         .AsSplitQuery()
         .Include(x => x.ExtractionRuns).ThenInclude(x => x.Fields).ThenInclude(x => x.Evidence)
+        .Include(x => x.ExtractionRuns).ThenInclude(x => x.Warnings)
         .Include(x => x.ReviewSessions).ThenInclude(x => x.Actions);
 }

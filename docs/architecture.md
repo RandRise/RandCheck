@@ -1,98 +1,191 @@
 # Architecture
 
-This page separates the **current prototype** from the **target portfolio architecture**. Planned components should not be mistaken for implemented capabilities.
+The main product workflow is **Add invoice + PO → Check details → See results**.
+The library, saved history and document questions support that workflow. The
+browser uses the ASP.NET API for all of them. Python handles private extraction and
+model-facing preparation; PostgreSQL stores the durable workflow and history.
 
-## Current implemented foundation
+## Follow one document
 
-```text
-Browser / Next.js ---> ASP.NET API ---> Application ---> Domain
-                           |                 ^
-                           v                 |
-                     Infrastructure --------+
-                       |          |
-                       v          v
-      PostgreSQL + extraction_jobs     .NET BackgroundService
-                  :55432                       |
-                                               v
-                                  private Python/FastAPI
-                                      mock / local
-```
+![Document processing: upload, store, queue, extract, save evidence, then review](/architecture/document-processing.svg)
 
-The .NET solution now has four production projects:
+Uploading accepts and queues the document; extraction happens afterward. A failed
+attempt can retry without blocking the browser request. Review operates on a
+successful extraction revision. It preserves the machine values and records human
+confirmations, corrections, additions, and exclusions separately.
 
-| Project | Implemented responsibility |
-| --- | --- |
-| Domain | Document, extraction, evidence, and review entities plus invariants |
-| Application | Feature use cases, DTO projection, queries, and dependency interfaces |
-| Infrastructure | EF Core/Npgsql, repositories, scoped storage/cleanup, durable queue, background worker, observability hooks, and authenticated Python client |
-| API | HTTP endpoints including asynchronous upload and processing primitives, composition, request IDs, CORS, and development Swagger |
+Completing review locks that revision. A comparison or question uses a specific
+completed revision, so a later extraction or correction cannot silently rewrite an
+old result. An invoice can be reviewed on its own; a comparison case is only needed
+when related procurement documents are being compared.
 
-The frontend consumes explicit ASP.NET DTOs rather than EF entities. ASP.NET validates and stores uploads, transactionally queues document/run/job state, and returns `202` without invoking the provider in the request lifecycle. A .NET `BackgroundService` claims PostgreSQL work and invokes the authenticated private AI route outside the claim transaction. PostgreSQL is canonical and is exposed locally on host port `55432`.
+The current Home flow saves a case only after the user chooses both files and
+continues. Uploading one document alone does not create a case. The three stages
+stay on `/invoices`; optional Details screens return to that workflow. Historical
+document links and quotation comparisons remain readable through compatibility
+paths. New invoice/PO checks use the AED-only `invoice-po-2.0` rule set, with no
+goods-receipt step or automatic currency conversion.
 
-The P2-T04 local extractor handles synthetic native and scanned English documents behind the private boundary. P2-T06 connects it to the durable workflow through migration `20260811131151_AddDurableExtractionQueue`; PostgreSQL, image builds, and synthetic native/scanned Compose flows are verified.
+![Invoice check: choose pair, review, compare exact versions, record a decision, and export](/architecture/invoice-check.svg)
 
-Architecture tests enforce that Domain has no outer-layer or persistence dependencies, Application has no Infrastructure/API/EF dependencies, and Infrastructure does not reference API.
+## Where each journey is implemented
 
-The upload workflow stores the file, atomically persists document/queued run/job, and compensates storage if the transaction fails. Orphan cleanup is scoped to generated keys and skips reparse points. PostgreSQL-clock claims use `SKIP LOCKED`, lease fencing, heartbeats, bounded retries, cancellation, and reprocess/latest-job primitives. The authenticated Python request verifies storage-key containment, bytes, SHA-256, schema, deadline, provider identity, errors, and normalized results. Activity/Meter hooks expose bounded operational signals. Exact verification and limitations are recorded in P2-T06 evidence.
+Read the screen, then the handler, then its persistence implementation. Start with
+these entry points rather than reading every class in the repository.
+Code paths are relative to the repository root; open them in your editor to follow
+the screen, handler and storage steps.
 
-## Implemented human-review workflow
+| Journey | Screen | Backend entry and behavior | Persistent state |
+| --- | --- | --- | --- |
+| Upload and processing | Home (`apps/web/app/page.tsx`), invoice workflow (`apps/web/app/invoices/page.tsx`) | Upload handler (`apps/backend/src/UaeDocumentIntelligence.Application/Documents/Upload/UploadDocument.cs`), worker (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Services/ExtractionWorker.cs`), Python extractor (`apps/api/app/local_extraction.py`) | Original file in scoped storage; document, extraction run, job, fields, pages, and evidence in PostgreSQL |
+| Human review | Embedded document workspace (`apps/web/app/document-workspace.tsx`), guided review (`apps/web/app/review/`) | Review handlers (`apps/backend/src/UaeDocumentIntelligence.Application/Documents/Review/ReviewHandlers.cs`), workspace projection (`apps/backend/src/UaeDocumentIntelligence.Application/Documents/Review/ReviewWorkspace.cs`) | Review session and append-only actions; effective values are projected from machine output and the latest decisions |
+| Compare documents | See results within the invoice workflow; shared result components under `apps/web/app/reconciliation/` | Comparison handlers (`apps/backend/src/UaeDocumentIntelligence.Application/Reconciliation/Handlers`), current rule engine (`apps/backend/src/UaeDocumentIntelligence.Domain/Model/InvoicePurchaseOrderRuleEngine.cs`); legacy engine remains for history | Exact completed reviews; frozen run values/evidence/checks; append-only decisions |
+| Report and spreadsheet | `apps/web/app/reconciliation/export/` | `GetReconciliationReportHandler` and `IReconciliationReportRepository`; authorized, version-checked repeatable-read snapshot | Frozen comparison plus one coherent decision snapshot; escaped HTML and formula-protected CSV use that same capture |
+| Questions | Questions (`apps/web/app/questions/page.tsx`) | Question routes (`apps/backend/src/UaeDocumentIntelligence.Api/CitedRetrievalEndpoints.cs`), reviewed-answer handler (`apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedReviewedQuestion.cs`), answer engine (`apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedFactAnswerEngine.cs`) | Frozen source indexes, saved retrieval/answer results, claims, citations, and refusal reasons |
+| Access and administration | Shared session (`apps/web/app/security/enterprise-provider.tsx`), organization screens | Permission map (`apps/backend/src/UaeDocumentIntelligence.Api/Security/EnterprisePermissions.cs`), security endpoints | Organization memberships, audit events, retention policies, and preservation holds |
 
-ASP.NET exposes a review workspace plus start, action, and completion endpoints. Review actions are append-only and the application projects machine, latest decision, and effective values separately. Strong ETags protect mutations: clients send `If-Match`, successful writes rotate the token, and stale writes fail without overwriting newer work.
+For the storage step, follow upload admission (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/UploadQueueStore.cs`)
+and the extraction queue (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/ExtractionJobQueue.cs`),
+then document/review persistence (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/DocumentRepository.cs`).
+Comparison uses the case repository (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/ReconciliationRepository.cs`).
+Questions use the reviewed-answer store (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedReviewedQuestionStore.cs`)
+or evidence retrieval store (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedRetrievalStore.cs`).
 
-The Next.js workspace consumes this contract to confirm, correct, add, clear, complete, and reload review state. Machine values remain visible and immutable beside reviewer-effective values. PostgreSQL migration `20260811073607_AddReviewActionValueTypeConstraint` adds the persisted corrected-value-type check.
+### .NET repository boundaries and file organization
 
-## Key decisions
+Application handlers depend on repository interfaces, including
+`IDocumentRepository` and `IReconciliationRepository`, in
+`apps/backend/src/UaeDocumentIntelligence.Application/Abstractions/Repositories`.
+Infrastructure implements those interfaces with Entity Framework and registers
+them as scoped services in `DependencyInjection.cs`. Application does not reference
+Entity Framework or the infrastructure project. Repository operations retain their
+organization scope, explicit save outcomes and concurrency handling.
 
-- **Two deliberate service boundaries:** ASP.NET demonstrates enterprise workflow/security strengths; Python isolates the changing AI ecosystem.
-- **Provider boundary:** `ExtractionProvider` keeps paid Azure OCR/LLM services replaceable and testable.
-- **Durable PostgreSQL queue first:** a .NET worker avoids database/broker dual writes and unlocks local processing; RabbitMQ remains deferred until measured scale justifies it.
-- **Evidence-aware fields:** every field carries confidence and source page even before full bounding-box citations.
-- **Generated storage keys:** original filenames are display metadata only; paths cannot escape the upload directory.
-- **No implicit AI claims:** the mock provider parses a documented synthetic format and identifies itself in stored results.
-- **Practical .NET structure:** the public backend remains one deployable modular monolith, organized with Clean Architecture boundaries, Vertical Slice features, and DDD-lite domain modeling.
-- **Code First persistence:** ASP.NET owns the PostgreSQL schema through reviewed EF Core Code First migrations.
+The reconciliation feature has separate `Handlers`, `Commands`, `Queries`,
+`Models`, `Mapping`, `Validation`, and `Exceptions` folders, with one named type per
+file. Namespaces and constructor contracts remain stable. Repository implementations
+and their transaction boundaries stay in Infrastructure; draft retry receipts still
+share the existing context and atomic save. Remaining extraction/storage contracts
+in `Abstractions/Ports.cs` and other features can be organized in later batches.
 
-## ASP.NET application approach
+The library uses `/api/documents/library` through its feature service and
+`IDocumentLibraryRepository`. Server-side search covers filenames, suppliers and
+printed invoice/PO references, returning 10 records per page. Quotations are hidden
+by default but can be included. The older work-list endpoint remains for other
+workflow consumers. List queries project metadata and status without loading every
+document's values, evidence or review history. Review state
+and the latest extraction state are separate: an earlier completed review remains
+available while a replacement extraction runs or fails.
 
-The ASP.NET backend is a **modular monolith**, not a collection of premature microservices. It remains one deployable application while its code is separated into clear boundaries:
+Questions resolves a document link using its document **and completed review** IDs
+through workspace queries (`apps/backend/src/UaeDocumentIntelligence.Application/CitedQuestions/CitedWorkspace.cs`)
+and the workspace store (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/Persistence/CitedWorkspaceStore.cs`).
+Its recent-result query returns at most 20 supported results for the current actor
+and organization, filtering source eligibility before limiting the list. Reading
+that list neither prepares indexes nor generates answers. A saved result keeps its
+own source versions independently of the current composer selection.
 
-- **Domain:** entities, value objects, invariants, and domain behavior without infrastructure dependencies.
-- **Application:** use-case orchestration and interfaces needed by a feature.
-- **Infrastructure:** EF Core, PostgreSQL, file/object storage, AI-service clients, and other adapters.
-- **API:** HTTP endpoints, authentication integration, DTO mapping, and composition.
+On the frontend, Questions workflow (`apps/web/app/questions/use-questions-workflow.ts`)
+owns source loading, URL restoration and request lifetimes; the page renders its
+state and controls. Document processing helpers (`apps/web/app/document-processing.ts`)
+own file fingerprints, scoped request identities and processing requests.
+Supported review fields (`apps/web/app/document-fields.ts`) defines the ordinary
+names, types and line-position conventions. These are feature-local modules, so
+following a Documents or Questions action does not require a shared orchestrator.
 
-Features are organized as **Vertical Slices** so an upload, extraction, review, or later reconciliation use case keeps its command/query, validation, handler, DTOs, and tests close together. **DDD-lite** means modeling important document, extraction, and review invariants explicitly without introducing patterns that do not solve a current domain problem.
+The normal service graph lives in
+core registration (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/DependencyInjection.cs`).
+Pilot registration (`apps/backend/src/UaeDocumentIntelligence.Infrastructure/CitedPilotRegistration.cs`)
+is an explicit extra step for standalone experiment tools and synthetic tests.
+The API and worker do not register generation, embedding-ingestion or recovery
+coordinators. Core Questions can still read saved results and reuse prepared
+semantic queries. Even the extra registration keeps generation and ingestion
+disabled and recovery denied until a tool supplies its separately authorized setup.
 
-The Python/FastAPI AI service remains a separate private service because model-facing document processing changes independently from the enterprise workflow backend. This does not turn every ASP.NET module into a network service.
-
-## Target architecture by responsibility
+## What each service owns
 
 | Component | Responsibility |
 | --- | --- |
-| Next.js | Upload, case list, document viewer, human review, discrepancy resolution, cited questions |
-| ASP.NET Core | Public API, workflow, authorization, tenancy, validation, audit, persistence orchestration |
-| Python/FastAPI | OCR normalization, extraction providers, RAG, evaluation, model-facing logic |
-| PostgreSQL/pgvector | Transactional state, structured results, evaluation metadata, vector retrieval |
-| Object storage | Original documents and derived page assets |
-| RabbitMQ or managed messaging | Background jobs, retries, dead-letter handling |
-| OpenTelemetry stack | Logs, metrics, traces, correlation, latency and failure measurement |
+| Next.js | Navigation, source context, drafts, review controls, saved-work reopening, and role-appropriate presentation |
+| ASP.NET API | Public HTTP contracts, authentication/permissions, validation, workflow, audit admission, and request limits |
+| .NET Application | Feature handlers and DTOs, review/answer projection, and interfaces for persistence and private services |
+| .NET Domain | Document/review/case entities, state transitions, invariants, and comparison rules |
+| .NET Infrastructure | EF Core/Npgsql, files, durable extraction queue/worker, private Python clients, and operational adapters |
+| Python/FastAPI | Private native-PDF/OCR extraction, normalization, evidence validation, chunking/search preparation, and isolated provider experiments |
+| PostgreSQL | Canonical durable records, job claims, transactions, version checks, and saved evidence; pgvector supports prepared semantic experiments |
 
-## Production target
+The four .NET projects are layers of one backend deployment. Domain has no
+persistence or outer-layer dependencies; Application does not reference
+Infrastructure/API/EF; Infrastructure does not reference API. Architecture tests
+check those boundaries. A separate message broker is unnecessary for the current
+queue: PostgreSQL stores document/run/job state in the same transaction.
 
-Next.js on a managed web host; containerized ASP.NET and private FastAPI on Azure Container Apps; Azure Database for PostgreSQL + pgvector; Blob Storage; Azure Document Intelligence; Azure OpenAI through managed identity; Service Bus/RabbitMQ-compatible jobs; Entra ID/OIDC; Key Vault; OpenTelemetry to Application Insights.
+## Rules that explain the less visible behavior
 
-## Security evolution
+- **Machine output and reviewed values are different.** A correction does not
+  overwrite the extractor's original value. Reviewer-added fields have review
+  provenance, not invented AI confidence or page evidence.
+- **Versions matter.** Extraction runs, completed reviews, comparison snapshots,
+  and question indexes identify the evidence a result actually used. Opening the
+  current document can show a newer revision than an old saved result.
+- **A retry and a revision are different.** Concurrency tokens (`ETag`/`If-Match`)
+  prevent stale writes. Request identities prevent repeated submission intent
+  from creating another result. Deliberate new processing/comparison decisions
+  must remain explicit. See the [repeat-action contract](design/action-repeat-contract.md)
+  for the implemented boundaries and remaining task status.
+- **Processing and reviewing have separate states.** An older successful output
+  can stay visible while a replacement extraction runs or fails.
+- **A finished review is not a match.** The backend distinguishes passed,
+  differing and unperformed checks. It derives reliable facts from reviewed values
+  and source evidence; it cannot infer missing commercial facts. A recorded reason
+  acknowledges a finding and never changes the underlying check outcome.
+- **Questions have different evidence paths.** Reviewed answers use a bounded
+  deterministic fact engine. Keyword search returns evidence, not a generated
+  answer. Semantic search reuses explicitly prepared queries. Missing or ambiguous
+  facts remain unanswered.
+- **Optional model experiments are separate capabilities.** Paid generation and
+  embedding ingestion are disabled in the normal profile. Their spending and
+  recovery records remain historical state; simplifying the interface does not
+  authorize spending or deleting them.
 
-Current controls include size/type validation, generated/scoped storage keys, symlink/traversal rejection, size/SHA verification, a shared-secret private worker route, safe provider errors, structural organization relationships, and organization-scoped repository queries. The worker token is local service authentication, not user authentication or a production tenant boundary. Local requests still use a fixed development organization/system actor. Before real documents: malware scanning, private object storage, encryption, authenticated tenant-scoped access, RBAC, audit events, production secret management, retention policies, signed downloads, rate limiting, and a DPIA/threat model appropriate to the organization.
+## Local environments
 
-## Architecture principles
+Use [UI preview](ui-preview.md) for frequent interface work and the
+[disposable local demo](local-demo.md) for real processing/persistence integration.
+The preview loads actual page components through Vite with synthetic responses;
+its success does not establish Next.js server, OCR, database, or authentication
+behavior. The demo builds the current source in an isolated copy, applies
+migrations, and uses loopback ports and disposable data.
 
-- The browser calls only the ASP.NET public API.
-- AI providers remain replaceable through explicit interfaces.
-- Local development does not require paid credentials.
-- Machine output and human corrections remain separate.
-- Evidence is part of the data model, not a UI-only decoration.
-- Tenant authorization is enforced at the data-access boundary.
-- Metrics describe measured behavior only.
+The [advanced setup reference](setup.md) describes the legacy root Compose/host
+path and its limits. The root profile and the disposable demo are distinct
+configurations. Normal development does not require paid credentials.
 
-See the [database design and ERD](./data/database-design.md), [P1-T08 acceptance verification](./evidence/phase-1/P1-T08-acceptance-verification.md), and [P2-T08 acceptance verification](./evidence/phase-2/P2-T08-acceptance-verification.md). Phases 1 and 2 are complete for their approved local boundaries; optional Azure, enterprise, and deployment capabilities remain roadmap work.
+## Security and deployment scope
+
+The default security profile is Locked. The local Development demo uses an
+explicit development identity. The Entra profile resolves current organization
+membership and enforces Staff/Admin access. Staff handles documents; Admin also
+manages people, audit access and storage controls. Migration of older accounts is
+explicit and must not silently grant broader access. The private worker
+credential authenticates the service and does not replace user authorization.
+
+Local security implementation includes tenant-scoped queries, restricted database
+roles, append-only audit, protected source downloads, source integrity/scanning
+boundaries, versioned retention/holds, and guarded deletion/recovery. The
+[local acceptance](security/phase-6-local-acceptance.md) records verification and
+limits. Real identity, scanner/key delivery, TLS, multi-replica behavior, and
+production operations require their own target-environment evidence.
+
+The [portfolio delivery decision](design/github-portfolio-delivery.md) requires a
+reproducible local project and honest evidence. The later
+[reviewer-experience ledger](tasks/reviewer-experience-recovery.md) separately tracks
+real-identity acceptance; an account-free demo does not complete that task.
+
+Azure Container Apps, managed PostgreSQL, Blob Storage, Azure OCR/OpenAI, Entra,
+Key Vault, and hosted telemetry are possible production targets. Object storage,
+a managed broker, and cloud deployment are optional extensions, not prerequisites
+for understanding or running the current portfolio workflow.
+
+See the [current simplification verification](testing/simplification-20261002.md)
+and [database design reference](data/database-design.md) for supporting details.

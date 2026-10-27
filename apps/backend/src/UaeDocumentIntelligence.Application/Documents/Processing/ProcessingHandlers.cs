@@ -22,12 +22,18 @@ public sealed class ReprocessDocumentHandler(
     IExtractionJobQueue queue, IExtractionClient extraction, IExecutionContext execution)
 {
     public Task<QueuedReprocess?> HandleAsync(Guid documentId, string correlationId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, string? requestKey = null)
     {
         if (string.IsNullOrWhiteSpace(correlationId) || correlationId.Length > 100 ||
             !Regex.IsMatch(correlationId, "^[A-Za-z0-9._:-]{1,100}$"))
             throw new ArgumentException("Correlation ID must contain 1 to 100 safe characters.",
                 nameof(correlationId));
+        requestKey = ProcessingIntent.ValidateKey(requestKey);
+        if (requestKey is not null)
+            return queue.QueueReprocessWithIntentAsync(execution.OrganizationId, documentId, Guid.NewGuid(),
+                Guid.NewGuid(), extraction.ProviderName, extraction.ProviderVersion, extraction.SchemaVersion,
+                correlationId, new ProcessingIntent(execution.ActorId, requestKey, ProcessingIntent.Hash(
+                    documentId, extraction.ProviderName, extraction.ProviderVersion, extraction.SchemaVersion)), cancellationToken);
         return queue.QueueReprocessAsync(execution.OrganizationId, documentId, Guid.NewGuid(),
             Guid.NewGuid(), extraction.ProviderName, extraction.ProviderVersion,
             extraction.SchemaVersion, correlationId, cancellationToken);

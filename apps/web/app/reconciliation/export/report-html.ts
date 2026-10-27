@@ -1,0 +1,37 @@
+import { checkHeaders, checkLabel, checkStatus, checkValues, decisionName, effectiveFieldValue, evidence, fieldState, findingLabel, label, reportMetadata, reportSummary, roleName } from "./report-content";
+import type { ReviewReport } from "./report.types";
+
+const escapeHtml = (value: unknown) => String(value ?? "Not recorded").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]!));
+const value = (text: unknown) => `<bdi dir="auto">${escapeHtml(text)}</bdi>`;
+// Keep exact amounts intact. Wide tables scroll instead of squeezing values on phones.
+const table = (headers: string[], rows: unknown[][]) => `${headers.length > 3 ? '<p class="scroll-hint">Scroll sideways to read all columns. With a keyboard, focus the table and use the arrow keys.</p>' : ""}<div class="table-scroll" tabindex="0" role="region" aria-label="${escapeHtml(headers.join(", "))}"><table${headers.length > 3 ? ' class="wide-table"' : ""}><thead><tr>${headers.map(header => `<th scope="col">${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(cell => `<td${/^[+-]?\d+(?:\.\d+)?$/.test(String(cell)) ? ' class="amount"' : ""}>${value(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+
+/** Standalone, script-free report. All saved content is text, including evidence and case names. */
+export function reportHtml(report: ReviewReport) {
+  const run = report.run, summary = reportSummary(run);
+  const checks = run.checks.filter(check => check.status !== "NoDifference").map(check => `<article><h3>${value(checkLabel(check))}</h3><p class="status">${checkStatus(check.status)}</p>
+    ${table([...checkHeaders(run), "Difference", "Allowed difference"], [[...checkValues(run, check), check.signedDifference, check.tolerance]])}
+    <p>${value(check.explanation)}</p><p>Unit: ${value(check.unit)} · Currency: ${value(check.currency)} · Basis: ${value(check.basis)}</p>
+    <p>${value(evidence(run, check.rightFieldSnapshotId))}</p><p>${value(evidence(run, check.leftFieldSnapshotId))}</p>
+    <p><small>Check ID: ${value(check.id)} · Finding ID: ${value(check.findingId)}</small></p></article>`).join("");
+  const findings = run.findings.map(finding => `<article><h3>${value(findingLabel(run, finding))}</h3>
+    ${run.checks.some(check => check.findingId === finding.id) ? "" : `<p>${value(finding.explanation)}</p>${table([roleName(finding.leftRole), roleName(finding.rightRole), "Difference", "Allowed difference"], [[finding.leftValue, finding.rightValue, finding.difference, finding.tolerance]])}`}
+    <p>Finding ID: ${value(finding.id)}</p>${finding.resolutions.length ? table(["Sequence", "Decision", "Reason", "Actor ID", "Time (UTC)"], [...finding.resolutions].sort((a,b) => a.sequenceNumber-b.sequenceNumber).map(decision => [decision.sequenceNumber, decisionName(decision.action), decision.reason, decision.actorId, decision.createdAt])) : "<p>No decision recorded.</p>"}</article>`).join("");
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+    <title>${escapeHtml(report.reference)} · Invoice check · Comparison ${run.runNumber}</title>
+    <style>body{margin:0;background:#f4f4f7;color:#24242c;font:16px/1.6 system-ui,sans-serif}main{max-width:1050px;margin:32px auto;padding:32px;background:white;border:1px solid #d9d8e0;border-radius:12px}h1,h2,h3{line-height:1.25}h2{margin-top:36px}article{padding:20px;border:1px solid #d9d8e0;border-radius:8px;margin:16px 0}.status{font-weight:700;color:#51417e}.notice{background:#f1eef9;padding:16px;border-left:4px solid #7867ba}.table-scroll{overflow:auto;border-radius:4px}.table-scroll:focus-visible{outline:3px solid #7867ba;outline-offset:3px}.wide-table{min-width:800px}.wide-table th,.wide-table td{min-width:75px}.amount bdi{white-space:nowrap;overflow-wrap:normal}.scroll-hint{display:none}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid #d9d8e0;padding:10px;overflow-wrap:anywhere}th{background:#f4f4f7}bdi{white-space:pre-wrap;overflow-wrap:anywhere}small{color:#555}@media(max-width:700px){main{margin:0;padding:16px;border:0}article{padding:12px}.scroll-hint{display:block;color:#555;font-size:14px}}@media print{body{background:white}main{border:0;margin:0;padding:0}article{break-inside:avoid}.table-scroll{overflow:visible}.wide-table{min-width:0}.wide-table th,.wide-table td{min-width:0;padding:6px}table{font-size:11px}.scroll-hint{display:none}thead{display:table-header-group}h2{break-after:avoid}}</style></head><body><main>
+    <h1>Invoice check report</h1><p>${value(report.reference)} · Saved comparison ${run.runNumber}</p><h2>${summary.outcome}</h2>
+    <p>${summary.recorded ? `${summary.passed} passed · ${summary.differed} differed · ${summary.incomplete} could not be checked · ${summary.total} total checks` : "Full check counts were not recorded. No complete match can be claimed."}</p>
+    <p class="notice">These results cover the saved documents only. They do not approve payment or show what remains on the order. Decisions do not turn an unperformed check into a passed check.</p>
+    <h2>Checks at a glance</h2>${run.checks.length ? table(["Check", "Result", ...checkHeaders(run), "Difference", "Allowed difference"], run.checks.map(check => [checkLabel(check), checkStatus(check.status), ...checkValues(run, check), check.signedDifference, check.tolerance])) : "<p>Individual checks were not recorded for this older comparison.</p>"}
+    <h2>Differences and missing checks</h2>${checks || "<p>No differing or missing checks were recorded. Read the coverage statement above.</p>"}
+    <h2>Decision history</h2><p>Each sequence is a saved decision. A later sequence replaces the earlier decision; it does not change the original check.</p>${findings || "<p>No findings were recorded.</p>"}
+    <h2>Saved fields and review state</h2><p>Only confirmed, corrected or added fields have an effective reviewed value here. Unchecked, cleared and older fields with no recorded state keep their captured text as history. That text is not an approved value.</p>
+    ${table(["Document", "Field", "Item row", "Review state", "Effective reviewed value", "Captured text (history)", "Supporting text"], run.fields.map(field => [roleName(field.role), label(field.key), field.occurrence > 0 ? field.occurrence : "", fieldState(field), effectiveFieldValue(field) ?? "No confirmed value", field.value, evidence(run, field.id)]))}
+    <h2>About this saved report</h2>${table(["Detail", "Saved value"], reportMetadata(report))}
+    <h2>Saved document versions</h2>${run.sources.map(source => `<h3>${value(roleName(source.role))}</h3>${table(["Detail", "Value"], Object.entries(source).map(([key, text]) => [label(key), text]))}`).join("")}
+    <h2>Allowed differences</h2>${table(["Setting", "Value"], Object.entries(run.tolerances).map(([key,text]) => [label(key),text]))}
+    <p><small>This is an HTML report. Open your browser's Print command to print it or save a PDF. The spreadsheet download uses this same snapshot; protective apostrophes prevent spreadsheet formulas from running.</small></p>
+    </main></body></html>`;
+}
