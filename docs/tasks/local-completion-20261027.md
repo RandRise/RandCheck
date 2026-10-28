@@ -1,5 +1,24 @@
 # Local delivery completion
 
+## October 28 follow-up: RandCheck
+
+Owner-approved product name: **RandCheck**; GitHub repository name: `randcheck`.
+Scope is visible branding and current documentation only. Internal identifiers,
+local paths, retained data and historical evidence stay unchanged. Acceptance:
+consistent app/guide branding, focused existing UI checks, independent diff review,
+and no service restart. Upload remains pending; `RandRise/randcheck` returned 404.
+
+Verification: existing `security.test.tsx` and `workspace-navigation.test.tsx`
+passed all 36 cases; targeted ESLint on the three changed web files and
+`git diff --check` passed. Seven branding content checks passed. The test runner's
+future Vite native-config warning remains recorded, not suppressed. Logs and
+captured baseline: `outputs/randcheck-rename-20261028/`. README and sidebar diffs
+were opened in the existing VS Code window. Independent Progress and Quality
+Reviewer found no material issues. No browser check, build or service restart
+was performed for this text-only batch. Earlier screenshots retain their original
+branding as historical evidence. Optional next-launch check: confirm RandCheck
+in the sidebar, browser tab, sign-in screen and guide header.
+
 ## Status: completed current local-development milestone
 
 Rand closed this milestone on October 27 and requested GitHub upload. Remaining

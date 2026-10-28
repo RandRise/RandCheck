@@ -1,7 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "UAE Document Intelligence",
+  title: "RandCheck",
   description: "Product plan, architecture, phases, and review decisions",
   cleanUrls: true,
   themeConfig: {

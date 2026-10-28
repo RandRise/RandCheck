@@ -1,4 +1,6 @@
-# UAE Enterprise Document Intelligence Platform
+# RandCheck
+
+Invoice and purchase order review. GitHub repository name: `randcheck`.
 
 **Status:** current local-development milestone completed on October 27, 2026.
 The owner closed this checkpoint and authorized GitHub upload. Remaining checks

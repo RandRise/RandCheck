@@ -18,7 +18,7 @@ export function WorkspaceFrame({ session, path, links, local, onSignOut, allowHe
   return <div className="workspace-shell">
     <a className="workspace-skip" href="#workspace-content">Skip to content</a>
     <aside className="workspace-sidebar">
-      <div className="workspace-brand"><span aria-hidden="true">d.</span>Document review</div>
+      <div className="workspace-brand"><span aria-hidden="true">R.</span>RandCheck</div>
       <div className="workspace-organization"><strong dir="auto">{session.organizationName}</strong><small>Workspace</small></div>
       <nav aria-label="Workspace">
         {(["Work", "Other tools", "Administration"] as const).map(group => {

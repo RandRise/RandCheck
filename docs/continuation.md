@@ -1,5 +1,20 @@
 # Continuation checkpoint
 
+## RandCheck name approved — October 28, 2026
+
+Rand approved **RandCheck**, with GitHub repository name `randcheck`. Visible app
+branding, browser title, README and guide branding now use this name. Keep the
+existing folder, package identifiers, .NET namespaces, storage keys and historical
+records stable. This is a name change only; the invoice/PO workflow is unchanged.
+The prior milestone is committed as `003b45c`. GitHub returned 404 for
+`RandRise/randcheck`; upload is still pending repository access and authentication.
+Do not restart Docker or heavy services for this rename or upload.
+
+Rename verification: 36 existing UI tests, targeted ESLint, seven content checks
+and diff whitespace checks passed; independent reviewer found no material issues.
+VS Code before/after diffs shown. No fresh browser/build run; prior screenshots
+remain historical. See the October 28 follow-up in the local-delivery task record.
+
 ## Current milestone completed; upload requested — October 27, 2026
 
 Rand explicitly closed the current milestone and requested upload to GitHub,

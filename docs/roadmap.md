@@ -1,5 +1,11 @@
 # Roadmap
 
+## October 28: product name
+
+The owner approved **RandCheck** (`randcheck` on GitHub). This branding-only
+follow-up does not reopen the closed local milestone or change its verification
+limits. Repository upload is still pending.
+
 ## October 27: delegated local completion
 
 **Closed current milestone:** Rand requested completion and GitHub upload after

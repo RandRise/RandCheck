@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "UAE Document Intelligence"
+  name: "RandCheck"
   text: "Review the plan before we build"
   tagline: Extract, reconcile, and verify business documents with traceable evidence.
   actions:
@@ -30,7 +30,7 @@ The overview below records the earlier planning baseline. For the current invoic
 
 > An enterprise platform that extracts and reconciles UAE business documents, flags financial discrepancies, and provides traceable evidence for human review.
 
-The product does **not** have a final brand name yet. “Bayaan” has been retired as the working name because it is crowded in the regional AI market.
+The product is named **RandCheck**, approved on October 28, 2026. The GitHub repository name is `randcheck`. Earlier names in historical records describe the same project.
 
 ## Earlier planning baseline
 

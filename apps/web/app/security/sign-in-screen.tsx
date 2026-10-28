@@ -6,7 +6,7 @@ export function SignInScreen({ configured = false, busy = false, message = "", o
   configured?: boolean; busy?: boolean; message?: string; onSignIn?: () => void; onSignOut?: () => void;
 }) {
   return <main className="signin-page">
-    <div className="security-wordmark"><span aria-hidden="true">DI</span> Document review</div>
+    <div className="security-wordmark"><span aria-hidden="true">R.</span> RandCheck</div>
     <div className="signin-grid">
       <section className="signin-story">
         <h1>Your document workspace</h1>
@@ -31,6 +31,6 @@ export function SignInScreen({ configured = false, busy = false, message = "", o
         <small>Access is checked on every request.</small>
       </section>
     </div>
-    <footer className="signin-footer"><span>UAE Enterprise Document Intelligence</span><span>Document review · Reconciliation · Evidence</span></footer>
+    <footer className="signin-footer"><span>RandCheck</span><span>Document review · Reconciliation · Evidence</span></footer>
   </main>;
 }

@@ -4,7 +4,7 @@ import { EnterpriseProvider } from "./security/enterprise-provider";
 import { AppearanceProvider } from "./appearance";
 
 export const metadata: Metadata = {
-  title: "UAE Enterprise Document Intelligence",
+  title: "RandCheck",
   description: "Bilingual document review for UAE operations teams"
 };
 

@@ -1,6 +1,6 @@
 ---
 title: Workflow review room
-description: Understand the invoice workflow, compare proposed changes, and review one change at a time.
+description: Understand the RandCheck invoice workflow, compare proposed changes, and review one change at a time.
 pageClass: workflow-review
 outline: [2, 2]
 lastUpdated: false
