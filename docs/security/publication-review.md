@@ -1,5 +1,14 @@
 # Local publication review
 
+## Public upload confirmation — October 28, 2026
+
+After creating the repository, the owner explicitly selected **Keep it public
+and upload**. The reviewed source and preserved history were pushed to
+[RandRise/RandCheck](https://github.com/RandRise/RandCheck) without force. Remote
+`main` matched local commit `6815db19a9d8513ad5639118fbbb609fa60c10f7` after upload.
+This resolves the earlier repository/authentication blocker. The application
+remains unlicensed, and the bounded review and verification limits below remain.
+
 ## Current preparation — October 27, 2026
 
 The owner explicitly chose **keep the software unlicensed until he decides**.

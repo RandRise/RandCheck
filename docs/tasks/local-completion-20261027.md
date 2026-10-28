@@ -1,5 +1,14 @@
 # Local delivery completion
 
+## October 28: upload completed
+
+The owner explicitly approved public visibility. Source and preserved history are
+uploaded to [RandRise/RandCheck](https://github.com/RandRise/RandCheck), branch
+`main`. `git ls-remote` verified `6815db19a9d8513ad5639118fbbb609fa60c10f7`,
+matching the reviewed local commit. No force push, license addition, service
+restart or additional application testing occurred. Earlier upload blockers below
+are resolved; the milestone's documented verification limits still apply.
+
 ## October 28 follow-up: RandCheck
 
 Owner-approved product name: **RandCheck**; GitHub repository name: `randcheck`.

@@ -1,5 +1,16 @@
 # Continuation checkpoint
 
+## GitHub upload verified — October 28, 2026
+
+The owner created [RandRise/RandCheck](https://github.com/RandRise/RandCheck),
+explicitly chose to keep it public, and completed Git sign-in. The reviewed source
+and existing commit history were pushed without force to `main`. Remote verification
+returned `6815db19a9d8513ad5639118fbbb609fa60c10f7`, matching the local RandCheck
+rename commit. Earlier pending-upload notes below are historical. The local branch
+`codex/project-checkpoint-20260921` tracks `origin/main`; the working folder is unchanged.
+The software remains unlicensed. Docker remains off; no heavy services were restarted.
+The previously documented verification follow-ups remain outstanding.
+
 ## RandCheck name approved — October 28, 2026
 
 Rand approved **RandCheck**, with GitHub repository name `randcheck`. Visible app
